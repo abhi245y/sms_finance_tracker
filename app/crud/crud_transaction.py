@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from app.models.transaction import Transaction
-from app.schemas.transaction import TransactionCreate, TransactionUpdate
+from app.schemas.transaction import TransactionCreate
 
 def create_transaction(db: Session, *, obj_in: TransactionCreate) -> Transaction:
     db_obj = Transaction(
@@ -9,7 +9,7 @@ def create_transaction(db: Session, *, obj_in: TransactionCreate) -> Transaction
         currency=obj_in.currency,
         transaction_type=obj_in.transaction_type,
         account_identifier=obj_in.account_identifier,
-        category=obj_in.category,
+        category_id=obj_in.category_id,
         description=obj_in.description,
         status=obj_in.status,
         bank_name=obj_in.bank_name,
