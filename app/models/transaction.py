@@ -21,4 +21,7 @@ class Transaction(Base):
     category = Column(String(100), nullable=True)
     description = Column(Text, nullable=True)
     status = Column(SQLAlchemyEnum(TransactionStatus), nullable=False, default=TransactionStatus.PENDING_CATEGORIZATION)
-    # Could add: merchant_name, transaction_date_from_sms, etc.
+    bank_name = Column(String(100), nullable=True)
+    merchant_vpa = Column(String(255), nullable=True)
+    transaction_datetime_from_sms = Column(DateTime(timezone=True), nullable=True)
+    # Could add: merchant_name, etc.

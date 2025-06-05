@@ -5,15 +5,16 @@ from app.schemas.transaction import TransactionCreate, TransactionUpdate
 def create_transaction(db: Session, *, obj_in: TransactionCreate) -> Transaction:
     db_obj = Transaction(
         raw_sms_content=obj_in.raw_sms_content,
-        # Initially, we might only have raw_sms_content
-        # Other fields can be updated later by parsing or user input
         amount=obj_in.amount,
         currency=obj_in.currency,
         transaction_type=obj_in.transaction_type,
         account_identifier=obj_in.account_identifier,
         category=obj_in.category,
         description=obj_in.description,
-        status=obj_in.status
+        status=obj_in.status,
+        bank_name=obj_in.bank_name,
+        merchant_vpa=obj_in.merchant_vpa,
+        transaction_datetime_from_sms=obj_in.transaction_datetime_from_sms
     )
     db.add(db_obj)
     db.commit()

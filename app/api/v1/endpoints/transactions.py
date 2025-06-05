@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Header, status
 from sqlalchemy.orm import Session
 from typing import Any, List
 
-from app import crud
+
 from app.api import deps
 from app.core.config import settings
 from app.services.sms_parser import parse_sms_content
@@ -29,14 +29,40 @@ def receive_sms(
     Receive SMS content from iPhone Shortcut.
     """
     parsed_data = parse_sms_content(sms_in.sms_content)
+    
+    if not parsed_data:
 
-    transaction_in = TransactionCreate(
-        raw_sms_content=sms_in.sms_content,
-        amount=parsed_data.get("amount"),
-        currency=parsed_data.get("currency"),
-        description=parsed_data.get("description")
-        # other fields can be None initially
-    )
+        """
+        
+        If parser returns None (e.g., it's a credit transaction or unparseable as spend),
+        you might choose to not create a transaction record, or create one with a specific status.
+        For now, let's assume we only want to store spend transactions that were parsed.
+        You could also log sms_in.sms_content here for manual review of unparsed messages.
+        
+        """
+        print(f"SMS not processed as spend or unparseable: {sms_in.sms_content[:100]}")
+
+        return {"message": "SMS not processed as a spend transaction or was unparseable."}
+
+
+    transaction_in_data = {
+        "raw_sms_content": sms_in.sms_content,
+        "amount": parsed_data.get("amount"),
+        "currency": parsed_data.get("currency", "INR"),
+        "description": parsed_data.get("description"),
+        "transaction_type": parsed_data.get("transaction_type"),
+        "account_identifier": parsed_data.get("account_identifier"),
+        "bank_name":  parsed_data.get("bank_name"),
+        "merchant_vpa": parsed_data.get("merchant_vpa"),
+        "transaction_datetime_from_sms": parsed_data.get("transaction_datetime_from_sms")
+    }
+    
+    print(f"Transation Data: {transaction_in_data}")
+    
+    # Filter out None values before passing to Pydantic model to allow optional fields
+    transaction_in_data_cleaned = {k: v for k, v in transaction_in_data.items() if v is not None}
+    
+    transaction_in = TransactionCreate(**transaction_in_data_cleaned)
     transaction = crud_transaction.create_transaction(db=db, obj_in=transaction_in)
     return transaction
 

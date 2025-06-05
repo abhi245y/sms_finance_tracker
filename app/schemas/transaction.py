@@ -15,6 +15,9 @@ class TransactionBase(BaseModel):
     category: Optional[str] = None
     description: Optional[str] = None
     status: TransactionStatus = TransactionStatus.PENDING_CATEGORIZATION
+    merchant_vpa: Optional[str] = None
+    transaction_datetime_from_sms: Optional[datetime] = None
+    bank_name: Optional[str] = None
 
 class TransactionCreate(TransactionBase):
     pass # For now, same as base

@@ -1,36 +1,191 @@
 import re
-from typing import Dict, Optional, Any
+from datetime import datetime
+from typing import Dict, Optional, Any, List, Callable
 
-def parse_sms_content(sms_content: str) -> Dict[str, Any]:
+# --- Helper function to parse dates ---
+def _parse_date(date_str: str, formats: List[str]) -> Optional[datetime]:
     """
-    Very basic initial SMS parser.
-    This needs to be significantly improved with more specific regex for bank SMS formats.
+    Tries to parse a date string using a list of possible formats.
+    Handles %y (e.g., 25 -> 2025) and %d-%m (assumes current year).
     """
-    parsed_data = {"raw_sms": sms_content}
-
-    # Attempt to find amount (very naive)
-    # Look for "Rs." or "INR" followed by a number
-    # Example: "Rs.1,234.56", "INR 500", "Rs 23.00"
-    amount_match = re.search(r"(?:Rs\.?|INR)\s*([\d,]+\.?\d*)", sms_content, re.IGNORECASE)
-    if amount_match:
+    for fmt in formats:
         try:
-            amount_str = amount_match.group(1).replace(",", "")
-            parsed_data["amount"] = float(amount_str)
-            parsed_data["currency"] = "INR" # Assume INR if keyword found
+            dt_obj = datetime.strptime(date_str, fmt)
+            
+            # Handle 2-digit year (e.g., '25' becomes 2025)
+            if '%y' in fmt and dt_obj.year < 2000: # strptime might parse '25' as 1925
+                dt_obj = dt_obj.replace(year=dt_obj.year + 2000)
+            
+            # Handle formats like "dd-mm" assuming current year if strptime defaults to 1900
+            if any(no_year_fmt in fmt for no_year_fmt in ["%d-%m", "%d/%m", "%m-%d", "%m/%d"]) \
+               and dt_obj.year == 1900:
+                dt_obj = dt_obj.replace(year=datetime.now().year)
+                
+            formatted_str = dt_obj.strftime("%Y-%m-%d %H:%M:%S")
+            return datetime.strptime(formatted_str, "%Y-%m-%d %H:%M:%S")
         except ValueError:
-            pass 
+            continue
+    return None
 
-    # Attempt to find a simple description (e.g., "spent at MERCHANT_NAME")
-    # This is highly dependent on SMS format
-    spent_at_match = re.search(r"(?:spent at|debited for purchase at)\s+([\w\s.-]+?)(?:\son\s|$|\.)", sms_content, re.IGNORECASE)
-    if spent_at_match:
-        parsed_data["description"] = f"Spent at {spent_at_match.group(1).strip()}"
-    else:
-        # Fallback or more generic description
-        first_sentence = sms_content.split('.')[0]
-        parsed_data["description"] = first_sentence[:100] # Truncate if too long
+# --- Define parser functions for each bank/type ---
 
-    # Add more parsing logic here for card numbers, account numbers, UPI IDs, etc.
-    # E.g., look for "A/c XXXXX1234", "Card XX1234"
+def _parse_federal_bank_upi(sms: str) -> Optional[Dict[str, Any]]:
+    pattern = re.compile(
+        r"Rs\s*(?P<amount>[\d,]+\.?\d*)\s*debited via UPI on\s*(?P<date>\d{2}-\d{2}-\d{4})\s*(?P<time>\d{2}:\d{2}:\d{2})\s*to VPA\s*(?P<vpa>[^.]+?)\.Ref No"
+    )
+    match = pattern.search(sms)
+    if match:
+        data = match.groupdict()
+        datetime_str = f"{data['date']} {data['time']}"
+        parsed_datetime = _parse_date(datetime_str, ["%d-%m-%Y %H:%M:%S"])
+        return {
+            "bank_name": "Federal Bank",
+            "transaction_type": "UPI",
+            "amount": float(data["amount"].replace(",", "")),
+            "currency": "INR",
+            "merchant_vpa": data["vpa"],
+            "account_identifier": "Federal Bank UPI", # Actual account not in SMS, generic
+            "transaction_datetime_from_sms": parsed_datetime if parsed_datetime else None,
+            "description": f"UPI to {data['vpa']}",
+        }
+    return None
 
-    return parsed_data
+def _parse_pluxee_card(sms: str) -> Optional[Dict[str, Any]]:
+    pattern = re.compile(
+        r"Rs\.\s*(?P<amount>[\d,]+\.?\d*)\s*spent from Pluxee\s*(?:Meal\s*)?Card wallet, card no\.(?:xx|\*\*)?(?P<card_last4>\d{4})\s*on\s*(?P<date>\d{1,2}-\d{2}-\d{4})\s*(?P<time>\d{2}:\d{2}:\d{2})\s*at\s*(?P<merchant>[^.]+?)\s*\."
+    )
+    match = pattern.search(sms)
+    if match:
+        data = match.groupdict()
+        datetime_str = f"{data['date']} {data['time']}"
+        parsed_datetime = _parse_date(datetime_str, ["%d-%m-%Y %H:%M:%S", "%m-%d-%Y %H:%M:%S"]) 
+        merchant = data["merchant"].strip()
+        return {
+            "bank_name": "Pluxee",
+            "transaction_type": "Wallet",
+            "amount": float(data["amount"].replace(",", "")),
+            "currency": "INR",
+            "merchant_vpa": merchant,
+            "account_identifier": f"Pluxee Card xx{data['card_last4']}",
+            "transaction_datetime_from_sms": parsed_datetime if parsed_datetime else None,
+            "description": f"Spent at {merchant}",
+        }
+    return None
+
+def _parse_idfc_first_bank_cc(sms: str) -> Optional[Dict[str, Any]]:
+    pattern = re.compile(
+        r"INR\s*(?P<amount>[\d,]+\.?\d*)\s*spent on your IDFC FIRST Bank Credit Card ending (?:XX|\*\*)(?P<card_last4>\d{4})\s*at\s*(?P<merchant>.+?)\s*on\s*(?P<date>\d{2}\s+\w{3}\s+\d{4})\s*at\s*(?P<time>\d{2}:\d{2}\s+(?:AM|PM))"
+    )
+    match = pattern.search(sms)
+    if match:
+        data = match.groupdict()
+        datetime_str = f"{data['date']} {data['time']}"
+        parsed_datetime = _parse_date(datetime_str, ["%d %b %Y %I:%M %p"])
+        merchant = data["merchant"].strip()
+        return {
+            "bank_name": "IDFC FIRST Bank",
+            "transaction_type": "Credit Card",
+            "amount": float(data["amount"].replace(",", "")),
+            "currency": "INR",
+            "merchant_vpa": merchant,
+            "account_identifier": f"IDFC CC XX{data['card_last4']}",
+            "transaction_datetime_from_sms": parsed_datetime if parsed_datetime else None,
+            "description": f"Spent at {merchant}",
+        }
+    return None
+
+def _parse_hdfc_bank_upi(sms: str) -> Optional[Dict[str, Any]]:
+    # Handles multi-line SMS. Using explicit \n for clarity.
+    pattern = re.compile(
+        r"Amt Sent Rs\.(?P<amount>[\d,]+\.?\d*)\s*\nFrom HDFC Bank A/C \*(?P<account_last4>\d{4})\s*\nTo (?P<recipient>.+?)\s*\nOn (?P<date>\d{2}-\d{2})"
+    )
+    match = pattern.search(sms)
+    if match:
+        data = match.groupdict()
+        parsed_date = _parse_date(data["date"], ["%d-%m"]) # Assumes current year
+        recipient = data["recipient"].strip()
+        return {
+            "bank_name": "HDFC Bank",
+            "transaction_type": "UPI",
+            "amount": float(data["amount"].replace(",", "")),
+            "currency": "INR",
+            "merchant_vpa": recipient,
+            "account_identifier": f"HDFC A/C *{data['account_last4']}",
+            "transaction_datetime_from_sms": parsed_date.strftime("%Y-%m-%d") if parsed_date else None, # Time not available
+            "description": f"UPI to {recipient}",
+        }
+    return None
+
+def _parse_icici_bank_card(sms: str) -> Optional[Dict[str, Any]]:
+    pattern = re.compile(
+        r"(?P<currency_symbol>INR|Rs)\s*(?P<amount>[\d,]+\.?\d*)\s*spent (?:on|using) ICICI Bank Card (?:XX|\*\*)(?P<card_last4>\d{4})\s*on\s*(?P<date>\d{1,2}-\w{3}-\d{2})\s*(?:on|at)\s*(?P<merchant>[^.]+?)\."
+    )
+    match = pattern.search(sms)
+    if match:
+        data = match.groupdict()
+        parsed_date = _parse_date(data["date"], ["%d-%b-%y", "%d-%B-%y"]) # e.g., 30-May-25
+        merchant = data["merchant"].strip()
+        
+        # Clean up common merchant prefixes/suffixes
+        if merchant.startswith("IND*") and merchant.endswith(" -"):
+            merchant = merchant[len("IND*"):-len(" -")].strip()
+        elif merchant.startswith("IND*"):
+            merchant = merchant[len("IND*"):].strip()
+
+        return {
+            "bank_name": "ICICI Bank",
+            "transaction_type": "Credit Card", # Could be Debit or Credit
+            "amount": float(data["amount"].replace(",", "")),
+            "currency": "INR", # Based on INR or Rs
+            "merchant_vpa": merchant,
+            "account_identifier": f"ICICI Card XX{data['card_last4']}",
+            "transaction_datetime_from_sms": parsed_date.strftime("%Y-%m-%d") if parsed_date else None, # Time not available
+            "description": f"Spent at {merchant}",
+        }
+    return None
+
+
+# --- Main parser function ---
+_SPENDING_PARSERS: List[Callable[[str], Optional[Dict[str, Any]]]] = [
+    _parse_idfc_first_bank_cc,
+    _parse_icici_bank_card,
+    _parse_hdfc_bank_upi,
+    _parse_federal_bank_upi,
+    _parse_pluxee_card,
+]
+
+_CREDIT_KEYWORDS = [ "credited to your A/c", "credited to Acct", "received", "deposited" ]
+
+def parse_sms_content(sms_content: str) -> Optional[Dict[str, Any]]:
+    """
+    Parses SMS content to extract transaction details.
+    Prioritizes spending transactions and tries to identify details from known bank formats.
+    Returns a dictionary with parsed data or None if it's a credit or unparseable.
+    """
+    # 1. Filter out credit/income transactions
+    for keyword in _CREDIT_KEYWORDS:
+        if keyword.lower() in sms_content.lower():
+            # print(f"DEBUG: Ignoring credit transaction: {sms_content[:70]}...")
+            return None 
+
+    # 2. Try specific bank/type parsers for spending
+    for parser_func in _SPENDING_PARSERS:
+        parsed_data = parser_func(sms_content)
+        if parsed_data:
+            # Add raw SMS and ensure essential fields have defaults if not set by parser
+            parsed_data["raw_sms"] = sms_content
+            parsed_data.setdefault("currency", "INR") # Should be set by parsers, but as a fallback
+            parsed_data.setdefault("bank_name", "Unknown")
+            parsed_data.setdefault("transaction_type", "Unknown")
+            parsed_data.setdefault("account_identifier", "Unknown")
+            parsed_data.setdefault("merchant_vpa", "Unknown")
+            parsed_data.setdefault("transaction_datetime_from_sms", "Unknown")
+            print(f"DEBUG: Parsed by {parser_func.__name__}")
+            return parsed_data
+
+    # 3. Optional: Fallback to a very generic parser if no specific one matched
+    # For now, we'll skip a noisy generic fallback. If an SMS is a spend but not parsed,
+    # it's better to explicitly add a parser for it.
+    
+    print(f"DEBUG: Could not parse as spend: {sms_content[:70]}...")
+    return None
