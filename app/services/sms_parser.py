@@ -144,6 +144,92 @@ def _parse_icici_bank_card(sms: str) -> Optional[Dict[str, Any]]:
         }
     return None
 
+def _parse_federal_bank_netbanking(sms: str) -> Optional[Dict[str, Any]]:
+    pattern = re.compile(
+        r"Rs\.(?P<amount>[\d,]+\.?\d*)\s*debited from your A/c (?:XX|\*\*)(?P<account_last4>\d{4})\s*on\s*(?P<date>\d{2}\w{3}\d{4})\s*(?P<time>\d{2}:\d{2}:\d{2})"
+    )
+    match = pattern.search(sms)
+    if match:
+        data = match.groupdict()
+        datetime_str = f"{data['date']} {data['time']}"
+        parsed_datetime = _parse_date(datetime_str, ["%d%b%Y %H:%M:%S"]) # e.g., 08JUN2025
+        return {
+            "bank_name": "Federal Bank",
+            "transaction_type": "Net Banking",
+            "amount": float(data["amount"].replace(",", "")),
+            "currency": "INR",
+            "merchant_vpa": "FEDNET Transaction", # Merchant isn't specified, so use a generic name
+            "account_identifier": f"Federal Bank A/c XX{data['account_last4']}",
+            "transaction_datetime_from_sms": parsed_datetime,
+            "description": "FEDNET Net Banking Debit",
+        }
+    return None
+
+def _parse_hdfc_bank_card(sms: str) -> Optional[Dict[str, Any]]:
+    pattern = re.compile(
+        r"Spent Rs\.(?P<amount>[\d,]+\.?\d*)\s*On HDFC Bank Card (?P<card_last4>\d{4})\s*At\s*(?P<merchant>.+?)\s*On\s*(?P<date>\d{4}-\d{2}-\d{2}):(?P<time>\d{2}:\d{2}:\d{2})"
+    )
+    match = pattern.search(sms)
+    if match:
+        data = match.groupdict()
+        datetime_str = f"{data['date']} {data['time']}"
+        parsed_datetime = _parse_date(datetime_str, ["%Y-%m-%d %H:%M:%S"])
+        merchant = data["merchant"].strip()
+        return {
+            "bank_name": "HDFC Bank",
+            "transaction_type": "Credit Card",
+            "amount": float(data["amount"].replace(",", "")),
+            "currency": "INR",
+            "merchant_vpa": merchant,
+            "account_identifier": f"HDFC Bank Card {data['card_last4']}",
+            "transaction_datetime_from_sms": parsed_datetime,
+            "description": f"Spent at {merchant}",
+        }
+    return None
+
+def _parse_amex_card(sms: str) -> Optional[Dict[str, Any]]:
+    pattern = re.compile(
+        r"spent (?P<currency_symbol>INR|\$)\s*(?P<amount>[\d,]+\.?\d*)\s*on your AMEX card \*\*\s*(?P<card_last4>\d{4})\s*at\s*(?P<merchant>.+?)\s*on\s*(?P<date>\d{1,2}\s+\w+\s+\d{4})\s*at\s*(?P<time>\d{2}:\d{2}\s+(?:AM|PM))"
+    )
+    match = pattern.search(sms)
+    if match:
+        data = match.groupdict()
+        datetime_str = f"{data['date']} {data['time']}"
+        parsed_datetime = _parse_date(datetime_str, ["%d %B %Y %I:%M %p"])
+        merchant = data["merchant"].strip()
+        currency = "USD" if data["currency_symbol"] == "$" else "INR"
+        return {
+            "bank_name": "AMEX",
+            "transaction_type": "Credit Card",
+            "amount": float(data["amount"].replace(",", "")),
+            "currency": currency,
+            "merchant_vpa": merchant,
+            "account_identifier": f"AMEX Card ** {data['card_last4']}",
+            "transaction_datetime_from_sms": parsed_datetime,
+            "description": f"Spent at {merchant}",
+        }
+    return None
+
+def _parse_sbi_credit_card(sms: str) -> Optional[Dict[str, Any]]:
+    pattern = re.compile(
+        r"Rs\.(?P<amount>[\d,]+\.?\d*)\s*spent on your SBI Credit Card ending (?P<card_last4>\d{4})\s*at\s*(?P<merchant>.+?)\s*on\s*(?P<date>\d{2}/\d{2}/\d{2})"
+    )
+    match = pattern.search(sms)
+    if match:
+        data = match.groupdict()
+        parsed_datetime = _parse_date(data["date"], ["%d/%m/%y"])
+        merchant = data["merchant"].strip()
+        return {
+            "bank_name": "SBI",
+            "transaction_type": "Credit Card",
+            "amount": float(data["amount"].replace(",", "")),
+            "currency": "INR",
+            "merchant_vpa": merchant,
+            "account_identifier": f"SBI Credit Card {data['card_last4']}",
+            "transaction_datetime_from_sms": parsed_datetime, # No time info available
+            "description": f"Spent at {merchant}",
+        }
+    return None
 
 # --- Main parser function ---
 _SPENDING_PARSERS: List[Callable[[str], Optional[Dict[str, Any]]]] = [
@@ -152,6 +238,10 @@ _SPENDING_PARSERS: List[Callable[[str], Optional[Dict[str, Any]]]] = [
     _parse_hdfc_bank_upi,
     _parse_federal_bank_upi,
     _parse_pluxee_card,
+    _parse_federal_bank_netbanking,
+    _parse_hdfc_bank_card,
+    _parse_amex_card,
+    _parse_sbi_credit_card,
 ]
 
 _CREDIT_KEYWORDS = [ "credited to your A/c", "credited to Acct", "received", "deposited" ]

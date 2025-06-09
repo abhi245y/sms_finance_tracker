@@ -13,13 +13,13 @@ app = FastAPI(
 
 app.include_router(
     transactions_v1.router, 
-    prefix=settings.API_V1_STR + "/transactions", 
+    prefix=settings.API_V1_STR +"/transactions", 
     tags=["transactions"]
 )
 
 app.include_router(
-    categories_v1.router, 
-    prefix=settings.API_V1_STR+"/categories",
+    categories_v1.router,
+    prefix=settings.API_V1_STR +"/categories",
     tags=["Categories"]
 )
 
