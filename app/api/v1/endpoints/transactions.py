@@ -4,7 +4,7 @@ from typing import Any, List, Optional
 
 from app.api import deps
 from app.core.config import settings
-from app.services.sms_parser import parse_sms_content
+from app.services.sms_parser import parse_sms_content, check_sms
 
 from app.schemas.transaction import TransactionInDB, SMSRecieved, TransactionCreate
 from app.models.transaction import TransactionStatus
@@ -18,6 +18,11 @@ async def verify_api_key(x_api_key: str = Header(...)):
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid API Key",
         )
+        
+@router.post("/check", dependencies=[Depends(verify_api_key)])
+def check_transaction( sms_in: SMSRecieved) -> Any:
+    return check_sms(sms_in.sms_content)
+    
 
 @router.post("/", response_model=TransactionInDB, dependencies=[Depends(verify_api_key)])
 def receive_sms(
@@ -41,9 +46,10 @@ def receive_sms(
         
         """
         print(f"SMS not processed as spend or unparseable: {sms_in.sms_content[:100]}")
+        raise HTTPException(status_code=400, detail={"status": "SMS not processed as a spend transaction or was unparseable."}) 
 
-        return {"message": "SMS not processed as a spend transaction or was unparseable."}
-
+    if parsed_data == "Ignoring credit transaction":
+        raise HTTPException(status_code=400, detail={"status": parsed_data}) 
 
     transaction_in_data = {
         "raw_sms_content": sms_in.sms_content,
@@ -61,12 +67,18 @@ def receive_sms(
     
     current_category_id: Optional[int] = None
     current_status = TransactionStatus.PENDING_CATEGORIZATION
-    
+
     if sms_in.category_name:
         category_obj = crud_category.get_category_by_name(db, name=sms_in.category_name)
+    else:
+        category_obj = crud_category.get_category_by_name(db, name="TBD")
+        
     if category_obj:
         current_category_id = category_obj.id
-        current_status = TransactionStatus.PROCESSED
+        if category_obj.name == "TBD":
+            current_status = TransactionStatus.PENDING_CATEGORIZATION
+        else:
+            current_status = TransactionStatus.PROCESSED
         print(f"Category '{sms_in.category_name}' (ID: {current_category_id}) assigned to transaction.")
     else:
         print(f"Warning: Category name '{sms_in.category_name}' from Shortcut not found in DB. Transaction will be PENDING_CATEGORIZATION.")
@@ -100,3 +112,4 @@ def read_transactions(
     """
     transactions = crud_transaction.get_transactions(db, skip=skip, limit=limit)
     return transactions
+    

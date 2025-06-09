@@ -189,8 +189,8 @@ def _parse_hdfc_bank_card(sms: str) -> Optional[Dict[str, Any]]:
 
 def _parse_amex_card(sms: str) -> Optional[Dict[str, Any]]:
     pattern = re.compile(
-        r"spent (?P<currency_symbol>INR|\$)\s*(?P<amount>[\d,]+\.?\d*)\s*on your AMEX card \*\*\s*(?P<card_last4>\d{4})\s*at\s*(?P<merchant>.+?)\s*on\s*(?P<date>\d{1,2}\s+\w+\s+\d{4})\s*at\s*(?P<time>\d{2}:\d{2}\s+(?:AM|PM))"
-    )
+    r"Alert:\s*You've spent (?P<currency_symbol>\$|INR)\s*(?P<amount>[\d,]+\.?\d*)\s*on your AMEX card\s+\*\*\s*(?P<card_last>\d{4,5})\s*at\s*(?P<merchant>.+?)\s*on\s*(?P<date>\d{1,2}\s+\w+\s+\d{4})\s*at\s*(?P<time>\d{2}:\d{2}\s+(?:AM|PM))"
+        )
     match = pattern.search(sms)
     if match:
         data = match.groupdict()
@@ -204,7 +204,7 @@ def _parse_amex_card(sms: str) -> Optional[Dict[str, Any]]:
             "amount": float(data["amount"].replace(",", "")),
             "currency": currency,
             "merchant_vpa": merchant,
-            "account_identifier": f"AMEX Card ** {data['card_last4']}",
+            "account_identifier": f"AMEX Card ** {data['card_last']}",
             "transaction_datetime_from_sms": parsed_datetime,
             "description": f"Spent at {merchant}",
         }
@@ -246,6 +246,19 @@ _SPENDING_PARSERS: List[Callable[[str], Optional[Dict[str, Any]]]] = [
 
 _CREDIT_KEYWORDS = [ "credited to your A/c", "credited to Acct", "received", "deposited" ]
 
+def check_sms(sms_content:str ) -> Optional[Dict[str, Any]]:
+    for keyword in _CREDIT_KEYWORDS:
+        if keyword.lower() in sms_content.lower():
+            print(f"DEBUG: Ignoring credit transaction: {sms_content[:70]}...")
+            return {"type": "Credit Transaction"}
+    
+    for parser_func in _SPENDING_PARSERS:
+        if parser_func(sms_content):
+            return {"type":"Valid Transaction"}
+    
+    return {"type":"Invalid Transaction"}
+            
+
 def parse_sms_content(sms_content: str) -> Optional[Dict[str, Any]]:
     """
     Parses SMS content to extract transaction details.
@@ -255,8 +268,8 @@ def parse_sms_content(sms_content: str) -> Optional[Dict[str, Any]]:
     # 1. Filter out credit/income transactions
     for keyword in _CREDIT_KEYWORDS:
         if keyword.lower() in sms_content.lower():
-            # print(f"DEBUG: Ignoring credit transaction: {sms_content[:70]}...")
-            return None 
+            print(f"DEBUG: Ignoring credit transaction: {sms_content[:70]}...")
+            return "Ignoring credit transaction" 
 
     # 2. Try specific bank/type parsers for spending
     for parser_func in _SPENDING_PARSERS:
@@ -264,7 +277,7 @@ def parse_sms_content(sms_content: str) -> Optional[Dict[str, Any]]:
         if parsed_data:
             # Add raw SMS and ensure essential fields have defaults if not set by parser
             parsed_data["raw_sms"] = sms_content
-            parsed_data.setdefault("currency", "INR") # Should be set by parsers, but as a fallback
+            parsed_data.setdefault("currency", "INR") 
             parsed_data.setdefault("bank_name", "Unknown")
             parsed_data.setdefault("transaction_type", "Unknown")
             parsed_data.setdefault("account_identifier", "Unknown")
