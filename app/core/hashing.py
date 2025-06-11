@@ -1,10 +1,12 @@
 import hashlib
+import xxhash
+import base64
 from typing import Dict, Any, Optional
 from datetime import datetime
 
-def generate_transaction_hash(parsed_data: Dict[str, Any]) -> Optional[str]:
+def generate_transaction_hash(parsed_data: Dict[str, Any], hash_type: str = 'xxhash') -> Optional[str]:
     """
-    Generates a unique, recreatable SHA256 hash for a transaction.
+    Generates a unique, recreatable SHA256 hash or xxhash  for a transaction.
     
     The hash is based on the most stable components of a transaction:
     - Transaction Datetime (normalized to ISO 8601 format)
@@ -35,9 +37,16 @@ def generate_transaction_hash(parsed_data: Dict[str, Any]) -> Optional[str]:
         
         print(f"DEBUG: Generating hash from stable string: \"{stable_string}\"")
 
-        hasher = hashlib.sha256()
-        hasher.update(stable_string.encode('utf-8'))
-        return hasher.hexdigest()
+        
+        if hash_type == 'xxhash':
+            hash_bytes = xxhash.xxh128(stable_string, seed=2024).digest()
+            encoded_hash = base64.urlsafe_b64encode(hash_bytes).decode('ascii').rstrip('=')
+            return encoded_hash
+        
+        if hash_type == 'SHA256':
+            hasher = hashlib.sha256()
+            hasher.update(stable_string.encode('utf-8'))
+            return hasher.hexdigest()
 
     except Exception as e:
         print(f"ERROR: Could not generate transaction hash. Error: {e}")

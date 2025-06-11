@@ -7,6 +7,7 @@ from app.core.config import settings
 from app.api.v1.endpoints import transactions as transactions_v1
 from app.api.v1.endpoints import categories as categories_v1
 from app.api.v1.endpoints import accounts as accounts_v1
+from app.api.v1.endpoints import telegram_webhook as telegram_webhook_v1
 
 
 app = FastAPI(
@@ -30,6 +31,12 @@ app.include_router(
     accounts_v1.router,
     prefix=f"{settings.API_V1_STR}/accounts",
     tags=["Accounts"]
+)
+
+app.include_router(
+    telegram_webhook_v1.router,
+    prefix=f"{settings.API_V1_STR}/telegram",
+    tags=["Telegram"],
 )
 
 @app.get("/")

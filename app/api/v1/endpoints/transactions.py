@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Depends, HTTPException, Header, status
+from fastapi import APIRouter, Depends, HTTPException, Header, status, BackgroundTasks
+from app.services import telegram_notifier
 from sqlalchemy.orm import Session
 from typing import Any, List 
 
@@ -26,6 +27,7 @@ def receive_sms(
     *,
     db: Session = Depends(deps.get_db),
     sms_in: SMSRecieved,
+    background_tasks: BackgroundTasks,
 ) -> Any:
     """
     Receive SMS content from iPhone Shortcut.
@@ -54,7 +56,6 @@ def receive_sms(
     
     transaction_to_create = TransactionCreate(**final_parsed_data)
     
-    # TODO Implement Plan C: unique hash and duplicate check here)
     
     print(f"Transation Data: {transaction_to_create}")
   
@@ -63,6 +64,12 @@ def receive_sms(
     except Exception as e:
         print(f"Error creating Pydantic TransactionCreate model: {e}")
         raise HTTPException(status_code=400, detail=f"Invalid transaction data: {e}")
+    
+    background_tasks.add_task(
+        telegram_notifier.send_new_transaction_notification,
+        transaction=transaction,
+        db=db
+    )
 
     return transaction
 
@@ -89,6 +96,7 @@ def update_transaction_details(
     db: Session = Depends(deps.get_db),
     transaction_hash: str,
     transaction_in: TransactionUpdate,
+    background_tasks: BackgroundTasks,
 ) -> Any:
     """
     Update a transaction with enrichment data like an account or category.
@@ -163,6 +171,10 @@ def update_transaction_details(
         obj_in=update_schema
     )
     
-    print(updated_transaction)
+    background_tasks.add_task(
+        telegram_notifier.send_update_notification,
+        transaction=updated_transaction,
+        db=db
+    )
 
     return updated_transaction
