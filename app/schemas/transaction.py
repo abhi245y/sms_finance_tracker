@@ -5,45 +5,65 @@ from app.models.transaction import TransactionStatus
 
 class SMSRecieved(BaseModel):
     sms_content: str
-    category_name: Optional[str] = None
 
 class TransactionBase(BaseModel):
-    raw_sms_content: str
+    # Core data fields parsed from SMS
     amount: Optional[float] = None
     currency: Optional[str] = "INR"
-    transaction_type: Optional[str] = None
-    account_identifier: Optional[str] = None
-    description: Optional[str] = None
-    status: TransactionStatus = TransactionStatus.PENDING_CATEGORIZATION
     merchant_vpa: Optional[str] = None
     transaction_datetime_from_sms: Optional[datetime] = None
-    bank_name: Optional[str] = None
+    description: Optional[str] = None
+    raw_sms_content: str
+
+    unique_hash: str
+    account_id: Optional[int] = None
+    category_id: Optional[int] = None
+    
+    status: TransactionStatus = TransactionStatus.PENDING_CATEGORIZATION
+    
+    class Config:
+        orm_mode = True
 
 class TransactionCreate(TransactionBase):
-    category_id: Optional[int] = None
-    status: Optional[str] = "pending_categorization"
+    pass
 
-class TransactionUpdate(BaseModel): # For later when user updates
-    amount: Optional[float] = None
+class TransactionUpdate(BaseModel):
+    """
+    Schema for updating an existing transaction. All fields are optional.
+    This will be used in the PATCH request body.
+    """
+    account_id: Optional[int] = None
     category_id: Optional[int] = None
-    transaction_type: Optional[str] = None
-    account_identifier: Optional[str] = None
-    category: Optional[str] = None
-    status: Optional[TransactionStatus] = None
+    category_name: Optional[str] = None
     description: Optional[str] = None
+    status: Optional[str] = None
 
 
 class CategoryForTransaction(BaseModel):
+    """A minimal Category schema for embedding in a Transaction response."""
     id: int
     name: str
     class Config:
         orm_mode = True
+        
+class AccountForTransaction(BaseModel):
+    """A minimal Account schema for embedding in a Transaction response."""
+    id: int
+    name: str
+    account_type: str
+    class Config:
+        orm_mode = True
 
 class TransactionInDB(TransactionBase):
+    """
+    The comprehensive schema for representing a transaction when returned from the API.
+    Includes database-generated fields and nested objects for related models.
+    """
     id: int
+    unique_hash: str
     received_at: datetime
     status: str
-    category_id: Optional[int] = None 
+    account: Optional[AccountForTransaction] = None
     category_obj: Optional[CategoryForTransaction] = None
 
     class Config:

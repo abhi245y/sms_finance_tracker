@@ -1,20 +1,20 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from typing import Any
+from typing import Any, Optional
 
 from app.crud import crud_category
-from app.schemas import category as category_schema # Import category schemas (e.g., CategoryNamesList, Category, CategoryCreate)
+from app.schemas import category as category_schema
 from app.api import deps
 
 router = APIRouter()
 
 @router.get(
-    "/",
+    "/list",
     response_model=category_schema.CategoryNamesList,
     summary="Get a list of all category names",
     description="Returns a JSON object containing a list of all category names, intended for populating selection menus."
 )
-def read_category_names(
+def get_category_list(
     db: Session = Depends(deps.get_db),
 ) -> Any:
     """
@@ -27,14 +27,11 @@ def read_category_names(
         pass
     return {"category_names": category_names}
 
-# Optional: Add more endpoints for full category management if needed later.
-# For example, to create a new category (you'd need to secure this endpoint):
 @router.post(
     "/",
-    response_model=category_schema.Category, # Returns the created category object
+    response_model=category_schema.Category, 
     status_code=status.HTTP_201_CREATED,
     summary="Create a new category",
-    # dependencies=[Depends(deps.get_current_active_superuser)] # TODO Secure this
 )
 def create_new_category(
     *,
@@ -60,12 +57,11 @@ def create_new_category(
     status_code=status.HTTP_201_CREATED,
     summary="Create multiple categories in bulk",
     description="Accepts a list of category names to create. Skips duplicates if they already exist."
-    # dependencies=[Depends(deps.get_current_active_superuser)] # Example: Secure this
 )
 def create_new_categories_bulk(
     *,
     db: Session = Depends(deps.get_db),
-    categories_in: category_schema.CategoryCreateBulk, # Expects {"categories": [{"name": "Cat1"}, {"name": "Cat2"}]}
+    categories_in: category_schema.CategoryCreateBulk,
 ) -> Any:
     """
     Create multiple new categories in a single request.
@@ -81,21 +77,36 @@ def create_new_categories_bulk(
 
 
 @router.get(
-    "/{category_id}",
+    "/",
     response_model=category_schema.Category,
-    summary="Get a specific category by ID"
+    summary="Get a specific category by ID or Name"
 )
-def read_category_by_id(
-    category_id: int,
+def get_category(
+    category_name: Optional[str] = None, 
+    category_id: Optional[int] = None,
     db: Session = Depends(deps.get_db),
 ) -> Any:
     """
-    Get a specific category by its ID.
+    Get a specific category by its ID or Name.
     """
-    category = crud_category.get_category(db=db, category_id=category_id)
+    category = None
+    if category_name:
+        category = crud_category.get_category_by_name(db=db, name=category_name)
+    elif category_id:
+         category = crud_category.get_category(db=db, category_id=category_id)
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Please specify either Category ID or Name",
+        )
+    
     if not category:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Category with ID {category_id} not found.",
+            detail=f"Category with ID: {category_id} or Name: {category_name} not found.",
         )
     return category
+        
+        
+
+
