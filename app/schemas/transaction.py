@@ -17,9 +17,9 @@ class TransactionBase(BaseModel):
 
     unique_hash: str
     account_id: Optional[int] = None
-    category_id: Optional[int] = None
+    category_id: Optional[int] = 11
     
-    status: TransactionStatus = TransactionStatus.PENDING_CATEGORIZATION
+    status: TransactionStatus = TransactionStatus.PENDING_PROCESSING
     
     class Config:
         orm_mode = True

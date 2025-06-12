@@ -15,7 +15,7 @@ class TransactionType(str, enum.Enum):
     NEW = "New Transaction Captured"
     UPDATED = "Transaction UPDATED"
 
-async def send_message(text: str, reply_markup: Optional[dict] = None):
+async def send_message(text: str, reply_markup: Optional[dict] = None) -> str|None:
     """A simple async function to send a message using httpx."""
     if not settings.TELEGRAM_BOT_TOKEN or not settings.TELEGRAM_CHAT_ID:
         print("WARN: Telegram credentials not set. Skipping notification.")
@@ -29,14 +29,20 @@ async def send_message(text: str, reply_markup: Optional[dict] = None):
         }
         if reply_markup:
             payload["reply_markup"] = reply_markup
-
+            
         try:
             response = await client.post(f"{API_BASE_URL}/sendMessage", json=payload)
             response.raise_for_status()
+            response_data = response.json()
+            if response_data.get("ok"):
+                return response_data["result"]["message_id"]
+            
         except httpx.HTTPStatusError as e:
             print(f"ERROR sending Telegram message: {e.response.text}")
         except Exception as e:
             print(f"ERROR during Telegram notification: {e}")
+            
+        return None
 
 def _format_transaction_message(transaction: TransactionInDB, type: TransactionType) -> str:
     """Formats a transaction object into a nice string for Telegram."""
@@ -60,35 +66,37 @@ def _format_transaction_message(transaction: TransactionInDB, type: TransactionT
         TransactionStatus.PROCESSED: "✅",
         TransactionStatus.PENDING_CATEGORIZATION: "🏷️",
         TransactionStatus.PENDING_ACCOUNT_SELECTION: "🏦",
+        TransactionStatus.PENDING_PROCESSING:"🚧",
         TransactionStatus.ERROR: "❌"
     }.get(transaction.status, "⚙️")
     status_text = escape_md(transaction.status.replace('_', ' ').title())
-
-    # Construct the message using MarkdownV2
+    
     message = (
-        f"*{status_emoji} {type}*\n\n"
-        f"*Amount*: `{amount_str}`\n"
-        f"*Merchant*: {merchant}\n"
-        f"*Account*: {account_name}\n"
-        f"*Category*: {category_name}\n"
-        f"*Status*: {status_text}"
-    )
+            f"*{status_emoji} {type}*\n\n"
+            f"*Amount*: `{amount_str}`\n"
+            f"*Merchant*: {merchant}\n"
+            f"*Account*: {account_name}\n"
+            f"*Category*: {category_name}\n"
+            f"*Status*: {status_text}\n"
+        )
     return message
 
 def _build_inline_keyboard(transaction: TransactionInDB, db: Session) -> Optional[dict]:
     """Builds an interactive keyboard based on the transaction's status."""
     buttons = []
-    if transaction.status == TransactionStatus.PENDING_ACCOUNT_SELECTION:
+    if transaction.status == TransactionStatus.PENDING_PROCESSING:
+        buttons.append([{"text": "Set Account", "callback_data":  f"sel_mod:{transaction.unique_hash}:{TransactionStatus.PENDING_ACCOUNT_SELECTION}"}])
+        buttons.append([{"text": "Set Category", "callback_data":  f"sel_mod:{transaction.unique_hash}:{TransactionStatus.PENDING_CATEGORIZATION}"}])
+    elif transaction.status == TransactionStatus.PENDING_ACCOUNT_SELECTION:
         accounts = crud_account.get_accounts(db, limit=20)
         for acc in accounts:
             callback_data = f"set_acc:{transaction.unique_hash}:{acc.id}"
-            buttons.append([{"text": f"Set Account: {acc.name}", "callback_data": callback_data}])
-    
-    if transaction.status == TransactionStatus.PENDING_CATEGORIZATION:
+            buttons.append([{"text": f"{acc.name}", "callback_data": callback_data}])
+    elif transaction.status == TransactionStatus.PENDING_CATEGORIZATION:
         categories = crud_category.get_categories(db, limit=20)
         for cat in categories:
             callback_data = f"set_cat:{transaction.unique_hash}:{cat.id}"
-            buttons.append([{"text": f"Set Category: {cat.name}", "callback_data": callback_data}])
+            buttons.append([{"text": f"{cat.name}", "callback_data": callback_data}])
 
     if not buttons:
         return {"inline_keyboard": []} 
@@ -99,7 +107,7 @@ async def send_new_transaction_notification(transaction: TransactionInDB, db: Se
     """The main function to call from an endpoint."""
     message_text = _format_transaction_message(transaction, TransactionType.NEW)
     keyboard = _build_inline_keyboard(transaction, db)
-    await send_message(text=message_text, reply_markup=keyboard)
+    return await send_message(text=message_text, reply_markup=keyboard)
 
 async def send_update_notification(transaction: TransactionInDB, db: Session):
     """Sends a simpler notification when a transaction is updated."""

@@ -5,11 +5,10 @@ from typing import Any, List
 
 from app.api import deps
 from app.core.config import settings
-from app.services.parser_engine import ParserEngine 
+from app.services.parser_engine import ParserEngine
+from app.services.transaction_status_manager import TransactionStatusManager
 
 from app.schemas.transaction import TransactionInDB, SMSRecieved, TransactionCreate, TransactionUpdate
-from app.models.transaction import TransactionStatus 
-from app.models.account import AccountType
 from app.crud import crud_transaction, crud_category, crud_account
 
 router = APIRouter()
@@ -23,7 +22,7 @@ async def verify_api_key(x_api_key: str = Header(...)):
     
 
 @router.post("/", response_model=TransactionInDB, dependencies=[Depends(verify_api_key)])
-def receive_sms(
+async def receive_sms(
     *,
     db: Session = Depends(deps.get_db),
     sms_in: SMSRecieved,
@@ -43,13 +42,11 @@ def receive_sms(
         print(f"DEBUG: Duplicate transaction detected with hash {final_parsed_data['unique_hash']}. Returning existing transaction ID {existing_transaction.id}.")
         return existing_transaction
     
-    account_id = final_parsed_data.get("account_id")
-    account_type = crud_account.get_account(db=db, account_id=account_id).account_type
-    
-    if account_id and account_type != AccountType.UNKNOWN:
-        current_status = TransactionStatus.PENDING_CATEGORIZATION
-    else:
-        current_status = TransactionStatus.PENDING_ACCOUNT_SELECTION
+        
+    current_status = TransactionStatusManager.determine_initial_status(
+        creation_data=final_parsed_data,
+        db=db
+    )
 
     final_parsed_data["status"] = current_status.value
     final_parsed_data["raw_sms_content"] = sms_in.sms_content
@@ -65,11 +62,12 @@ def receive_sms(
         print(f"Error creating Pydantic TransactionCreate model: {e}")
         raise HTTPException(status_code=400, detail=f"Invalid transaction data: {e}")
     
-    background_tasks.add_task(
-        telegram_notifier.send_new_transaction_notification,
+    message_id = await telegram_notifier.send_new_transaction_notification(
         transaction=transaction,
         db=db
     )
+    if message_id:
+        crud_transaction.update_transaction_message_id(db, transaction_obj=transaction, message_id=message_id)
 
     return transaction
 
@@ -147,19 +145,12 @@ def update_transaction_details(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"Category with ID {update_data['category_id']} not found.",
             )
-            
-    current_status = db_transaction.status
-
-    if status != TransactionStatus.PROCESSED:
-        has_account = db_transaction.account_id is not None or "account_id" in update_data
-        has_category = db_transaction.category_id is not None or "category_id" in update_data or "category_name" in update_data
-
-        if not has_account:
-            current_status = TransactionStatus.PENDING_ACCOUNT_SELECTION
-        elif not has_category:
-            current_status = TransactionStatus.PENDING_CATEGORIZATION
-        else:
-            current_status = TransactionStatus.PROCESSED
+    
+    current_status = TransactionStatusManager.determine_status_for_update(
+        transaction=db_transaction,
+        db=db,
+        update_data=update_data
+    )
     
     update_data["status"] = current_status.value
         
@@ -171,10 +162,19 @@ def update_transaction_details(
         obj_in=update_schema
     )
     
-    background_tasks.add_task(
-        telegram_notifier.send_update_notification,
-        transaction=updated_transaction,
-        db=db
-    )
+    if db_transaction.telegram_message_id:
+        background_tasks.add_task(
+            telegram_notifier.edit_message_after_update,
+            transaction=updated_transaction,
+            chat_id=int(settings.TELEGRAM_CHAT_ID),
+            message_id=db_transaction.telegram_message_id ,
+            db=db
+        )
+    else:
+        background_tasks.add_task(
+            telegram_notifier.send_update_notification,
+            transaction=updated_transaction,
+            db=db
+        )
 
     return updated_transaction

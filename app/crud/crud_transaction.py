@@ -61,6 +61,14 @@ def update_transaction(
     reloaded_obj = get_transaction_by_hash(db, hash_str=db_obj.unique_hash)
     return reloaded_obj
 
+def update_transaction_message_id(db: Session, *, transaction_obj: Transaction, message_id: int) -> Transaction:
+    """Updates only the telegram_message_id of a transaction."""
+    transaction_obj.telegram_message_id = message_id
+    db.add(transaction_obj)
+    db.commit()
+    db.refresh(transaction_obj)
+    return transaction_obj
+
 def get_transaction(db: Session, id: int) -> Transaction | None:
     return db.query(Transaction).options(
         joinedload(Transaction.account),
