@@ -1,0 +1,64 @@
+/* Use Telegram's theme variables for a native feel */
+:root {
+    --pico-background-color: var(--tg-theme-bg-color, #ffffff);
+    --pico-card-background-color: var(--tg-theme-secondary-bg-color, #f8f8f8);
+    --pico-color: var(--tg-theme-text-color, #000000);
+    --pico-h1-color: var(--tg-theme-text-color, #000000);
+    --pico-h2-color: var(--tg-theme-text-color, #000000);
+    --pico-h3-color: var(--tg-theme-text-color, #000000);
+    --pico-muted-color: var(--tg-theme-hint-color, #999999);
+    --pico-card-border-radius: 12px;
+    --pico-card-padding: 1rem;
+}
+
+body {
+    padding: 1rem;
+    background-color: var(--pico-background-color);
+}
+
+/* Make the cards look modern */
+article.card {
+    background-color: var(--pico-card-background-color);
+    border: 1px solid var(--tg-theme-hint-color, #e0e0e0);
+    border-radius: var(--pico-card-border-radius);
+    padding: var(--pico-card-padding);
+    margin-bottom: 1.5rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+/* Header card for the transaction details */
+.transaction-header h2 {
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin-bottom: 0.25rem;
+    color: var(--pico-color);
+}
+
+.transaction-header h4 {
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--pico-color);
+}
+
+.transaction-header p {
+    color: var(--pico-muted-color);
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+/* Form card for editing */
+.form-card textarea {
+    min-height: 120px;
+    resize: vertical;
+}
+
+.loading-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(128, 128, 128, 0.2);
+    backdrop-filter: blur(4px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}

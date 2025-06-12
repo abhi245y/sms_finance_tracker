@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 import enum
 
 from app.core.config import settings
+from app.core.security import create_mini_app_access_token 
 from app.schemas.transaction import TransactionInDB
 from app.models.transaction import TransactionStatus
 from app.crud import crud_category, crud_account
@@ -15,7 +16,7 @@ class TransactionType(str, enum.Enum):
     NEW = "New Transaction Captured"
     UPDATED = "Transaction UPDATED"
 
-async def send_message(text: str, reply_markup: Optional[dict] = None) -> str|None:
+async def send_message(text: str, reply_markup: Optional[dict] = None) -> Optional[int]:
     """A simple async function to send a message using httpx."""
     if not settings.TELEGRAM_BOT_TOKEN or not settings.TELEGRAM_CHAT_ID:
         print("WARN: Telegram credentials not set. Skipping notification.")
@@ -77,6 +78,7 @@ def _format_transaction_message(transaction: TransactionInDB, type: TransactionT
             f"*Merchant*: {merchant}\n"
             f"*Account*: {account_name}\n"
             f"*Category*: {category_name}\n"
+            f"*Description*: {transaction.description}\n"
             f"*Status*: {status_text}\n"
         )
     return message
@@ -84,9 +86,15 @@ def _format_transaction_message(transaction: TransactionInDB, type: TransactionT
 def _build_inline_keyboard(transaction: TransactionInDB, db: Session) -> Optional[dict]:
     """Builds an interactive keyboard based on the transaction's status."""
     buttons = []
-    if transaction.status == TransactionStatus.PENDING_PROCESSING:
-        buttons.append([{"text": "Set Account", "callback_data":  f"sel_mod:{transaction.unique_hash}:{TransactionStatus.PENDING_ACCOUNT_SELECTION}"}])
-        buttons.append([{"text": "Set Category", "callback_data":  f"sel_mod:{transaction.unique_hash}:{TransactionStatus.PENDING_CATEGORIZATION}"}])
+    if transaction.status == TransactionStatus.PROCESSED:
+        access_token = create_mini_app_access_token(transaction_hash=transaction.unique_hash)
+        mini_app_url = f"{settings.MINI_APP_BASE_URL}/edit-transaction?token={access_token}"
+        buttons.append([
+            {"text": "✏️ Edit Details", "web_app": {"url": mini_app_url}}
+        ])   
+    elif transaction.status == TransactionStatus.PENDING_PROCESSING:
+        buttons.append([{"text": "Set Account", "callback_data":  f"sel_mod:{transaction.unique_hash}:{TransactionStatus.PENDING_ACCOUNT_SELECTION.value}"}])
+        buttons.append([{"text": "Set Category", "callback_data":  f"sel_mod:{transaction.unique_hash}:{TransactionStatus.PENDING_CATEGORIZATION.value}"}])
     elif transaction.status == TransactionStatus.PENDING_ACCOUNT_SELECTION:
         accounts = crud_account.get_accounts(db, limit=20)
         for acc in accounts:

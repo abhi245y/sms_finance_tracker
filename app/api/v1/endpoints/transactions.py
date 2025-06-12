@@ -71,7 +71,21 @@ async def receive_sms(
 
     return transaction
 
-@router.get("/", response_model=List[TransactionInDB])
+@router.get(
+    "/get/by-token",
+    response_model=TransactionInDB,
+    summary="Retrieve single transaction via token.",
+)
+def get_transaction_by_token(
+    db: Session = Depends(deps.get_db),
+    transaction_hash: str = Depends(deps.get_transaction_hash_from_token),
+) -> Any:
+    transaction = crud_transaction.get_transaction_by_hash(db=db, hash_str=transaction_hash)
+    return transaction
+
+
+
+@router.get("/list", response_model=List[TransactionInDB])
 def read_transactions(
     db: Session = Depends(deps.get_db),
     skip: int = 0,
@@ -82,27 +96,34 @@ def read_transactions(
     """
     transactions = crud_transaction.get_transactions(db, skip=skip, limit=limit)
     return transactions
-    
-@router.patch(
-    "/{transaction_hash}",
+
+@router.get(
+    "/get/{transaction_hash}", 
     response_model=TransactionInDB,
-    summary="Update a Transaction (Enrichment)",
+    summary="Retrieve single transaction.",
     dependencies=[Depends(verify_api_key)]
-)
-def update_transaction_details(
-    *,
+    )
+def get_transaction(
+    transaction_hash: str,
     db: Session = Depends(deps.get_db),
+) -> Any:
+    """
+    Retrieve single transaction.
+    """
+    transaction = crud_transaction.get_transaction_by_hash(db=db, hash_str=transaction_hash)
+    return transaction
+    
+def _update_transaction_logic(
+    db: Session,
     transaction_hash: str,
     transaction_in: TransactionUpdate,
-    background_tasks: BackgroundTasks,
+    background_tasks: BackgroundTasks
 ) -> Any:
     """
     Update a transaction with enrichment data like an account or category.
     This is the primary endpoint for the interactive part of the Shortcut
     or a future UI to update transactions that are pending input.
     """
-
-    print("Parameters and values:", locals())
     
     db_transaction = crud_transaction.get_transaction_by_hash(db=db, hash_str=transaction_hash)
     if not db_transaction:
@@ -178,3 +199,51 @@ def update_transaction_details(
         )
 
     return updated_transaction
+
+
+@router.patch(
+    "/by-token",
+    response_model=TransactionInDB,
+    summary="Update a Transaction (Mini App)",
+)
+def update_transaction_by_token(
+    *,
+    db: Session = Depends(deps.get_db),
+    background_tasks: BackgroundTasks,
+    transaction_in: TransactionUpdate,
+    transaction_hash: str = Depends(deps.get_transaction_hash_from_token)
+) -> Any:
+    """
+    Update a transaction's description or other details via a secure token.
+    This endpoint is intended for use by the Telegram Mini App.
+    """
+    return _update_transaction_logic(
+        db=db,
+        transaction_hash=transaction_hash,
+        transaction_in=transaction_in,
+        background_tasks=background_tasks
+    )
+
+@router.patch(
+    "/{transaction_hash}",
+    response_model=TransactionInDB,
+    summary="Update a Transaction (Shortcut)", # Renamed for clarity
+    dependencies=[Depends(verify_api_key)]
+)
+def update_transaction_details(
+    *,
+    db: Session = Depends(deps.get_db),
+    transaction_hash: str,
+    transaction_in: TransactionUpdate,
+    background_tasks: BackgroundTasks,
+) -> Any:
+    """
+    Update a transaction with enrichment data like an account or category.
+    This endpoint is secured with an API key, intended for use by Shortcuts or trusted clients.
+    """
+    return _update_transaction_logic(
+        db=db,
+        transaction_hash=transaction_hash,
+        transaction_in=transaction_in,
+        background_tasks=background_tasks
+    )

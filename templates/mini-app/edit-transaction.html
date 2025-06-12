@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Transaction</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css">
+    <style>
+        body {
+            background-color: var(--card-background-color);
+            padding: 1rem;
+        }
+        main.container {
+            padding: 0;
+        }
+        textarea {
+            height: 120px;
+            resize: vertical;
+        }
+        .loading-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <main class="container">
+        <h3 id="merchant-name">Loading...</h3>
+        <p id="transaction-details"></p>
+
+        <form id="edit-form">
+            <label for="description">Description</label>
+            <textarea id="description" name="description" placeholder="Enter a description..."></textarea>
+            
+            <!-- TODO create and show the main button with JavaScript -->
+        </form>
+
+        <div id="loading-overlay" class="loading-overlay" style="display: none;">
+            <article aria-busy="true"></article>
+        </div>
+    </main>
+
+    <!-- Telegram Web App Script -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <!-- Custom JavaScript file -->
+    <script src="/static/js/edit-transaction.js"></script>
+</body>
+</html>
