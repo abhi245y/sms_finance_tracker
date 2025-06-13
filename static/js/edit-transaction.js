@@ -1,49 +1,41 @@
-// Immediately execute this code when the script is loaded
-(function() {
+document.addEventListener('DOMContentLoaded', function() {
     'use strict';
-
-    // 1. Initialize Telegram Mini App
     const tg = window.Telegram.WebApp;
     tg.expand();
-    // Use Telegram's theme settings
-    tg.setHeaderColor(tg.themeParams.secondary_bg_color || '#ffffff');
-    tg.setBackgroundColor(tg.themeParams.bg_color || '#ffffff');
-
+    tg.setHeaderColor('secondary_bg_color');
 
     // --- DOM Elements ---
-    const transactionAmountEl = document.getElementById('transaction-amount');
-    const transactionMerchantEl = document.getElementById('transaction-merchant'); 
-    const transactionAccountDateEl = document.getElementById('transaction-account-date');
-    const descriptionTextarea = document.getElementById('description');
     const loadingOverlay = document.getElementById('loading-overlay');
+    const merchantEl = document.getElementById('merchant-name');
+    const amountEl = document.getElementById('transaction-amount');
+    const dateEl = document.getElementById('transaction-date');
+    const accountDetailsEl = document.getElementById('account-details');
+    const categoryDetailsEl = document.getElementById('category-details').querySelector('span');
+    const descriptionTextarea = document.getElementById('description');
 
-    // --- State ---
+    // --- STATE ---
     let access_token = '';
     const API_BASE_URL = 'https://finance.arlp.live/api/v1';
 
-    // 2. Main function to initialize the app
+    // --- MAIN ---
     async function initialize() {
         setLoading(true);
         try {
             const urlParams = new URLSearchParams(window.location.search);
             access_token = urlParams.get('token');
-
-            if (!access_token) {
-                showError("Access token not found.");
-                return;
-            }
+            if (!access_token) throw new Error("Access token not found.");
 
             const transaction = await fetchTransaction();
             populateUI(transaction);
             configureMainButton();
         } catch (error) {
-            showError(`Failed to load transaction: ${error.message}`);
+            showError(error.message);
         } finally {
             setLoading(false);
         }
     }
 
-    // 3. API Fetch function
+    // --- API ---
     async function fetchTransaction() {
         const response = await fetch(`${API_BASE_URL}/transactions/get/by-token`, {
             headers: { 'Authorization': `Bearer ${access_token}` },
@@ -52,7 +44,7 @@
         return await response.json();
     }
 
-    // 4. Helper functions
+    // --- UI HELPERS ---
     function setLoading(isLoading) {
         loadingOverlay.style.display = isLoading ? 'flex' : 'none';
     }
@@ -63,48 +55,56 @@
     }
 
     function populateUI(transaction) {
-        transactionAmountEl.textContent = `${transaction.amount.toFixed(2)} ${transaction.currency}`;
-        transactionMerchantEl.textContent = transaction.merchant_vpa || 'Unknown Merchant';
-        
-        const accountName = transaction.account ? transaction.account.name : 'Unknown Account';
-        const date = new Date(transaction.transaction_datetime_from_sms).toLocaleString();
-        transactionAccountDateEl.textContent = `${accountName} • ${date}`;
-        
+        merchantEl.textContent = transaction.merchant_vpa || 'Unknown Merchant';
+        amountEl.textContent = `- ₹${transaction.amount.toFixed(2)}`;
         descriptionTextarea.value = transaction.description || '';
+
+        if (transaction.category_obj) {
+            categoryDetailsEl.textContent = transaction.category_obj.name;
+        } else {
+            categoryDetailsEl.textContent = 'Uncategorized';
+        }
+
+        if (transaction.account) {
+            accountDetailsEl.textContent = `${transaction.account.name} · ${transaction.account.account_last4}`;
+        } else {
+            accountDetailsEl.textContent = 'Unknown Account';
+        }
+
+        if (transaction.transaction_datetime_from_sms) {
+            const date = new Date(transaction.transaction_datetime_from_sms);
+            dateEl.textContent = date.toLocaleString('en-US', {
+                month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true
+            });
+        } else {
+            dateEl.textContent = 'No Date';
+        }
+        
+        feather.replace({ width: '22px', height: '22px', 'stroke-width': 1.8 });
     }
 
+    // --- TELEGRAM BUTTONS ---
     function configureMainButton() {
-        tg.MainButton.setText('Save Description');
-        tg.MainButton.setTextColor(tg.themeParams.button_text_color || '#ffffff');
-        tg.MainButton.color = tg.themeParams.button_color || '#2481cc';
+        tg.MainButton.setParams({
+            text: 'Save Notes',
+            color: '#31b545',
+            text_color: '#ffffff',
+        });
         tg.MainButton.show();
         tg.MainButton.onClick(handleSave);
     }
 
-    // 5. Event handler for saving
     async function handleSave() {
         if (!tg.MainButton.isVisible || !tg.MainButton.isActive) return;
-
         tg.MainButton.showProgress();
         try {
             const newDescription = descriptionTextarea.value;
-            const response = await fetch(`${API_BASE_URL}/transactions/by-token`, {
+            await fetch(`${API_BASE_URL}/transactions/by-token`, {
                 method: 'PATCH',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${access_token}`,
-                },
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${access_token}` },
                 body: JSON.stringify({ description: newDescription }),
             });
-
-            if (!response.ok) throw new Error('Failed to save description.');
-
-            tg.showPopup({
-                title: 'Success',
-                message: 'Description has been updated!',
-                buttons: [{ type: 'ok', text: 'Done' }]
-            }, () => tg.close());
-
+            tg.close();
         } catch (error) {
             tg.showAlert(`Error: ${error.message}`);
         } finally {
@@ -112,7 +112,6 @@
         }
     }
 
-    // Run the initialization
+    // --- RUN ---
     initialize();
-
-})();
+});

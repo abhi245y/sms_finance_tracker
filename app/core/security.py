@@ -8,7 +8,7 @@ def create_mini_app_access_token(transaction_hash: str) -> str:
     Creates a short-lived JWT for the Mini App to use.
     The token is specific to one transaction hash.
     """
-    expire = datetime.utcnow() + timedelta(hours=1)
+    expire = datetime.utcnow() + timedelta(hours=128)
     to_encode = {
         "exp": expire,
         "sub": "mini_app_user",

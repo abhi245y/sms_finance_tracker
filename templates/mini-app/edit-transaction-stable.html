@@ -46,7 +46,14 @@
             position: relative;
         }
 
-        /* REMOVED .bookmark-icon */
+        .bookmark-icon {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 22px;
+            height: 22px;
+            color: #9ca3af; /* Grey icon color */
+        }
 
         .amount {
             font-size: 48px;
@@ -179,9 +186,10 @@
         }
 
         /* Action items (Account in, More Details, etc.) */
+        /* Card for these items has no direct padding */
         .actions-card {
             padding: 0;
-            overflow: hidden; 
+            overflow: hidden; /* For border radius of card to apply to children */
         }
 
         .action-item {
@@ -194,11 +202,11 @@
         }
 
         .action-item:hover {
-            background-color: #f9fafb; 
+            background-color: #f9fafb; /* Slight hover effect */
         }
 
         .action-item:not(:last-child) {
-            border-bottom: 1px solid #f3f4f6; 
+            border-bottom: 1px solid #f3f4f6; /* Separator line */
         }
 
         .action-left {
@@ -222,19 +230,20 @@
         .action-date {
             font-size: 14px;
             font-weight: 500;
-            color: #374151; 
+            color: #374151; /* Darker grey for date text */
             margin-left: auto;
             padding-right: 8px;
         }
         
+        /* Specific styling for "Add transaction to group" which has no chevron */
         .action-item.no-chevron .action-left {
-            flex-grow: 1; 
+            flex-grow: 1; /* Allow it to take full width if no chevron */
         }
 
 
         /* Notes section */
         .notes-card {
-            padding: 0; 
+            padding: 0; /* Padding handled by internal elements */
             overflow: hidden;
         }
 
@@ -246,7 +255,7 @@
             justify-content: space-between;
         }
 
-        .notes-title-text { 
+        .notes-title-text { /* To avoid conflict with title attribute */
             font-size: 16px;
             font-weight: 600;
             color: #1a1a1a;
@@ -255,7 +264,7 @@
         .add-receipt-btn {
             font-size: 14px;
             font-weight: 600;
-            color: #3b82f6; 
+            color: #3b82f6; /* Blue color for button */
             cursor: pointer;
             background: none;
             border: none;
@@ -273,38 +282,38 @@
             outline: none;
             font-family: inherit;
             font-size: 15px;
-            color: #374151; 
+            color: #374151; /* Darker grey for typed text */
             resize: none;
             background: transparent;
         }
 
         .notes-textarea::placeholder {
-            color: #9ca3af; 
+            color: #9ca3af; /* Lighter grey for placeholder */
         }
 
         /* Toggle switch (Exclude from Cash Flow) */
-        .toggle-item-card { 
-             padding: 0; 
+        .toggle-item-card { /* Wrapper card for toggle */
+             padding: 0; /* Padding is on toggle-item */
         }
         .toggle-item {
             display: flex;
-            align-items: center; 
+            align-items: center; /* Vertically center icon with text block */
             justify-content: space-between;
             padding: 16px 20px;
         }
 
         .toggle-left {
             display: flex;
-            align-items: flex-start; 
+            align-items: flex-start; /* Align icon to top of text block */
             gap: 12px;
-            flex: 1; 
+            flex: 1; /* Take available space */
         }
 
         .toggle-icon {
             width: 20px;
             height: 20px;
             color: #6b7280;
-            margin-top: 2px; 
+            margin-top: 2px; /* Align icon nicely with first line of text */
         }
 
         .toggle-content {
@@ -327,9 +336,9 @@
         .switch {
             position: relative;
             display: inline-block;
-            width: 44px; 
-            height: 24px; 
-            flex-shrink: 0; 
+            width: 44px; /* Width of the switch */
+            height: 24px; /* Height of the switch */
+            flex-shrink: 0; /* Prevent switch from shrinking */
         }
 
         .switch input {
@@ -345,29 +354,29 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background-color: #e5e7eb; 
+            background-color: #e5e7eb; /* Switch off state color */
             transition: 0.2s;
-            border-radius: 24px; 
+            border-radius: 24px; /* Fully rounded */
         }
 
         .slider:before {
             position: absolute;
             content: "";
-            height: 20px; 
-            width: 20px;  
-            left: 2px;   
-            bottom: 2px; 
+            height: 20px; /* Knob height */
+            width: 20px;  /* Knob width */
+            left: 2px;   /* Knob position */
+            bottom: 2px; /* Knob position */
             background-color: white;
             transition: 0.2s;
-            border-radius: 50%; 
+            border-radius: 50%; /* Circular knob */
         }
 
         input:checked + .slider {
-            background-color: #3b82f6; 
+            background-color: #3b82f6; /* Switch on state color (blue) */
         }
 
         input:checked + .slider:before {
-            transform: translateX(20px); 
+            transform: translateX(20px); /* Move knob to the right */
         }
 
         /* Loading overlay */
@@ -378,7 +387,7 @@
             right: 0;
             bottom: 0;
             background: rgba(255, 255, 255, 0.9);
-            display: none; 
+            display: none; /* Hidden by default */
             justify-content: center;
             align-items: center;
             z-index: 1000;
@@ -387,9 +396,9 @@
         .spinner {
             width: 32px;
             height: 32px;
-            border: 3px solid #f3f4f6; 
+            border: 3px solid #f3f4f6; /* Light part of spinner */
             border-radius: 50%;
-            border-top-color: #3b82f6; 
+            border-top-color: #3b82f6; /* Blue part of spinner */
             animation: spin 1s ease-in-out infinite;
         }
 
@@ -406,26 +415,26 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: rgba(0, 0, 0, 0.5); 
-            display: none; 
+            background: rgba(0, 0, 0, 0.5); /* Semi-transparent overlay */
+            display: none; /* Hidden by default */
             justify-content: center;
-            align-items: flex-end; 
+            align-items: flex-end; /* Modal slides from bottom */
             z-index: 2000;
         }
 
         .category-content {
             background: white;
             width: 100%;
-            max-width: 400px; 
-            border-radius: 16px 16px 0 0; 
-            max-height: 85vh; 
+            max-width: 400px; /* Match container width */
+            border-radius: 16px 16px 0 0; /* Rounded top corners */
+            max-height: 85vh; /* Limit height */
             overflow-y: auto;
             display: flex;
             flex-direction: column;
         }
 
         .category-header {
-            padding: 12px 20px; 
+            padding: 12px 20px; /* Adjusted padding */
             border-bottom: 1px solid #f3f4f6;
             display: flex;
             align-items: center;
@@ -441,20 +450,20 @@
             font-weight: 600;
             color: #1a1a1a;
             text-align: center;
-            flex-grow: 1; 
+            flex-grow: 1; /* Center title */
         }
 
         .close-btn, .save-btn {
             font-size: 16px;
             font-weight: 600;
-            color: #3b82f6; 
+            color: #3b82f6; /* Blue */
             background: none;
             border: none;
             cursor: pointer;
-            padding: 8px; 
+            padding: 8px; /* Easier to tap */
         }
-        .close-btn { font-size: 20px; line-height: 1; } 
-        .save-btn { font-size: 22px; line-height: 1; } 
+        .close-btn { font-size: 20px; line-height: 1; } /* Make X bigger */
+        .save-btn { font-size: 22px; line-height: 1; } /* Make tick bigger */
 
 
         .transaction-preview {
@@ -470,7 +479,7 @@
             align-items: center;
             gap: 12px;
         }
-        .preview-left .merchant-icon { 
+        .preview-left .merchant-icon { /* Re-use merchant icon style */
             width: 28px; height: 28px;
         }
         .preview-left .merchant-icon i {
@@ -485,12 +494,12 @@
             gap: 12px;
         }
         .preview-amount {
-            font-size: 16px; 
+            font-size: 16px; /* Smaller amount in preview */
             font-weight: 700;
             color: #1a1a1a;
         }
 
-        .preview-category-badge { 
+        .preview-category-badge { /* Renamed to avoid conflict */
             display: flex;
             align-items: center;
             gap: 6px;
@@ -503,7 +512,7 @@
         }
         .preview-category-badge i { width: 12px; height: 12px; }
 
-        .preview-account-icon { 
+        .preview-account-icon { /* Re-use account icon style, make it distinct if needed */
             width: 18px; height: 18px; font-size: 9px;
         }
 
@@ -524,25 +533,25 @@
         .search-input::placeholder { color: #9ca3af; }
 
         .search-input:focus {
-            border-color: #3b82f6; 
+            border-color: #3b82f6; /* Blue border on focus */
         }
 
         .categories-section {
             padding: 20px;
-            flex-grow: 1; 
+            flex-grow: 1; /* Allow this section to scroll */
             overflow-y: auto;
         }
 
         .section-title {
             font-size: 14px;
             font-weight: 600;
-            color: #6b7280; 
+            color: #6b7280; /* Grey section title */
             margin-bottom: 16px;
         }
 
-        .category-grid { /* For 'Most used' */
+        .category-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); 
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); /* Responsive grid */
             gap: 12px;
             margin-bottom: 24px;
         }
@@ -551,9 +560,9 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            padding: 10px 12px; 
-            background: #f9fafb; 
-            border: 1px solid #e5e7eb; 
+            padding: 10px 12px; /* Adjusted padding */
+            background: #f9fafb; /* Very light grey */
+            border: 1px solid #e5e7eb; /* Light border */
             border-radius: 12px;
             font-size: 14px;
             font-weight: 500;
@@ -565,38 +574,45 @@
 
         .category-chip:hover,
         .category-chip.selected {
-            background: #eff6ff; 
-            border-color: #3b82f6; 
-            color: #1d4ed8; 
+            background: #eff6ff; /* Light blue background for selected/hover */
+            border-color: #3b82f6; /* Blue border */
+            color: #1d4ed8; /* Darker blue text */
         }
         .category-chip.selected i { color: #1d4ed8; }
 
 
-        .category-list { /* For main list of categories */
+        .category-list {
             display: flex;
             flex-direction: column;
-            gap: 24px; 
+            gap: 24px; /* Space between category groups */
         }
 
         .category-group {
+            /* border-bottom: 1px solid #f3f4f6; */ /* Fold doesn't seem to have bottom border here */
+            /* padding-bottom: 16px; */
         }
+
+        /* .category-group:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        } */
 
         .category-group-title {
             font-size: 16px;
             font-weight: 600;
             color: #1a1a1a;
-            margin-bottom: 4px; 
+            margin-bottom: 4px; /* Reduced margin */
         }
 
         .category-group-subtitle {
-            font-size: 12px; 
+            font-size: 12px; /* Smaller subtitle */
             color: #6b7280;
             margin-bottom: 12px;
         }
 
         .subcategory-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); 
+            grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); /* Responsive grid for subcategories */
             gap: 12px;
         }
 
@@ -605,13 +621,13 @@
             flex-direction: column;
             align-items: center;
             gap: 6px;
-            padding: 10px 6px; 
+            padding: 10px 6px; /* Adjusted padding */
             border-radius: 12px;
             cursor: pointer;
             transition: background-color 0.15s ease;
             position: relative;
         }
-         .subcategory-item.selected::after { 
+         .subcategory-item.selected::after { /* Blue dot for selected subcategory */
             content: '';
             position: absolute;
             bottom: 4px;
@@ -625,19 +641,19 @@
 
 
         .subcategory-item:hover {
-            background: #f9fafb; 
+            background: #f9fafb; /* Light hover effect */
         }
 
-        .subcategory-icon-wrapper { 
-            width: 40px; 
+        .subcategory-icon-wrapper { /* Wrapper for subcategory icon */
+            width: 40px; /* Increased size */
             height: 40px;
-            background: #f3f4f6; 
-            border-radius: 12px; 
+            background: #f3f4f6; /* Light grey background */
+            border-radius: 12px; /* More rounded */
             display: flex;
             align-items: center;
             justify-content: center;
             color: #6b7280;
-            font-size: 20px; 
+            font-size: 20px; /* For emoji icons */
         }
         .subcategory-icon-wrapper i { width: 20px; height: 20px;}
 
@@ -648,14 +664,16 @@
             color: #374151;
             text-align: center;
             line-height: 1.2;
-            width: 100%; 
+            width: 100%; /* Ensure text wraps if too long */
         }
 
     </style>
 </head>
 <body>
     <main class="container">
+        <!-- Main Transaction Card -->
         <div class="card main-card">
+            <i data-feather="bookmark" class="bookmark-icon"></i>
             <div id="transaction-amount" class="amount">-₹140</div>
             <div class="category-badge" id="category-badge-main">
                 <i data-feather="coffee" id="main-category-icon"></i>
@@ -663,6 +681,7 @@
             </div>
         </div>
 
+        <!-- Info Grid -->
         <div class="info-grid">
             <div class="info-item">
                 <div class="info-label">FROM</div>
@@ -679,7 +698,8 @@
             </div>
         </div>
 
-        <div class="card paid-to-card" id="paid-to-card-action">
+        <!-- Paid To -->
+        <div class="card paid-to-card">
             <div class="paid-to-header">PAID TO</div>
             <div class="paid-to-content">
                 <div class="paid-to-info">
@@ -692,8 +712,9 @@
             </div>
         </div>
 
+        <!-- Action Items -->
         <div class="card actions-card">
-            <div class="action-item" id="account-in-action">
+            <div class="action-item">
                 <div class="action-left">
                     <i data-feather="calendar" class="action-icon"></i>
                     <span class="action-text">Account in</span>
@@ -701,7 +722,7 @@
                 <span id="account-in-date" class="action-date">Jun 2025</span>
                 <i data-feather="chevron-right" class="chevron"></i>
             </div>
-            <div class="action-item" id="more-details-action">
+            <div class="action-item">
                 <div class="action-left">
                     <i data-feather="info" class="action-icon"></i>
                     <span class="action-text">More Details</span>
@@ -710,6 +731,16 @@
             </div>
         </div>
 
+        <!-- Add to Group -->
+        <div class="card actions-card">
+            <div class="action-item no-chevron"> <!-- Added no-chevron class -->
+                <div class="action-left">
+                    <i data-feather="folder-plus" class="action-icon"></i>
+                    <span class="action-text">Add transaction to group</span>
+                </div>
+                <!-- No chevron as per screenshot 1 -->
+            </div>
+        </div>
 
         <!-- Notes -->
         <div class="card notes-card">
@@ -770,31 +801,88 @@
             </div>
 
             <div class="search-section">
-                <input type="text" id="category-search-input" class="search-input" placeholder="Search Bills, Categories...">
+                <input type="text" class="search-input" placeholder="Search Bills, Categories...">
             </div>
 
             <div class="categories-section">
-                <div id="most-used-categories-container">
-                    <div class="section-title">Most used</div>
-                    <div class="category-grid" id="most-used-category-grid">
-                        <!-- Most used category chips will be populated here by JS -->
+                <div class="section-title">Most used</div>
+                <div class="category-grid">
+                    <!-- Example chips, to be populated dynamically or static -->
+                    <div class="category-chip" data-category-id="personal">
+                        <i data-feather="user"></i> PERSONAL
+                    </div>
+                    <div class="category-chip" data-category-id="groceries">
+                        <i data-feather="shopping-cart"></i> GROCERIES
+                    </div>
+                    <div class="category-chip selected" data-category-id="food"> <!-- Default selected example -->
+                        <i data-feather="coffee"></i> FOOD & DRINKS
+                    </div>
+                    <div class="category-chip" data-category-id="shopping">
+                        <i data-feather="shopping-bag"></i> SHOPPING
+                    </div>
+                    <div class="category-chip" data-category-id="investment">
+                        <i data-feather="trending-up"></i> INVESTMENT
                     </div>
                 </div>
 
-                <div class="category-list" id="full-category-list">
-                    <!-- Full category groups will be populated here by JS -->
-                    <!-- Example structure for one group (to be generated by JS):
-                    <div class="category-group" data-group-id="food-drinks">
+                <div class="category-list">
+                    <div class="category-group">
                         <div class="category-group-title">Food & Drinks</div>
                         <div class="category-group-subtitle">Eating out, Swiggy, Zomato etc.</div>
                         <div class="subcategory-grid">
-                            <div class="subcategory-item" data-category-id="1" data-icon-name="utensils">
+                            <div class="subcategory-item" data-subcategory-id="eating_out">
                                 <div class="subcategory-icon-wrapper">🍽️</div>
                                 <div class="subcategory-name">Eating out</div>
                             </div>
+                            <div class="subcategory-item" data-subcategory-id="take_away">
+                                <div class="subcategory-icon-wrapper">🥡</div>
+                                <div class="subcategory-name">Take Away</div>
+                            </div>
+                            <div class="subcategory-item selected" data-subcategory-id="tea_coffee"> <!-- Example selected -->
+                                <div class="subcategory-icon-wrapper">☕</div>
+                                <div class="subcategory-name">Tea & Coffee</div>
+                            </div>
+                            <div class="subcategory-item" data-subcategory-id="fast_food">
+                                <div class="subcategory-icon-wrapper">🍔</div>
+                                <div class="subcategory-name">Fast Food</div>
+                            </div>
+                            <div class="subcategory-item" data-subcategory-id="snacks">
+                                <div class="subcategory-icon-wrapper">🍿</div>
+                                <div class="subcategory-name">Snacks</div>
+                            </div>
                         </div>
                     </div>
-                    -->
+
+                    <div class="category-group">
+                        <div class="category-group-title">Transport</div>
+                        <div class="category-group-subtitle">Uber, Ola and other modes of transport</div>
+                        <div class="subcategory-grid">
+                            <div class="subcategory-item" data-subcategory-id="uber">
+                                <div class="subcategory-icon-wrapper">🚗</div>
+                                <div class="subcategory-name">Uber</div>
+                            </div>
+                            <div class="subcategory-item" data-subcategory-id="rapido">
+                                 <div class="subcategory-icon-wrapper">🛵</div> <!-- Changed icon -->
+                                <div class="subcategory-name">Rapido</div>
+                            </div>
+                            <div class="subcategory-item" data-subcategory-id="auto">
+                                <div class="subcategory-icon-wrapper">🛺</div> <!-- Changed icon -->
+                                <div class="subcategory-name">Auto</div>
+                            </div>
+                            <div class="subcategory-item" data-subcategory-id="cab">
+                                <div class="subcategory-icon-wrapper">🚕</div>
+                                <div class="subcategory-name">Cab</div>
+                            </div>
+                            <div class="subcategory-item" data-subcategory-id="train">
+                                <div class="subcategory-icon-wrapper">🚆</div> <!-- Changed icon -->
+                                <div class="subcategory-name">Train</div>
+                            </div>
+                        </div>
+                    </div>
+                     <div class="category-group">
+                        <div class="category-group-title">Shopping</div>
+                        {/* Add subcategories if any or leave empty */}
+                    </div>
                 </div>
             </div>
         </div>
@@ -810,15 +898,16 @@
         document.addEventListener('DOMContentLoaded', function() {
             'use strict';
             const tg = window.Telegram.WebApp;
-            if (tg.initDataUnsafe?.user) { 
+            if (tg.initDataUnsafe?.user) { // Check if running in Telegram
                 tg.expand();
-                tg.setHeaderColor('#f8f9fa'); 
+                tg.setHeaderColor('#f8f9fa'); // Match body background
                 tg.setBackgroundColor('#f8f9fa');
             }
 
             // --- DOM Elements ---
             const loadingOverlay = document.getElementById('loading-overlay');
             
+            // Main page elements
             const transactionAmountEl = document.getElementById('transaction-amount');
             const mainCategoryIconEl = document.getElementById('main-category-icon');
             const mainCategoryNameEl = document.getElementById('main-category-name');
@@ -829,7 +918,6 @@
             const accountInDateEl = document.getElementById('account-in-date');
             const descriptionTextarea = document.getElementById('description');
             const categoryBadgeMain = document.getElementById('category-badge-main');
-            const excludeCashflowToggle = document.getElementById('exclude-cashflow-toggle');
 
             // Category Modal elements
             const categoryModal = document.getElementById('categoryModal');
@@ -838,22 +926,15 @@
             const modalMerchantNamePreviewEl = document.getElementById('modal-merchant-name-preview');
             const modalTransactionTimePreviewEl = document.getElementById('modal-transaction-time-preview');
             const modalAmountPreviewEl = document.getElementById('modal-amount-preview');
-            const modalCategoryIconPreviewEl = document.getElementById('modal-category-icon-preview'); 
+            const modalCategoryIconPreviewEl = document.getElementById('modal-category-icon-preview'); // Ensure this ID exists if you want to change icon
             const modalCategoryNamePreviewEl = document.getElementById('modal-category-name-preview');
             const modalAccountIconPreviewEl = document.getElementById('modal-account-icon-preview');
-            const mostUsedCategoryGridEl = document.getElementById('most-used-category-grid');
-            const fullCategoryListEl = document.getElementById('full-category-list');
-            const categorySearchInputEl = document.getElementById('category-search-input');
 
 
             // --- STATE ---
-            let currentTransaction = null; 
-            let access_token = ''; 
-            const API_BASE_URL = 'https://finance.arlp.live/api/v1'; 
-            
-            let allCategories = []; // To store fetched categories {id, name, icon, subcategories: []}
-            let tempSelectedCategoryId = null; // Stores ID of category selected in modal before confirmed save
-            let categoryDataChanged = false; // Flag to indicate if category has been changed in modal
+            let currentTransaction = null; // To store fetched transaction
+            let access_token = ''; // To be fetched from URL params
+            const API_BASE_URL = 'https://finance.arlp.live/api/v1'; // Your API base URL
 
             // --- MAIN ---
             async function initialize() {
@@ -861,25 +942,17 @@
                 try {
                     const urlParams = new URLSearchParams(window.location.search);
                     access_token = urlParams.get('token');
-                    
-                    if (!access_token && !tg.initDataUnsafe?.user) { 
+                    if (!access_token && !tg.initDataUnsafe?.user) { // Allow local testing without token
                         console.warn("Access token not found. Running in local mode.");
+                        // Use mock data for local testing if no token
                         currentTransaction = getMockTransaction();
-                        allCategories = getMockCategories(); // Load mock categories
                     } else if (!access_token && tg.initDataUnsafe?.user) {
                          throw new Error("Access token not found.");
-                    } else {
-                        // Parallel fetch transaction and categories
-                        [currentTransaction, allCategories] = await Promise.all([
-                            fetchTransaction(),
-                            fetchAllCategoriesDetails()
-                        ]);
+                    }
+                     else {
+                        currentTransaction = await fetchTransaction();
                     }
                     
-                    if (currentTransaction.category_obj && currentTransaction.category_obj.id) {
-                        tempSelectedCategoryId = currentTransaction.category_obj.id;
-                    }
-
                     populateUI(currentTransaction);
                     configureMainButton();
                     setupEventListeners();
@@ -888,46 +961,24 @@
                     showError(error.message);
                 } finally {
                     setLoading(false);
-                    feather.replace({ width: '1em', height: '1em', 'stroke-width': 1.8 }); 
+                    feather.replace({ width: '1em', height: '1em' }); // Apply Feather icons globally after DOM is ready
                 }
             }
             
             function getMockTransaction() {
-                // Ensure mock data includes icon and type_initial as per schema enhancements
                 return {
-                    unique_hash: 'mock_hash_123',
-                    merchant_vpa: 'MOCK MERCHANT A',
+                    merchant_vpa: 'JOSE A',
                     amount: 140.00,
-                    description: 'Mock tea at office',
-                    category_obj: { id: 1, name: 'Food & Drinks', icon: 'coffee' }, 
-                    account: { id:1, name: 'MockBank', account_last4: '0214', type_initial: 'M', account_type: 'SAVINGS_ACCOUNT' }, 
-                    transaction_datetime_from_sms: new Date().toISOString(), 
-                    exclude_from_cashflow: false,
-                    currency: 'INR',
-                    status: 'processed',
-                    raw_sms_content: 'mock sms',
-                    received_at: new Date().toISOString()
+                    description: 'Tea at office',
+                    category_obj: { name: 'Food & Drinks', icon: 'coffee' }, // Add icon field to your category_obj
+                    account: { name: 'PhonePe', account_last4: '0214', type_initial: 'P' }, // Add type_initial
+                    transaction_datetime_from_sms: new Date().toISOString(), // Use current time for mock
+                    exclude_from_cashflow: false
                 };
-            }
-
-            function getMockCategories() {
-                // Mock categories with an icon field
-                return [
-                    { id: 1, name: 'Food & Drinks', icon: 'coffee', description: 'Eating out, Swiggy, Zomato etc.', subcategories: [
-                        {id: 101, name: 'Eating out', icon_emoji: '🍽️', parent_category_id: 1},
-                        {id: 102, name: 'Tea & Coffee', icon_emoji: '☕', parent_category_id: 1},
-                    ]},
-                    { id: 2, name: 'Groceries', icon: 'shopping-cart', description: 'Supermarket, daily needs', subcategories: [] },
-                    { id: 3, name: 'Transport', icon: 'truck', description: 'Uber, Ola, public transport', subcategories: [] },
-                    { id: 4, name: 'Shopping', icon: 'shopping-bag', description: 'Clothes, electronics', subcategories: [] },
-                    { id: 5, name: 'Personal', icon: 'user', description: 'Personal expenses', subcategories: [] },
-                    { id: 6, name: 'Investment', icon: 'trending-up', description: 'Stocks, mutual funds', subcategories: [] },
-                ];
             }
 
             // --- API ---
             async function fetchTransaction() {
-                // ... (fetchTransaction function remains the same)
                 const response = await fetch(`${API_BASE_URL}/transactions/get/by-token`, {
                     headers: { 'Authorization': `Bearer ${access_token}` },
                 });
@@ -935,29 +986,10 @@
                     const errorData = await response.json().catch(() => ({ detail: response.statusText }));
                     throw new Error(`API Error: ${errorData.detail || response.statusText}`);
                 }
-                const txnData = await response.json();
-                // Ensure category_obj exists for easier handling, even if null from backend
-                if (!txnData.category_obj) { 
-                    txnData.category_obj = { id: null, name: 'Uncategorized', icon: 'circle'};
-                }
-                return txnData;
-            }
-
-            async function fetchAllCategoriesDetails() {
-                // Assumes backend endpoint /api/v1/categories/all_details
-                const response = await fetch(`${API_BASE_URL}/categories/all_details`, {
-                     // Add Authorization header if your categories endpoint is protected
-                });
-                if (!response.ok) {
-                    const errorData = await response.json().catch(() => ({ detail: response.statusText }));
-                    throw new Error(`API Error fetching categories: ${errorData.detail || response.statusText}`);
-                }
                 return await response.json();
             }
 
-
-            async function updateTransactionAPI(patchData) { // Renamed from updateTransaction to avoid conflict
-                // ... (updateTransaction function remains the same, renamed to updateTransactionAPI)
+            async function updateTransaction(patchData) {
                 const response = await fetch(`${API_BASE_URL}/transactions/by-token`, {
                     method: 'PATCH',
                     headers: { 
@@ -975,16 +1007,14 @@
 
             // --- UI HELPERS ---
             function setLoading(isLoading) {
-                // ... (setLoading function remains the same)
-                 loadingOverlay.style.display = isLoading ? 'flex' : 'none';
+                loadingOverlay.style.display = isLoading ? 'flex' : 'none';
             }
 
             function showError(message) {
-                // ... (showError function remains the same)
                 if (tg.initDataUnsafe?.user) {
                     tg.showAlert(message);
                 } else {
-                    alert(message); 
+                    alert(message); // Fallback for local testing
                 }
                 if (tg.MainButton) tg.MainButton.hide();
             }
@@ -994,9 +1024,9 @@
 
                 transactionAmountEl.textContent = `-₹${Math.round(transaction.amount)}`;
                 
-                if (transaction.category_obj && transaction.category_obj.name) {
+                if (transaction.category_obj) {
                     mainCategoryNameEl.textContent = transaction.category_obj.name.toUpperCase();
-                    mainCategoryIconEl.setAttribute('data-feather', transaction.category_obj.icon || 'circle'); 
+                    mainCategoryIconEl.setAttribute('data-feather', transaction.category_obj.icon || 'circle'); // Default icon
                 } else {
                     mainCategoryNameEl.textContent = 'UNCATEGORIZED';
                     mainCategoryIconEl.setAttribute('data-feather', 'circle');
@@ -1004,11 +1034,7 @@
 
                 if (transaction.account) {
                     fromAccountDetailsEl.textContent = `***${transaction.account.account_last4}`;
-                    // Use type_initial if present, otherwise derive from bank name
-                    const accInitial = transaction.account.type_initial || 
-                                       (transaction.account.bank_name ? transaction.account.bank_name.charAt(0).toUpperCase() : 
-                                       (transaction.account.name ? transaction.account.name.charAt(0).toUpperCase() : 'A'));
-                    fromAccountIconInitialEl.textContent = accInitial;
+                    fromAccountIconInitialEl.textContent = transaction.account.type_initial || transaction.account.name?.charAt(0).toUpperCase() || 'A';
                 } else {
                     fromAccountDetailsEl.textContent = '***0000';
                     fromAccountIconInitialEl.textContent = 'A';
@@ -1016,14 +1042,14 @@
                 
                 paidToMerchantNameEl.textContent = transaction.merchant_vpa || 'Unknown Merchant';
                 descriptionTextarea.value = transaction.description || '';
-                excludeCashflowToggle.checked = transaction.exclude_from_cashflow || false;
+                document.getElementById('exclude-cashflow-toggle').checked = transaction.exclude_from_cashflow || false;
 
 
                 if (transaction.transaction_datetime_from_sms) {
                     const date = new Date(transaction.transaction_datetime_from_sms);
-                    transactionDateEl.textContent = date.toLocaleDateString('en-GB', { 
+                    transactionDateEl.textContent = date.toLocaleDateString('en-GB', { // en-GB for dd/mm/yy consistency if desired, or en-US
                         weekday: 'short', month: 'short', day: 'numeric', year: '2-digit'
-                    }).replace(/,/g, ''); 
+                    }).replace(/,/g, ''); // "Thu Jun 12 '25" or similar based on locale
 
                     accountInDateEl.textContent = date.toLocaleDateString('en-US', {
                         month: 'short', year: 'numeric'
@@ -1033,27 +1059,24 @@
                     accountInDateEl.textContent = 'N/A';
                 }
                 
-                feather.replace({ width: '1em', height: '1em', 'stroke-width': 1.8 }); 
+                feather.replace({ width: '1em', height: '1em' }); // Re-apply icons
             }
             
             function populateCategoryModalPreview(transaction) {
-                // ... (populateCategoryModalPreview function remains largely the same)
-                 if (!transaction) return;
+                if (!transaction) return;
 
                 modalMerchantNamePreviewEl.textContent = transaction.merchant_vpa || 'Unknown';
                 modalAmountPreviewEl.textContent = `-₹${Math.round(transaction.amount)}`;
                 
                 if (transaction.account) {
-                     const accInitial = transaction.account.type_initial || 
-                                       (transaction.account.bank_name ? transaction.account.bank_name.charAt(0).toUpperCase() : 
-                                       (transaction.account.name ? transaction.account.name.charAt(0).toUpperCase() : 'A'));
-                    modalAccountIconPreviewEl.textContent = accInitial;
+                    modalAccountIconPreviewEl.textContent = transaction.account.type_initial || transaction.account.name?.charAt(0).toUpperCase() || 'A';
                 } else {
                      modalAccountIconPreviewEl.textContent = 'A';
                 }
 
                 if (transaction.transaction_datetime_from_sms) {
                     const date = new Date(transaction.transaction_datetime_from_sms);
+                    // This is a simplified time. "Yesterday, 5:39PM" requires relative date logic.
                     modalTransactionTimePreviewEl.textContent = date.toLocaleTimeString('en-US', {
                         hour: 'numeric', minute: '2-digit', hour12: true 
                     });
@@ -1061,117 +1084,23 @@
                     modalTransactionTimePreviewEl.textContent = "Time N/A";
                 }
 
-                // Use tempSelectedCategoryId to reflect live changes in modal
-                const catToPreview = tempSelectedCategoryId 
-                    ? allCategories.find(c => c.id === tempSelectedCategoryId) 
-                    : (transaction.category_obj || { name: 'Uncategorized', icon: 'circle' });
-
-                if (catToPreview) {
-                    modalCategoryNamePreviewEl.textContent = catToPreview.name.toUpperCase();
-                    modalCategoryIconPreviewEl.setAttribute('data-feather', catToPreview.icon || 'circle');
+                if (transaction.category_obj) {
+                    modalCategoryNamePreviewEl.textContent = transaction.category_obj.name.toUpperCase();
+                    modalCategoryIconPreviewEl.setAttribute('data-feather', transaction.category_obj.icon || 'circle');
+                } else {
+                    modalCategoryNamePreviewEl.textContent = 'UNCATEGORIZED';
+                    modalCategoryIconPreviewEl.setAttribute('data-feather', 'circle');
                 }
-                feather.replace({ width: '1em', height: '1em', 'stroke-width': 1.8 });
-            }
-
-            function populateCategoriesInModal(categoriesToDisplay) {
-                mostUsedCategoryGridEl.innerHTML = ''; // Clear previous items
-                fullCategoryListEl.innerHTML = ''; // Clear previous items
-
-                // For simplicity, let's make "Most Used" the first 5 categories for now
-                // This logic can be enhanced later (e.g., based on frequency from backend)
-                const mostUsed = categoriesToDisplay.slice(0, 5);
-                const otherCategories = categoriesToDisplay.slice(5);
-
-                mostUsed.forEach(cat => {
-                    const chip = document.createElement('div');
-                    chip.className = 'category-chip';
-                    chip.dataset.categoryId = cat.id;
-                    chip.innerHTML = `<i data-feather="${cat.icon || 'circle'}"></i> ${cat.name.toUpperCase()}`;
-                    if (cat.id === tempSelectedCategoryId) {
-                        chip.classList.add('selected');
-                    }
-                    chip.addEventListener('click', handleCategoryChipClick);
-                    mostUsedCategoryGridEl.appendChild(chip);
-                });
-
-                // Group other categories (assuming no deep subcategory structure for now from API)
-                // If your API returns flat categories, this will list them.
-                // If it returns grouped, this needs more complex rendering.
-                // For now, let's assume `allCategories` might have a `description` and `subcategories` field if available
-                
-                // Example of simple list for remaining categories:
-                const generalGroup = document.createElement('div');
-                generalGroup.className = 'category-group';
-                
-                const groupTitle = document.createElement('div');
-                groupTitle.className = 'category-group-title';
-                groupTitle.textContent = "All Categories";
-                generalGroup.appendChild(groupTitle);
-
-                const subcategoryGrid = document.createElement('div');
-                subcategoryGrid.className = 'subcategory-grid';
-
-                otherCategories.forEach(cat => {
-                    // For now, treating all main categories as subcategory items if not in "Most Used"
-                    const item = document.createElement('div');
-                    item.className = 'subcategory-item';
-                    item.dataset.categoryId = cat.id; // Using category-id as primary identifier
-                    item.innerHTML = `
-                        <div class="subcategory-icon-wrapper">
-                           ${cat.icon_emoji ? cat.icon_emoji : `<i data-feather="${cat.icon || 'circle'}"></i>`}
-                        </div>
-                        <div class="subcategory-name">${cat.name}</div>
-                    `;
-                    if (cat.id === tempSelectedCategoryId) {
-                        item.classList.add('selected');
-                    }
-                    item.addEventListener('click', handleSubcategoryItemClick); // Or a generic handler
-                    subcategoryGrid.appendChild(item);
-                });
-                generalGroup.appendChild(subcategoryGrid);
-                fullCategoryListEl.appendChild(generalGroup);
-
-
-                feather.replace({ width: '1em', height: '1em', 'stroke-width': 1.8 });
-            }
-
-            function handleCategoryChipClick(event) {
-                const clickedChip = event.currentTarget;
-                const categoryId = parseInt(clickedChip.dataset.categoryId);
-
-                // Remove 'selected' from all chips and subcategory items
-                document.querySelectorAll('.category-modal .category-chip.selected, .category-modal .subcategory-item.selected')
-                    .forEach(el => el.classList.remove('selected'));
-                
-                clickedChip.classList.add('selected');
-                tempSelectedCategoryId = categoryId;
-                categoryDataChanged = true;
-                populateCategoryModalPreview(currentTransaction); // Update preview
-            }
-
-            function handleSubcategoryItemClick(event) {
-                const clickedItem = event.currentTarget;
-                const categoryId = parseInt(clickedItem.dataset.categoryId); 
-                // In a more complex setup, this might be subcategory_id, and you'd find its parent category_id.
-                // For now, assuming flat categories in "All Categories" list use their own ID.
-
-                document.querySelectorAll('.category-modal .category-chip.selected, .category-modal .subcategory-item.selected')
-                    .forEach(el => el.classList.remove('selected'));
-
-                clickedItem.classList.add('selected');
-                tempSelectedCategoryId = categoryId;
-                categoryDataChanged = true;
-                populateCategoryModalPreview(currentTransaction); // Update preview
+                feather.replace({ width: '1em', height: '1em' });
             }
 
 
             // --- TELEGRAM BUTTONS ---
             function configureMainButton() {
-                // ... (configureMainButton function remains the same, text "SAVE CHANGES")
-                if (!tg.MainButton) return; 
+                if (!tg.MainButton) return; // Not in Telegram environment
                 tg.MainButton.setParams({
                     text: 'SAVE CHANGES',
-                    color: '#3b82f6', 
+                    color: '#3b82f6', // Fold's blue
                     text_color: '#ffffff',
                     is_active: true,
                     is_visible: true
@@ -1180,7 +1109,6 @@
             }
 
             async function handleSave() {
-                // ... (handleSave function: add category_id to patchData if categoryDataChanged)
                 if (tg.MainButton && (!tg.MainButton.isVisible || !tg.MainButton.isActive)) return;
                 
                 if (tg.MainButton) tg.MainButton.showProgress();
@@ -1189,41 +1117,19 @@
                 try {
                     const patchData = {
                         description: descriptionTextarea.value,
-                        exclude_from_cashflow: excludeCashflowToggle.checked
+                        // category_id: currentlySelectedCategoryId, // If category changes
+                        // exclude_from_cashflow: document.getElementById('exclude-cashflow-toggle').checked
                     };
-
-                    if (categoryDataChanged && tempSelectedCategoryId !== null) {
-                        patchData.category_id = tempSelectedCategoryId;
-                    }
                     
                     if (access_token) { 
-                        const updatedTxn = await updateTransactionAPI(patchData);
-                        currentTransaction = updatedTxn; // Update local state with response
-                        if (!currentTransaction.category_obj) { // Ensure structure
-                             currentTransaction.category_obj = { id: null, name: 'Uncategorized', icon: 'circle'};
-                        }
-                        categoryDataChanged = false; // Reset flag
-                         // Update tempSelectedCategoryId to reflect saved state
-                        if (currentTransaction.category_obj) {
-                            tempSelectedCategoryId = currentTransaction.category_obj.id;
-                        }
-
+                        await updateTransaction(patchData);
                     } else {
                         console.log("Local save (mock):", patchData);
-                        if (categoryDataChanged && tempSelectedCategoryId !== null) {
-                            const newCat = allCategories.find(c=>c.id === tempSelectedCategoryId);
-                            currentTransaction.category_obj = newCat || { id: tempSelectedCategoryId, name: 'Selected Mock Cat', icon: 'help-circle'};
-                        }
-                        currentTransaction.description = descriptionTextarea.value;
-                        currentTransaction.exclude_from_cashflow = excludeCashflowToggle.checked;
-                        categoryDataChanged = false;
                         await new Promise(resolve => setTimeout(resolve, 500));
                     }
-                    
-                    populateUI(currentTransaction); // Refresh UI with potentially new category from server
 
                     if (tg.initDataUnsafe?.user) tg.close();
-                    else console.log("Changes saved!"); // Changed from alert for better dev experience
+                    else alert("Changes saved (mocked)!");
 
                 } catch (error) {
                     console.error("Save error:", error);
@@ -1237,65 +1143,64 @@
             // --- EVENT LISTENERS ---
             function setupEventListeners() {
                 categoryBadgeMain.addEventListener('click', () => {
-                    // tempSelectedCategoryId should be up-to-date with currentTransaction before opening
-                    if (currentTransaction.category_obj && currentTransaction.category_obj.id) {
-                        tempSelectedCategoryId = currentTransaction.category_obj.id;
-                    } else {
-                        tempSelectedCategoryId = null; // Or a default "Uncategorized" ID if you have one
-                    }
-                    populateCategoriesInModal(allCategories); // Populate with all fetched categories
-                    populateCategoryModalPreview(currentTransaction); // Populate preview
+                    populateCategoryModalPreview(currentTransaction);
                     categoryModal.style.display = 'flex';
-                    feather.replace({ width: '1em', height: '1em', 'stroke-width': 1.8 }); 
+                    feather.replace({ width: '1em', height: '1em' }); 
                 });
 
                 closeModalBtn.addEventListener('click', () => {
                     categoryModal.style.display = 'none';
-                    // Reset temp selection if modal is closed without saving explicitly
-                    if (currentTransaction.category_obj && currentTransaction.category_obj.id) {
-                       tempSelectedCategoryId = currentTransaction.category_obj.id;
-                    } else {
-                        tempSelectedCategoryId = null;
-                    }
-                    categoryDataChanged = false; // No changes made if closed this way
                 });
 
-                saveCategoryBtn.addEventListener('click', () => { // Modal's own save button
-                    if (categoryDataChanged && tempSelectedCategoryId !== null) {
-                        const selectedCat = allCategories.find(c => c.id === tempSelectedCategoryId);
-                        if (selectedCat) {
-                            currentTransaction.category_obj = { ...selectedCat }; // Update local transaction state
-                            // mainCategoryNameEl and mainCategoryIconEl will be updated by populateUI on final save
-                            // or if you want instant reflection on main page:
-                            mainCategoryNameEl.textContent = selectedCat.name.toUpperCase();
-                            mainCategoryIconEl.setAttribute('data-feather', selectedCat.icon || 'circle');
-                            feather.replace({elem: mainCategoryIconEl });
-                        }
-                    }
+                saveCategoryBtn.addEventListener('click', () => {
+                    // Logic to get selected category from modal
+                    // const selectedCategoryId = ...; 
+                    // currentTransaction.category_obj = ... ; // Update local transaction
+                    // populateUI(currentTransaction); // Refresh main UI
+                    // Then you might want to include category_id in handleSave patchData
                     categoryModal.style.display = 'none';
-                    // The categoryDataChanged flag remains true, so main save button will pick it up
+                    // For now, just closes. Actual save would happen with main "SAVE CHANGES"
                 });
 
+                // Close modal if clicking outside content
                 categoryModal.addEventListener('click', (e) => {
-                    // ... (close on outside click remains the same)
-                     if (e.target === categoryModal) {
+                    if (e.target === categoryModal) {
                         categoryModal.style.display = 'none';
-                        if (currentTransaction.category_obj && currentTransaction.category_obj.id) {
-                           tempSelectedCategoryId = currentTransaction.category_obj.id;
-                        } else {
-                            tempSelectedCategoryId = null;
-                        }
-                        categoryDataChanged = false; 
                     }
                 });
                 
-                categorySearchInputEl.addEventListener('input', (e) => {
-                    const searchTerm = e.target.value.toLowerCase();
-                    const filteredCategories = allCategories.filter(cat => 
-                        cat.name.toLowerCase().includes(searchTerm) || 
-                        (cat.description && cat.description.toLowerCase().includes(searchTerm))
-                    );
-                    populateCategoriesInModal(filteredCategories);
+                // Example: Handle clicks on category chips in modal
+                document.querySelectorAll('.category-modal .category-chip').forEach(chip => {
+                    chip.addEventListener('click', function() {
+                        document.querySelectorAll('.category-modal .category-chip.selected').forEach(c => c.classList.remove('selected'));
+                        this.classList.add('selected');
+                        // Update preview category in modal
+                        const categoryName = this.innerText.trim();
+                        const iconName = this.querySelector('i').getAttribute('data-feather');
+                        modalCategoryNamePreviewEl.textContent = categoryName;
+                        modalCategoryIconPreviewEl.setAttribute('data-feather', iconName || 'circle');
+                        feather.replace({ width: '1em', height: '1em' });
+                    });
+                });
+                 document.querySelectorAll('.category-modal .subcategory-item').forEach(item => {
+                    item.addEventListener('click', function() {
+                        document.querySelectorAll('.category-modal .subcategory-item.selected').forEach(s => s.classList.remove('selected'));
+                        this.classList.add('selected');
+                        // Potentially update main category as well if subcategory implies parent
+                        const subCategoryName = this.querySelector('.subcategory-name').innerText.trim();
+                        // Find parent category name
+                        const parentGroup = this.closest('.category-group');
+                        const parentCategoryName = parentGroup.querySelector('.category-group-title').innerText.trim();
+                        
+                        modalCategoryNamePreviewEl.textContent = `${parentCategoryName} (${subCategoryName})`.toUpperCase();
+                        // You might need a mapping for subcategory icons or use parent's
+                        const parentChip = Array.from(document.querySelectorAll('.category-modal .category-chip')).find(c => c.innerText.trim().includes(parentCategoryName));
+                        if(parentChip){
+                             const iconName = parentChip.querySelector('i').getAttribute('data-feather');
+                             modalCategoryIconPreviewEl.setAttribute('data-feather', iconName || 'circle');
+                        }
+                        feather.replace({ width: '1em', height: '1em' });
+                    });
                 });
             }
 

@@ -51,6 +51,7 @@ class AccountForTransaction(BaseModel):
     id: int
     name: str
     account_type: str
+    account_last4: str
     class Config:
         orm_mode = True
 

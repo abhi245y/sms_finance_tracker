@@ -20,6 +20,3 @@ class Settings(BaseSettings):
         env_file_encoding = 'utf-8'
 
 settings = Settings()
-
-print("--- Settings Loaded ---")
-print(settings.model_dump_json(indent=2))
