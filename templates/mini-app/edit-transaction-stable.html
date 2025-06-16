@@ -1014,7 +1014,7 @@
                 if (tg.initDataUnsafe?.user) {
                     tg.showAlert(message);
                 } else {
-                    alert(message); // Fallback for local testing
+                    alert(message); 
                 }
                 if (tg.MainButton) tg.MainButton.hide();
             }
@@ -1047,9 +1047,9 @@
 
                 if (transaction.transaction_datetime_from_sms) {
                     const date = new Date(transaction.transaction_datetime_from_sms);
-                    transactionDateEl.textContent = date.toLocaleDateString('en-GB', { // en-GB for dd/mm/yy consistency if desired, or en-US
+                    transactionDateEl.textContent = date.toLocaleDateString('en-GB', { 
                         weekday: 'short', month: 'short', day: 'numeric', year: '2-digit'
-                    }).replace(/,/g, ''); // "Thu Jun 12 '25" or similar based on locale
+                    }).replace(/,/g, '');
 
                     accountInDateEl.textContent = date.toLocaleDateString('en-US', {
                         month: 'short', year: 'numeric'
@@ -1059,7 +1059,7 @@
                     accountInDateEl.textContent = 'N/A';
                 }
                 
-                feather.replace({ width: '1em', height: '1em' }); // Re-apply icons
+                feather.replace({ width: '1em', height: '1em' }); 
             }
             
             function populateCategoryModalPreview(transaction) {

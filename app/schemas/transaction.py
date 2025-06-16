@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel,Field
 from datetime import datetime
 from typing import Optional
 from app.models.transaction import TransactionStatus
@@ -7,19 +7,21 @@ class SMSRecieved(BaseModel):
     sms_content: str
 
 class TransactionBase(BaseModel):
-    # Core data fields parsed from SMS
     amount: Optional[float] = None
-    currency: Optional[str] = "INR"
+    currency: Optional[str] = Field("INR", example="INR")
     merchant_vpa: Optional[str] = None
     transaction_datetime_from_sms: Optional[datetime] = None
     description: Optional[str] = None
     raw_sms_content: str
 
     unique_hash: str
+    subcategory_id: Optional[int] = None 
+    
     account_id: Optional[int] = None
-    category_id: Optional[int] = 11
     
     status: TransactionStatus = TransactionStatus.PENDING_PROCESSING
+    
+    # exclude_from_cashflow: bool = Field(False, example=False)
     
     class Config:
         orm_mode = True
@@ -33,8 +35,7 @@ class TransactionUpdate(BaseModel):
     This will be used in the PATCH request body.
     """
     account_id: Optional[int] = None
-    category_id: Optional[int] = None
-    category_name: Optional[str] = None
+    subcategory_id: Optional[int] = None    
     description: Optional[str] = None
     status: Optional[str] = None
 
@@ -43,6 +44,16 @@ class CategoryForTransaction(BaseModel):
     """A minimal Category schema for embedding in a Transaction response."""
     id: int
     name: str
+    class Config:
+        orm_mode = True
+        
+class SubCategoryForTransaction(BaseModel):
+    id: int
+    name: str
+    icon_name: Optional[str] = None
+    parent_category_id: int
+    parent_category_name: str 
+
     class Config:
         orm_mode = True
         
@@ -65,7 +76,7 @@ class TransactionInDB(TransactionBase):
     received_at: datetime
     status: str
     account: Optional[AccountForTransaction] = None
-    category_obj: Optional[CategoryForTransaction] = None
+    subcategory: Optional[SubCategoryForTransaction] = None
 
     class Config:
         orm_mode = True

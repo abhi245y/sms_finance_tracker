@@ -578,9 +578,6 @@
             gap: 24px; 
         }
 
-        .category-group {
-        }
-
         .category-group-title {
             font-size: 16px;
             font-weight: 600;
@@ -649,6 +646,30 @@
             text-align: center;
             line-height: 1.2;
             width: 100%; 
+        }
+
+        .subcategory-icon-wrapper .emoji-icon,
+        .preview-category-badge .emoji-icon, 
+        .category-badge .emoji-icon {
+            font-size: 1.2em; 
+            line-height: 1;
+            vertical-align: middle;
+        }
+
+        .subcategory-icon-wrapper img.custom-icon,
+        .preview-category-badge img.custom-icon,
+        .category-badge img.custom-icon{
+            width: 20px; 
+            height: 20px;
+            vertical-align: middle;
+        }
+
+        .category-chip .emoji-icon {
+            font-size: 1em; 
+        }
+        .category-chip img.custom-icon {
+            width: 16px;
+            height: 16px;
         }
 
     </style>
@@ -732,8 +753,8 @@
                         <div class="toggle-subtitle">Turn this on if you don't want this expense to affect your cash flow analysis.</div>
                     </div>
                 </div>
-                <label class="switch">
-                    <input type="checkbox" id="exclude-cashflow-toggle">
+                <label class="switch" >
+                    <input disabled type="checkbox" id="exclude-cashflow-toggle">
                     <span class="slider"></span>
                 </label>
             </div>
@@ -834,7 +855,7 @@
             // Category Modal elements
             const categoryModal = document.getElementById('categoryModal');
             const closeModalBtn = document.getElementById('closeModalBtn');
-            const saveCategoryBtn = document.getElementById('saveCategoryBtn');
+            const saveCategoryBtn = document.getElementById('saveCategoryBtn'); 
             const modalMerchantNamePreviewEl = document.getElementById('modal-merchant-name-preview');
             const modalTransactionTimePreviewEl = document.getElementById('modal-transaction-time-preview');
             const modalAmountPreviewEl = document.getElementById('modal-amount-preview');
@@ -844,16 +865,20 @@
             const mostUsedCategoryGridEl = document.getElementById('most-used-category-grid');
             const fullCategoryListEl = document.getElementById('full-category-list');
             const categorySearchInputEl = document.getElementById('category-search-input');
+            const mostUsedCategoriesContainerEl = document.getElementById('most-used-categories-container');
 
 
             // --- STATE ---
             let currentTransaction = null; 
             let access_token = ''; 
-            const API_BASE_URL = 'https://finance.arlp.live/api/v1'; 
+            const API_BASE_URL = 'https://finance.arlp.live/api/v1';
             
-            let allCategories = []; // To store fetched categories {id, name, icon, subcategories: []}
-            let tempSelectedCategoryId = null; // Stores ID of category selected in modal before confirmed save
-            let categoryDataChanged = false; // Flag to indicate if category has been changed in modal
+            let allCategoriesStructured = []; // Stores fetched categories: Array of {id, name, description, icon (for parent if any), display_order, subcategories: [{id, name, icon_name, display_order}]}
+            let tempSelectedSubcategoryId = null; // Stores ID of SUBCATEGORY selected in modal
+            let dataChangedInModal = { 
+                subcategory: false,
+            };
+
 
             // --- MAIN ---
             async function initialize() {
@@ -864,24 +889,36 @@
                     
                     if (!access_token && !tg.initDataUnsafe?.user) { 
                         console.warn("Access token not found. Running in local mode.");
-                        currentTransaction = getMockTransaction();
-                        allCategories = getMockCategories(); // Load mock categories
+                        currentTransaction = getMockTransactionWithSubcategory();
+                        allCategoriesStructured = getMockStructuredCategories(); 
                     } else if (!access_token && tg.initDataUnsafe?.user) {
                          throw new Error("Access token not found.");
                     } else {
-                        // Parallel fetch transaction and categories
-                        [currentTransaction, allCategories] = await Promise.all([
-                            fetchTransaction(),
-                            fetchAllCategoriesDetails()
+                        [currentTransaction, allCategoriesStructured] = await Promise.all([
+                            fetchTransactionAPI(),
+                            fetchAllCategoriesDetailsAPI() 
                         ]);
                     }
                     
-                    if (currentTransaction.category_obj && currentTransaction.category_obj.id) {
-                        tempSelectedCategoryId = currentTransaction.category_obj.id;
+                    // Initialize tempSelectedSubcategoryId from current transaction
+                    if (currentTransaction.subcategory && currentTransaction.subcategory.id) {
+                        tempSelectedSubcategoryId = currentTransaction.subcategory.id;
+                    } else {
+                         // Find the "Uncategorized" subcategory under "General" from allCategoriesStructured
+                        const generalCat = allCategoriesStructured.find(c => c.name.toLowerCase() === 'general');
+                        if (generalCat && generalCat.subcategories) {
+                            const uncategorizedSub = generalCat.subcategories.find(sc => sc.name.toLowerCase() === 'uncategorized');
+                            if (uncategorizedSub) {
+                                tempSelectedSubcategoryId = uncategorizedSub.id;
+                                if (!currentTransaction.subcategory) { 
+                                    currentTransaction.subcategory = { ...uncategorizedSub, parent_category_name: generalCat.name };
+                                }
+                            }
+                        }
                     }
 
                     populateUI(currentTransaction);
-                    configureMainButton();
+                    configureMainButton(); 
                     setupEventListeners();
                 } catch (error) {
                     console.error("Initialization error:", error);
@@ -892,61 +929,61 @@
                 }
             }
             
-            function getMockTransaction() {
-                // Ensure mock data includes icon and type_initial as per schema enhancements
+            function getMockTransactionWithSubcategory() {
                 return {
                     unique_hash: 'mock_hash_123',
                     merchant_vpa: 'MOCK MERCHANT A',
                     amount: 140.00,
                     description: 'Mock tea at office',
-                    category_obj: { id: 1, name: 'Food & Drinks', icon: 'coffee' }, 
+                    subcategory: { id: 1101, name: 'Tea & Coffee', icon_name: 'emoji:☕', parent_category_id: 101, parent_category_name: 'Food & Drinks' }, 
                     account: { id:1, name: 'MockBank', account_last4: '0214', type_initial: 'M', account_type: 'SAVINGS_ACCOUNT' }, 
                     transaction_datetime_from_sms: new Date().toISOString(), 
                     exclude_from_cashflow: false,
-                    currency: 'INR',
-                    status: 'processed',
-                    raw_sms_content: 'mock sms',
-                    received_at: new Date().toISOString()
+                    currency: 'INR', status: 'processed', raw_sms_content: 'mock sms', received_at: new Date().toISOString(),
+                    subcategory_id: 1101,
+                    account_id: 1
                 };
             }
 
-            function getMockCategories() {
-                // Mock categories with an icon field
+            function getMockStructuredCategories() {
                 return [
-                    { id: 1, name: 'Food & Drinks', icon: 'coffee', description: 'Eating out, Swiggy, Zomato etc.', subcategories: [
-                        {id: 101, name: 'Eating out', icon_emoji: '🍽️', parent_category_id: 1},
-                        {id: 102, name: 'Tea & Coffee', icon_emoji: '☕', parent_category_id: 1},
+                    { id: 100, name: 'General', description: 'Default items', display_order: 999, subcategories: [
+                        {id: 1000, name: 'Uncategorized', icon_name: 'fthr:tag', display_order: 0, parent_category_id: 100},
                     ]},
-                    { id: 2, name: 'Groceries', icon: 'shopping-cart', description: 'Supermarket, daily needs', subcategories: [] },
-                    { id: 3, name: 'Transport', icon: 'truck', description: 'Uber, Ola, public transport', subcategories: [] },
-                    { id: 4, name: 'Shopping', icon: 'shopping-bag', description: 'Clothes, electronics', subcategories: [] },
-                    { id: 5, name: 'Personal', icon: 'user', description: 'Personal expenses', subcategories: [] },
-                    { id: 6, name: 'Investment', icon: 'trending-up', description: 'Stocks, mutual funds', subcategories: [] },
+                    { id: 101, name: 'Food & Drinks', description: 'Eating out, Swiggy, Zomato etc.', display_order: 0, subcategories: [
+                        {id: 1101, name: 'Eating out', icon_name: 'emoji:🍽️', display_order: 0, parent_category_id: 101},
+                        {id: 1102, name: 'Tea & Coffee', icon_name: 'emoji:☕', display_order: 1, parent_category_id: 101},
+                    ]},
+                    { id: 102, name: 'Groceries', description: 'Supermarket, daily needs', display_order: 1, subcategories: [
+                        {id: 1201, name: 'Staples', icon_name: 'fthr:archive', display_order: 0, parent_category_id: 102},
+                    ]},
                 ];
             }
 
             // --- API ---
-            async function fetchTransaction() {
-                // ... (fetchTransaction function remains the same)
+            async function fetchTransactionAPI() {
                 const response = await fetch(`${API_BASE_URL}/transactions/get/by-token`, {
                     headers: { 'Authorization': `Bearer ${access_token}` },
                 });
                 if (!response.ok) {
                     const errorData = await response.json().catch(() => ({ detail: response.statusText }));
-                    throw new Error(`API Error: ${errorData.detail || response.statusText}`);
+                    throw new Error(`API Error fetching transaction: ${errorData.detail || response.statusText}`);
                 }
                 const txnData = await response.json();
-                // Ensure category_obj exists for easier handling, even if null from backend
-                if (!txnData.category_obj) { 
-                    txnData.category_obj = { id: null, name: 'Uncategorized', icon: 'circle'};
+
+                if (!txnData.subcategory) { 
+                    const generalCat = allCategoriesStructured.find(c => c.name.toLowerCase() === 'general') || {name: 'General'};
+                    const uncategorizedSub = generalCat.subcategories ? generalCat.subcategories.find(sc => sc.name.toLowerCase() === 'uncategorized') : null;
+                    txnData.subcategory = uncategorizedSub 
+                        ? { ...uncategorizedSub, parent_category_name: generalCat.name, parent_category_id: generalCat.id }
+                        : { id: null, name: 'Uncategorized', icon_name: 'fthr:circle', parent_category_name: 'General', parent_category_id: null};
+                    if (uncategorizedSub) txnData.subcategory_id = uncategorizedSub.id;
                 }
                 return txnData;
             }
 
-            async function fetchAllCategoriesDetails() {
-                // Assumes backend endpoint /api/v1/categories/all_details
+            async function fetchAllCategoriesDetailsAPI() {
                 const response = await fetch(`${API_BASE_URL}/categories/all_details`, {
-                     // Add Authorization header if your categories endpoint is protected
                 });
                 if (!response.ok) {
                     const errorData = await response.json().catch(() => ({ detail: response.statusText }));
@@ -955,9 +992,7 @@
                 return await response.json();
             }
 
-
-            async function updateTransactionAPI(patchData) { // Renamed from updateTransaction to avoid conflict
-                // ... (updateTransaction function remains the same, renamed to updateTransactionAPI)
+            async function updateTransactionAPI(patchData) { 
                 const response = await fetch(`${API_BASE_URL}/transactions/by-token`, {
                     method: 'PATCH',
                     headers: { 
@@ -975,28 +1010,28 @@
 
             // --- UI HELPERS ---
             function setLoading(isLoading) {
-                // ... (setLoading function remains the same)
-                 loadingOverlay.style.display = isLoading ? 'flex' : 'none';
+                loadingOverlay.style.display = isLoading ? 'flex' : 'none';
             }
 
             function showError(message) {
-                // ... (showError function remains the same)
                 if (tg.initDataUnsafe?.user) {
                     tg.showAlert(message);
                 } else {
-                    alert(message); 
+                    alert(message); // Fallback for local testing
                 }
                 if (tg.MainButton) tg.MainButton.hide();
             }
 
             function populateUI(transaction) {
                 if (!transaction) return;
-
                 transactionAmountEl.textContent = `-₹${Math.round(transaction.amount)}`;
                 
-                if (transaction.category_obj && transaction.category_obj.name) {
-                    mainCategoryNameEl.textContent = transaction.category_obj.name.toUpperCase();
-                    mainCategoryIconEl.setAttribute('data-feather', transaction.category_obj.icon || 'circle'); 
+                if (transaction.subcategory && transaction.subcategory.name) {
+                    const displayName = transaction.subcategory.parent_category_name && transaction.subcategory.parent_category_name.toLowerCase() !== 'general'
+                        ? `${transaction.subcategory.parent_category_name} (${transaction.subcategory.name})`
+                        : transaction.subcategory.name;
+                    mainCategoryNameEl.textContent = displayName.toUpperCase();
+                    mainCategoryIconEl.setAttribute('data-feather', parseIconName(transaction.subcategory.icon_name).name || 'circle');
                 } else {
                     mainCategoryNameEl.textContent = 'UNCATEGORIZED';
                     mainCategoryIconEl.setAttribute('data-feather', 'circle');
@@ -1004,12 +1039,11 @@
 
                 if (transaction.account) {
                     fromAccountDetailsEl.textContent = `***${transaction.account.account_last4}`;
-                    // Use type_initial if present, otherwise derive from bank name
                     const accInitial = transaction.account.type_initial || 
                                        (transaction.account.bank_name ? transaction.account.bank_name.charAt(0).toUpperCase() : 
                                        (transaction.account.name ? transaction.account.name.charAt(0).toUpperCase() : 'A'));
                     fromAccountIconInitialEl.textContent = accInitial;
-                } else {
+                } else { 
                     fromAccountDetailsEl.textContent = '***0000';
                     fromAccountIconInitialEl.textContent = 'A';
                 }
@@ -1018,12 +1052,11 @@
                 descriptionTextarea.value = transaction.description || '';
                 excludeCashflowToggle.checked = transaction.exclude_from_cashflow || false;
 
-
                 if (transaction.transaction_datetime_from_sms) {
                     const date = new Date(transaction.transaction_datetime_from_sms);
                     transactionDateEl.textContent = date.toLocaleDateString('en-GB', { 
                         weekday: 'short', month: 'short', day: 'numeric', year: '2-digit'
-                    }).replace(/,/g, ''); 
+                    }).replace(/,/g, '');
 
                     accountInDateEl.textContent = date.toLocaleDateString('en-US', {
                         month: 'short', year: 'numeric'
@@ -1037,17 +1070,12 @@
             }
             
             function populateCategoryModalPreview(transaction) {
-                // ... (populateCategoryModalPreview function remains largely the same)
-                 if (!transaction) return;
-
+                if (!transaction) return;
                 modalMerchantNamePreviewEl.textContent = transaction.merchant_vpa || 'Unknown';
                 modalAmountPreviewEl.textContent = `-₹${Math.round(transaction.amount)}`;
                 
                 if (transaction.account) {
-                     const accInitial = transaction.account.type_initial || 
-                                       (transaction.account.bank_name ? transaction.account.bank_name.charAt(0).toUpperCase() : 
-                                       (transaction.account.name ? transaction.account.name.charAt(0).toUpperCase() : 'A'));
-                    modalAccountIconPreviewEl.textContent = accInitial;
+                    modalAccountIconPreviewEl.textContent = transaction.account.type_initial || transaction.account.name?.charAt(0).toUpperCase() || 'A';
                 } else {
                      modalAccountIconPreviewEl.textContent = 'A';
                 }
@@ -1061,113 +1089,160 @@
                     modalTransactionTimePreviewEl.textContent = "Time N/A";
                 }
 
-                // Use tempSelectedCategoryId to reflect live changes in modal
-                const catToPreview = tempSelectedCategoryId 
-                    ? allCategories.find(c => c.id === tempSelectedCategoryId) 
-                    : (transaction.category_obj || { name: 'Uncategorized', icon: 'circle' });
+                // Use tempSelectedSubcategoryId to reflect live changes in modal preview
+                let subcatToPreview = null;
+                if (tempSelectedSubcategoryId) {
+                    for (const parentCat of allCategoriesStructured) {
+                        subcatToPreview = parentCat.subcategories.find(sc => sc.id === tempSelectedSubcategoryId);
+                        if (subcatToPreview) {
+                            subcatToPreview.parent_category_name = parentCat.name;
+                            break;
+                        }
+                    }
+                }
+                // Fallback to current transaction's subcategory if nothing temporarily selected or found
+                if (!subcatToPreview) subcatToPreview = transaction.subcategory;
 
-                if (catToPreview) {
-                    modalCategoryNamePreviewEl.textContent = catToPreview.name.toUpperCase();
-                    modalCategoryIconPreviewEl.setAttribute('data-feather', catToPreview.icon || 'circle');
+
+                if (subcatToPreview && subcatToPreview.name) {
+                    const displayName = subcatToPreview.parent_category_name && subcatToPreview.parent_category_name.toLowerCase() !== 'general'
+                        ? `${subcatToPreview.parent_category_name} (${subcatToPreview.name})`
+                        : subcatToPreview.name;
+                    modalCategoryNamePreviewEl.textContent = displayName.toUpperCase();
+                    const parsedIcon = parseIconName(subcatToPreview.icon_name);
+                    if (parsedIcon.type === 'feather') {
+                        modalCategoryIconPreviewEl.outerHTML = `<i data-feather="${parsedIcon.name || 'circle'}" id="modal-category-icon-preview"></i>`;
+                    } else if (parsedIcon.type === 'emoji') {
+                        modalCategoryIconPreviewEl.outerHTML = `<span id="modal-category-icon-preview" class="emoji-icon">${parsedIcon.name}</span>`;
+                    } 
+                } else {
+                    modalCategoryNamePreviewEl.textContent = 'UNCATEGORIZED';
+                    modalCategoryIconPreviewEl.outerHTML = `<i data-feather="circle" id="modal-category-icon-preview"></i>`;
                 }
                 feather.replace({ width: '1em', height: '1em', 'stroke-width': 1.8 });
             }
 
+            function parseIconName(iconString) {
+                if (!iconString) return { type: 'feather', name: 'circle' };
+                if (iconString.startsWith('fthr:')) return { type: 'feather', name: iconString.substring(5) };
+                if (iconString.startsWith('img:')) return { type: 'image', name: iconString.substring(4) };
+                if (iconString.startsWith('emoji:')) return { type: 'emoji', name: iconString.substring(6) };
+                const emojiRegex = /[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F900}-\u{1F9FF}\u{1F1E0}-\u{1F1FF}]/u;
+                if (emojiRegex.test(iconString)) return { type: 'emoji', name: iconString };
+                
+                return { type: 'feather', name: iconString };
+            }
+
+            function createIconElement(iconString) {
+                const parsed = parseIconName(iconString);
+                if (parsed.type === 'feather') {
+                    return `<i data-feather="${parsed.name || 'circle'}"></i>`;
+                } else if (parsed.type === 'emoji') {
+                    return `<span class="emoji-icon">${parsed.name}</span>`;
+                } else if (parsed.type === 'image') {
+                    // Assuming images are in a known path e.g., /static/images/icons/
+                    return `<img src="/static/images/icons/${parsed.name}" alt="${parsed.name.split('/').pop().split('.')[0]}" class="custom-icon">`;
+                }
+                return `<i data-feather="circle"></i>`; 
+            }
+
+
             function populateCategoriesInModal(categoriesToDisplay) {
-                mostUsedCategoryGridEl.innerHTML = ''; // Clear previous items
-                fullCategoryListEl.innerHTML = ''; // Clear previous items
-
-                // For simplicity, let's make "Most Used" the first 5 categories for now
-                // This logic can be enhanced later (e.g., based on frequency from backend)
-                const mostUsed = categoriesToDisplay.slice(0, 5);
-                const otherCategories = categoriesToDisplay.slice(5);
-
-                mostUsed.forEach(cat => {
-                    const chip = document.createElement('div');
-                    chip.className = 'category-chip';
-                    chip.dataset.categoryId = cat.id;
-                    chip.innerHTML = `<i data-feather="${cat.icon || 'circle'}"></i> ${cat.name.toUpperCase()}`;
-                    if (cat.id === tempSelectedCategoryId) {
-                        chip.classList.add('selected');
-                    }
-                    chip.addEventListener('click', handleCategoryChipClick);
-                    mostUsedCategoryGridEl.appendChild(chip);
-                });
-
-                // Group other categories (assuming no deep subcategory structure for now from API)
-                // If your API returns flat categories, this will list them.
-                // If it returns grouped, this needs more complex rendering.
-                // For now, let's assume `allCategories` might have a `description` and `subcategories` field if available
+                mostUsedCategoryGridEl.innerHTML = ''; 
+                fullCategoryListEl.innerHTML = ''; 
                 
-                // Example of simple list for remaining categories:
-                const generalGroup = document.createElement('div');
-                generalGroup.className = 'category-group';
-                
-                const groupTitle = document.createElement('div');
-                groupTitle.className = 'category-group-title';
-                groupTitle.textContent = "All Categories";
-                generalGroup.appendChild(groupTitle);
-
-                const subcategoryGrid = document.createElement('div');
-                subcategoryGrid.className = 'subcategory-grid';
-
-                otherCategories.forEach(cat => {
-                    // For now, treating all main categories as subcategory items if not in "Most Used"
-                    const item = document.createElement('div');
-                    item.className = 'subcategory-item';
-                    item.dataset.categoryId = cat.id; // Using category-id as primary identifier
-                    item.innerHTML = `
-                        <div class="subcategory-icon-wrapper">
-                           ${cat.icon_emoji ? cat.icon_emoji : `<i data-feather="${cat.icon || 'circle'}"></i>`}
-                        </div>
-                        <div class="subcategory-name">${cat.name}</div>
-                    `;
-                    if (cat.id === tempSelectedCategoryId) {
-                        item.classList.add('selected');
+                // TODO: For "Most Used" needs a proper mechanism. For now, skip or use a few from first category.
+                // Example: take first 2 subcategories from first 2 parent categories if they exist
+                let mostUsedCount = 0;
+                if (categoriesToDisplay.length > 0) {
+                    mostUsedCategoriesContainerEl.style.display = 'block';
+                    for (const parentCat of categoriesToDisplay) {
+                        if (parentCat.subcategories && parentCat.subcategories.length > 0) {
+                            for (const subCat of parentCat.subcategories.slice(0, 2)) { 
+                                if (mostUsedCount >= 4) break; 
+                                const chip = document.createElement('div');
+                                chip.className = 'category-chip';
+                                chip.dataset.subcategoryId = subCat.id;
+                                chip.innerHTML = `${createIconElement(subCat.icon_name)} ${subCat.name.toUpperCase()}`;
+                                if (subCat.id === tempSelectedSubcategoryId) {
+                                    chip.classList.add('selected');
+                                }
+                                chip.addEventListener('click', handleSubcategorySelection);
+                                mostUsedCategoryGridEl.appendChild(chip);
+                                mostUsedCount++;
+                            }
+                        }
+                        if (mostUsedCount >= 4) break;
                     }
-                    item.addEventListener('click', handleSubcategoryItemClick); // Or a generic handler
-                    subcategoryGrid.appendChild(item);
-                });
-                generalGroup.appendChild(subcategoryGrid);
-                fullCategoryListEl.appendChild(generalGroup);
+                } else {
+                     mostUsedCategoriesContainerEl.style.display = 'none';
+                }
 
+
+                categoriesToDisplay.forEach(parentCat => {
+                    if (parentCat.name.toLowerCase() === 'general' && parentCat.subcategories.some(sc => sc.name.toLowerCase() === 'uncategorized' && sc.id === tempSelectedSubcategoryId)) {
+                        // Optionally skip showing "General (Uncategorized)" in the main list if it's the current selection
+                        // Or always show it. For now, let's show all.
+                    }
+
+                    const groupDiv = document.createElement('div');
+                    groupDiv.className = 'category-group';
+                    
+                    const titleDiv = document.createElement('div');
+                    titleDiv.className = 'category-group-title';
+                    titleDiv.textContent = parentCat.name;
+                    groupDiv.appendChild(titleDiv);
+
+                    if(parentCat.description){
+                        const subtitleDiv = document.createElement('div');
+                        subtitleDiv.className = 'category-group-subtitle';
+                        subtitleDiv.textContent = parentCat.description;
+                        groupDiv.appendChild(subtitleDiv);
+                    }
+
+                    const subcategoryGridDiv = document.createElement('div');
+                    subcategoryGridDiv.className = 'subcategory-grid';
+
+                    parentCat.subcategories.forEach(subCat => {
+                        const itemDiv = document.createElement('div');
+                        itemDiv.className = 'subcategory-item';
+                        itemDiv.dataset.subcategoryId = subCat.id;
+                        itemDiv.innerHTML = `
+                            <div class="subcategory-icon-wrapper">${createIconElement(subCat.icon_name)}</div>
+                            <div class="subcategory-name">${subCat.name}</div>
+                        `;
+                        if (subCat.id === tempSelectedSubcategoryId) {
+                            itemDiv.classList.add('selected');
+                        }
+                        itemDiv.addEventListener('click', handleSubcategorySelection);
+                        subcategoryGridDiv.appendChild(itemDiv);
+                    });
+                    groupDiv.appendChild(subcategoryGridDiv);
+                    fullCategoryListEl.appendChild(groupDiv);
+                });
 
                 feather.replace({ width: '1em', height: '1em', 'stroke-width': 1.8 });
             }
 
-            function handleCategoryChipClick(event) {
-                const clickedChip = event.currentTarget;
-                const categoryId = parseInt(clickedChip.dataset.categoryId);
+            function handleSubcategorySelection(event) {
+                const clickedItem = event.currentTarget;
+                const subcategoryId = parseInt(clickedItem.dataset.subcategoryId);
 
-                // Remove 'selected' from all chips and subcategory items
                 document.querySelectorAll('.category-modal .category-chip.selected, .category-modal .subcategory-item.selected')
                     .forEach(el => el.classList.remove('selected'));
                 
-                clickedChip.classList.add('selected');
-                tempSelectedCategoryId = categoryId;
-                categoryDataChanged = true;
-                populateCategoryModalPreview(currentTransaction); // Update preview
+                clickedItem.classList.add('selected'); 
+                const correspondingChip = mostUsedCategoryGridEl.querySelector(`.category-chip[data-subcategory-id="${subcategoryId}"]`);
+                if(correspondingChip) correspondingChip.classList.add('selected');
+
+
+                tempSelectedSubcategoryId = subcategoryId;
+                dataChangedInModal.subcategory = true; 
+                populateCategoryModalPreview(currentTransaction); 
             }
-
-            function handleSubcategoryItemClick(event) {
-                const clickedItem = event.currentTarget;
-                const categoryId = parseInt(clickedItem.dataset.categoryId); 
-                // In a more complex setup, this might be subcategory_id, and you'd find its parent category_id.
-                // For now, assuming flat categories in "All Categories" list use their own ID.
-
-                document.querySelectorAll('.category-modal .category-chip.selected, .category-modal .subcategory-item.selected')
-                    .forEach(el => el.classList.remove('selected'));
-
-                clickedItem.classList.add('selected');
-                tempSelectedCategoryId = categoryId;
-                categoryDataChanged = true;
-                populateCategoryModalPreview(currentTransaction); // Update preview
-            }
-
 
             // --- TELEGRAM BUTTONS ---
             function configureMainButton() {
-                // ... (configureMainButton function remains the same, text "SAVE CHANGES")
                 if (!tg.MainButton) return; 
                 tg.MainButton.setParams({
                     text: 'SAVE CHANGES',
@@ -1179,10 +1254,8 @@
                 tg.MainButton.onClick(handleSave);
             }
 
-            async function handleSave() {
-                // ... (handleSave function: add category_id to patchData if categoryDataChanged)
+            async function handleSave() { 
                 if (tg.MainButton && (!tg.MainButton.isVisible || !tg.MainButton.isActive)) return;
-                
                 if (tg.MainButton) tg.MainButton.showProgress();
                 setLoading(true);
 
@@ -1192,38 +1265,42 @@
                         exclude_from_cashflow: excludeCashflowToggle.checked
                     };
 
-                    if (categoryDataChanged && tempSelectedCategoryId !== null) {
-                        patchData.category_id = tempSelectedCategoryId;
+                    if (dataChangedInModal.subcategory && tempSelectedSubcategoryId !== null) {
+                        patchData.subcategory_id = tempSelectedSubcategoryId;
                     }
                     
-                    if (access_token) { 
-                        const updatedTxn = await updateTransactionAPI(patchData);
-                        currentTransaction = updatedTxn; // Update local state with response
-                        if (!currentTransaction.category_obj) { // Ensure structure
-                             currentTransaction.category_obj = { id: null, name: 'Uncategorized', icon: 'circle'};
-                        }
-                        categoryDataChanged = false; // Reset flag
-                         // Update tempSelectedCategoryId to reflect saved state
-                        if (currentTransaction.category_obj) {
-                            tempSelectedCategoryId = currentTransaction.category_obj.id;
-                        }
+                    if (Object.keys(patchData).length > 0 || dataChangedInModal.subcategory) { 
+                        if (access_token) { 
+                            const updatedTxnFromServer = await updateTransactionAPI(patchData);
+                            currentTransaction = { ...currentTransaction, ...updatedTxnFromServer }; 
+                             if (updatedTxnFromServer.subcategory) {
+                                currentTransaction.subcategory = updatedTxnFromServer.subcategory;
+                                tempSelectedSubcategoryId = updatedTxnFromServer.subcategory.id; 
+                            } else if (tempSelectedSubcategoryId){ 
+                                const sc = findSubcategoryById(allCategoriesStructured, tempSelectedSubcategoryId);
+                                currentTransaction.subcategory = sc ? {...sc.subcat, parent_category_name: sc.parentCat.name} : null;
+                            }
 
-                    } else {
-                        console.log("Local save (mock):", patchData);
-                        if (categoryDataChanged && tempSelectedCategoryId !== null) {
-                            const newCat = allCategories.find(c=>c.id === tempSelectedCategoryId);
-                            currentTransaction.category_obj = newCat || { id: tempSelectedCategoryId, name: 'Selected Mock Cat', icon: 'help-circle'};
+                        } else { 
+                            console.log("Local save (mock):", patchData);
+                            if (dataChangedInModal.subcategory && tempSelectedSubcategoryId !== null) {
+                                const scPair = findSubcategoryById(allCategoriesStructured, tempSelectedSubcategoryId);
+                                if (scPair) {
+                                    currentTransaction.subcategory = {...scPair.subcat, parent_category_name: scPair.parentCat.name };
+                                    currentTransaction.subcategory_id = tempSelectedSubcategoryId;
+                                }
+                            }
+                            currentTransaction.description = descriptionTextarea.value;
+                            currentTransaction.exclude_from_cashflow = excludeCashflowToggle.checked;
+                            await new Promise(resolve => setTimeout(resolve, 500));
                         }
-                        currentTransaction.description = descriptionTextarea.value;
-                        currentTransaction.exclude_from_cashflow = excludeCashflowToggle.checked;
-                        categoryDataChanged = false;
-                        await new Promise(resolve => setTimeout(resolve, 500));
                     }
                     
-                    populateUI(currentTransaction); // Refresh UI with potentially new category from server
+                    dataChangedInModal.subcategory = false; 
+                    populateUI(currentTransaction); 
 
                     if (tg.initDataUnsafe?.user) tg.close();
-                    else console.log("Changes saved!"); // Changed from alert for better dev experience
+                    else console.log("Changes processed!");
 
                 } catch (error) {
                     console.error("Save error:", error);
@@ -1233,70 +1310,64 @@
                     setLoading(false);
                 }
             }
+            
+            function findSubcategoryById(structuredCategories, subcatId) {
+                 for (const parentCat of structuredCategories) {
+                    const foundSubcat = parentCat.subcategories.find(sc => sc.id === subcatId);
+                    if (foundSubcat) {
+                        return { subcat: foundSubcat, parentCat: parentCat };
+                    }
+                }
+                return null;
+            }
 
             // --- EVENT LISTENERS ---
             function setupEventListeners() {
                 categoryBadgeMain.addEventListener('click', () => {
-                    // tempSelectedCategoryId should be up-to-date with currentTransaction before opening
-                    if (currentTransaction.category_obj && currentTransaction.category_obj.id) {
-                        tempSelectedCategoryId = currentTransaction.category_obj.id;
-                    } else {
-                        tempSelectedCategoryId = null; // Or a default "Uncategorized" ID if you have one
+                    if (currentTransaction.subcategory && currentTransaction.subcategory.id) {
+                        tempSelectedSubcategoryId = currentTransaction.subcategory.id;
+                    } else { 
+                        const generalCat = allCategoriesStructured.find(c => c.name.toLowerCase() === 'general');
+                        const uncategorizedSub = generalCat?.subcategories.find(sc => sc.name.toLowerCase() === 'uncategorized');
+                        tempSelectedSubcategoryId = uncategorizedSub ? uncategorizedSub.id : null;
                     }
-                    populateCategoriesInModal(allCategories); // Populate with all fetched categories
-                    populateCategoryModalPreview(currentTransaction); // Populate preview
+                    dataChangedInModal.subcategory = false; 
+                    categorySearchInputEl.value = ''; 
+                    populateCategoriesInModal(allCategoriesStructured); 
+                    populateCategoryModalPreview(currentTransaction); 
                     categoryModal.style.display = 'flex';
                     feather.replace({ width: '1em', height: '1em', 'stroke-width': 1.8 }); 
                 });
 
                 closeModalBtn.addEventListener('click', () => {
                     categoryModal.style.display = 'none';
-                    // Reset temp selection if modal is closed without saving explicitly
-                    if (currentTransaction.category_obj && currentTransaction.category_obj.id) {
-                       tempSelectedCategoryId = currentTransaction.category_obj.id;
-                    } else {
-                        tempSelectedCategoryId = null;
+                    dataChangedInModal.subcategory = false; 
+                    if (currentTransaction.subcategory && currentTransaction.subcategory.id) {
+                       tempSelectedSubcategoryId = currentTransaction.subcategory.id;
                     }
-                    categoryDataChanged = false; // No changes made if closed this way
                 });
 
-                saveCategoryBtn.addEventListener('click', () => { // Modal's own save button
-                    if (categoryDataChanged && tempSelectedCategoryId !== null) {
-                        const selectedCat = allCategories.find(c => c.id === tempSelectedCategoryId);
-                        if (selectedCat) {
-                            currentTransaction.category_obj = { ...selectedCat }; // Update local transaction state
-                            // mainCategoryNameEl and mainCategoryIconEl will be updated by populateUI on final save
-                            // or if you want instant reflection on main page:
-                            mainCategoryNameEl.textContent = selectedCat.name.toUpperCase();
-                            mainCategoryIconEl.setAttribute('data-feather', selectedCat.icon || 'circle');
-                            feather.replace({elem: mainCategoryIconEl });
+                saveCategoryBtn.addEventListener('click', () => { 
+                    categoryModal.style.display = 'none';
+                    if (dataChangedInModal.subcategory && tempSelectedSubcategoryId) {
+                        const scPair = findSubcategoryById(allCategoriesStructured, tempSelectedSubcategoryId);
+                        if(scPair){
+                            populateUI({...currentTransaction, subcategory: {...scPair.subcat, parent_category_name: scPair.parentCat.name}});
                         }
                     }
-                    categoryModal.style.display = 'none';
-                    // The categoryDataChanged flag remains true, so main save button will pick it up
                 });
 
                 categoryModal.addEventListener('click', (e) => {
-                    // ... (close on outside click remains the same)
-                     if (e.target === categoryModal) {
+                    if (e.target === categoryModal) {
                         categoryModal.style.display = 'none';
-                        if (currentTransaction.category_obj && currentTransaction.category_obj.id) {
-                           tempSelectedCategoryId = currentTransaction.category_obj.id;
-                        } else {
-                            tempSelectedCategoryId = null;
-                        }
-                        categoryDataChanged = false; 
                     }
-                });
+                })
                 
                 categorySearchInputEl.addEventListener('input', (e) => {
-                    const searchTerm = e.target.value.toLowerCase();
-                    const filteredCategories = allCategories.filter(cat => 
-                        cat.name.toLowerCase().includes(searchTerm) || 
-                        (cat.description && cat.description.toLowerCase().includes(searchTerm))
-                    );
-                    populateCategoriesInModal(filteredCategories);
-                });
+                     if (e.target === categorySearchInputEl) {
+                        categorySearchInputEl.style.display = 'none';
+                    }
+                 });
             }
 
             // --- RUN ---
