@@ -45,7 +45,7 @@ async def send_message(text: str, reply_markup: Optional[dict] = None) -> Option
             
         return None
 
-def _format_transaction_message(transaction: TransactionInDB, type_str: str) -> str:
+def _format_transaction_message(transaction: TransactionInDB, type_str: TransactionType) -> str:
     """Formats a transaction object into a nice string for Telegram."""
     def escape_md(text: str) -> str:
         escape_chars = r'_*[]()~`>#+-=|{}.!'
@@ -80,7 +80,7 @@ def _format_transaction_message(transaction: TransactionInDB, type_str: str) -> 
     description_text = escape_md(transaction.description or "_No description_")
     
     message = (
-            f"*{status_emoji} {escape_md(type_str)}*\n\n" 
+            f"*{status_emoji} {escape_md(type_str.value)}*\n\n" 
             f"*Amount*: `{amount_str}`\n"
             f"*Merchant*: {merchant}\n"
             f"*Account*: {account_name}\n"

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
@@ -680,6 +681,13 @@
             vertical-align: middle;
         }
 
+        /* Styling for the actual logo image inside the container */
+.account-item-icon img.custom-icon {
+    max-width: 100%;   
+    max-height: 100%;  
+    object-fit: contain; /* Safest for not cropping logos */
+    display: block;
+}
         .category-chip .emoji-icon {
             font-size: 1em; 
         }
@@ -847,9 +855,218 @@
             }
         }
 
+        /* Account Selection Modal Styles */
+.account-select-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: none; /* Hidden by default */
+    justify-content: center;
+    align-items: flex-end; 
+    z-index: 3000; /* Higher than other modals */
+}
 
+.account-select-modal-content {
+    background: #f8f9fa; /* Light background for the sheet */
+    width: 100%;
+    max-width: 400px;
+    border-radius: 16px 16px 0 0;
+    max-height: 90vh; 
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+}
+
+.account-select-modal-header {
+    padding: 12px 20px;
+    border-bottom: 1px solid #e5e7eb;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    background: #f8f9fa; /* Match content background */
+    z-index: 10;
+}
+
+.account-select-modal-title {
+    font-size: 17px;
+    font-weight: 600;
+    color: #1a1a1a;
+    text-align: center;
+    flex-grow: 1;
+}
+
+.account-select-close-btn, .account-select-save-btn {
+    font-size: 16px;
+    font-weight: 600;
+    color: #3b82f6; /* Blue, matching category modal */
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+}
+.account-select-close-btn { font-size: 20px; line-height: 1; }
+.account-select-save-btn { font-size: 22px; line-height: 1; }
+
+#account-select-transaction-preview {
+    background-color: white; 
+    border-bottom: 1px solid #e5e7eb;
+    padding: 16px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    /* padding, etc., should be inherited from .transaction-preview */
+}
+#account-select-transaction-preview .merchant-icon { /* Ensure specific ID targeting if needed */
+    width: 32px;
+            height: 32px;
+            background: #f3f4f6; /* Light grey background for icon */
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6b7280; /* Icon color */
+}
+/* ... other preview styles ... */
+
+
+.account-select-modal-body {
+    padding: 16px 20px 20px 20px;
+    background-color: white; /* White background for the list area */
+}
+
+.account-select-prompt-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #1a1a1a;
+    text-align: center;
+    margin-bottom: 8px;
+}
+
+.account-select-prompt-subtitle {
+    font-size: 14px;
+    color: #6b7280;
+    text-align: center;
+    line-height: 1.4;
+    margin-bottom: 24px;
+    max-width: 300px; /* Limit width for better readability */
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#account-list-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px; /* Space between account groups */
+}
+
+
+.account-group-title {
+    font-size: 13px; /* Smaller title for account type groups */
+    font-weight: 500;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+    padding-left: 4px; /* Slight indent */
+}
+
+.account-item {
+    background-color: #f8f9fa; /* Slightly off-white for item background within white body */
+    padding: 12px 16px;
+    border-radius: 12px; /* Rounded corners for each item */
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+    border: 1px solid #e5e7eb;
+    margin-bottom: 5px; /* Subtle border for each item */
+}
+.account-item:hover {
+    background-color: #eff6ff; /* Light blue hover */
+}
+.account-item.selected {
+    border-color: #3b82f6; /* Blue border for selected */
+    background-color: #eff6ff;
+}
+
+.account-item-icon { 
+    width: 40px;
+    height: 40px;
+    background: #fff;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 12px;
+    padding: 5px;
+    box-sizing: border-box;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.07), inset 0 1px 1px rgba(255,255,255,0.5), inset 0 -1px 1px rgba(0,0,0,0.05);
+}
+
+
+.account-item-details {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.account-item-name {
+    font-size: 15px;
+    font-weight: 500;
+    color: #1a1a1a;
+}
+
+.account-item-last4 {
+    font-size: 13px;
+    color: #6b7280;
+}
+
+.account-item-radio {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 22px;
+    height: 22px;
+    border: 2px solid #c8c7cc; /* iOS-like grey border */
+    border-radius: 50%;
+    outline: none;
+    cursor: pointer;
+    margin-left: 16px;
+    position: relative;
+    flex-shrink: 0;
+}
+
+.account-item-radio:checked {
+    border-color: #3b82f6; /* Blue border when checked */
+    background-color: #3b82f6; /* Blue fill */
+}
+
+.account-item-radio:checked::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 6px; /* Adjust size of inner dot */
+    height: 6px;
+    border-radius: 50%;
+    background-color: white;
+    transform: translate(-50%, -50%);
+    display: block;
+}
+
+/* For the "Cash" item if it needs specific icon */
+.account-item[data-account-type="CASH"] .account-item-icon i.feather {
+    width: 18px; height: 18px;
+}
     </style>
 </head>
+
 <body>
     <main class="container">
         <div class="card main-card">
@@ -929,7 +1146,7 @@
                         <div class="toggle-subtitle">Turn this on if you don't want this expense to affect your cash flow analysis.</div>
                     </div>
                 </div>
-                <label class="switch" >
+                <label class="switch">
                     <input disabled type="checkbox" id="exclude-cashflow-toggle">
                     <span class="slider"></span>
                 </label>
@@ -945,7 +1162,7 @@
                 <div class="category-title">Tag transaction</div>
                 <button class="save-btn" id="saveCategoryBtn">✓</button>
             </div>
-            
+
             <div class="transaction-preview">
                 <div class="preview-left">
                     <div class="merchant-icon" id="modal-merchant-icon-preview">
@@ -956,7 +1173,7 @@
                         <div style="font-size: 12px; color: #6b7280;" id="modal-transaction-time-preview">Loading...</div>
                     </div>
                 </div>
-                <div class="preview-right"> 
+                <div class="preview-right">
                     <div class="preview-amount" id="modal-amount-preview">Loading...</div>
                     <div class="preview-category-badge" id="modal-category-badge-preview">
                         <i data-feather="" id="modal-category-icon-preview"></i>
@@ -985,8 +1202,8 @@
         </div>
     </div>
 
-<!-- Transaction Details Modal -->
-    <div class="details-modal" id="moreDetailsModal" >
+    <!-- Transaction Details Modal -->
+    <div class="details-modal" id="moreDetailsModal">
         <div class="details-modal-content">
             <div class="details-modal-header">
                 <span class="details-modal-title">Transaction Details</span>
@@ -1070,7 +1287,7 @@
                     <span class="detail-value" id="details-mode">Loading...</span>
                 </div>
 
-                <div style="display: none;" class="detail-item" >
+                <div style="display: none;" class="detail-item">
                     <span class="detail-label">Reference/UTR</span>
                     <span class="detail-value" id="details-reference-utr">
                         Loading...
@@ -1086,6 +1303,59 @@
         </div>
     </div>
 
+    <!-- Account Selection Modal -->
+    <div class="account-select-modal" id="accountSelectModal">
+        <div class="account-select-modal-content">
+            <div class="account-select-modal-header">
+                <button class="account-select-close-btn" id="closeAccountSelectModalBtn">✕</button>
+                <span class="account-select-modal-title">Choose source</span>
+                <button class="account-select-save-btn" id="saveAccountSelectionBtn">✓</button>
+            </div>
+            <div class="transaction-preview" id="account-select-transaction-preview">
+                <div class="preview-left">
+                    <div class="merchant-icon" id="account-select-merchant-icon-preview">
+                        <i data-feather="user"></i>
+                    </div>
+                    <div>
+                        <div class="merchant-name" id="account-select-merchant-name-preview">Loading...</div>
+                        <div style="font-size: 12px; color: #6b7280;" id="account-select-transaction-time-preview">Loading...</div>
+                    </div>
+                </div>
+                <div class="preview-right">
+                    <div class="preview-amount" id="account-select-amount-preview">Loading...</div>
+                    <div class="preview-category-badge" id="account-select-category-badge-preview">
+                        <i data-feather="briefcase" id="account-select-category-icon-preview"></i>
+                        <span id="account-select-category-name-preview">Loading...</span>
+                    </div>
+                    <div class="account-icon preview-account-icon" id="account-select-current-account-icon-preview">P</div>
+                </div>
+            </div>
+
+            <div class="account-select-modal-body">
+                <h3 class="account-select-prompt-title">What's the source for this transaction?</h3>
+                <p class="account-select-prompt-subtitle">
+                    Transaction will be linked to your chosen source. You can change the source or delete this transaction later if you wish.
+                </p>
+                <div id="account-list-container">
+                    <!-- Accounts will be populated here by JS -->
+                    <!-- Example Group Structure:
+                    <div class="account-group">
+                        <h4 class="account-group-title">Credit cards</h4>
+                        <div class="account-item" data-account-id="123">
+                            <div class="account-item-icon" style="background-color: #007AFF;">S</div>
+                            <div class="account-item-details">
+                                <span class="account-item-name">SBI CASHBACK</span>
+                                <span class="account-item-last4">***0400</span>
+                            </div>
+                            <input type="radio" name="selectedAccount" value="123" class="account-item-radio">
+                        </div>
+                    </div>
+                    -->
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Loading Overlay -->
     <div id="loading-overlay" class="loading-overlay">
         <div class="spinner"></div>
@@ -1094,661 +1364,1198 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            'use strict';
-            const tg = window.Telegram.WebApp;
-            if (tg.initDataUnsafe?.user) { 
-                tg.expand();
-                tg.setHeaderColor('#f8f9fa'); 
-                tg.setBackgroundColor('#f8f9fa');
+    'use strict';
+    const tg = window.Telegram.WebApp;
+    if (tg.initDataUnsafe?.user) {
+        tg.expand();
+        tg.setHeaderColor('#f8f9fa');
+        tg.setBackgroundColor('#f8f9fa');
+    }
+
+    // --- DOM Elements ---
+    const loadingOverlay = document.getElementById('loading-overlay');
+
+    const transactionAmountEl = document.getElementById('transaction-amount');
+    const mainCategoryIconEl = document.getElementById('main-category-icon');
+    const mainCategoryNameEl = document.getElementById('main-category-name');
+    const fromAccountIconInitialEl = document.getElementById('from-account-icon-initial');
+    const fromAccountDetailsEl = document.getElementById('from-account-details');
+    const transactionDateEl = document.getElementById('transaction-date');
+    const paidToMerchantNameEl = document.getElementById('paid-to-merchant-name');
+    const accountInDateEl = document.getElementById('account-in-date');
+    const descriptionTextarea = document.getElementById('description');
+    const categoryBadgeMain = document.getElementById('category-badge-main');
+    const excludeCashflowToggle = document.getElementById('exclude-cashflow-toggle');
+
+    // Category Modal elements
+    const categoryModal = document.getElementById('categoryModal');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+    const saveCategoryBtn = document.getElementById('saveCategoryBtn');
+    const modalMerchantNamePreviewEl = document.getElementById('modal-merchant-name-preview');
+    const modalTransactionTimePreviewEl = document.getElementById('modal-transaction-time-preview');
+    const modalAmountPreviewEl = document.getElementById('modal-amount-preview');
+    const modalCategoryIconPreviewEl = document.getElementById('modal-category-icon-preview');
+    const modalCategoryNamePreviewEl = document.getElementById('modal-category-name-preview');
+    const modalAccountIconPreviewEl = document.getElementById('modal-account-icon-preview');
+    const mostUsedCategoryGridEl = document.getElementById('most-used-category-grid');
+    const fullCategoryListEl = document.getElementById('full-category-list');
+    const categorySearchInputEl = document.getElementById('category-search-input');
+    const mostUsedCategoriesContainerEl = document.getElementById('most-used-categories-container');
+
+    const moreDetailsModalEl = document.getElementById('moreDetailsModal');
+    const closeMoreDetailsModalBtn = document.getElementById('closeMoreDetailsModalBtn');
+    const moreDetailsActionItem = document.getElementById('more-details-action');
+
+    // DOM elements for detail values
+    const detailsSummaryEl = document.getElementById('details-summary');
+    const detailsTypeEl = document.getElementById('details-type');
+    const detailsAmountEl = document.getElementById('details-amount');
+    const detailsDebitedFromEl = document.getElementById('details-debited-from');
+    const detailsTransferredToEl = document.getElementById('details-transferred-to');
+    const detailsNarrationEl = document.getElementById('details-narration');
+    const detailsTransactionIdEl = document.getElementById('details-transaction-id');
+    const detailsTimestampEl = document.getElementById('details-timestamp');
+    const detailsModeEl = document.getElementById('details-mode');
+    const detailsReferenceUtrEl = document.getElementById('details-reference-utr');
+
+    const fromInfoItemEl = document.querySelector('.info-grid .info-item:first-child');
+    const accountSelectModalEl = document.getElementById('accountSelectModal');
+    const closeAccountSelectModalBtn = document.getElementById('closeAccountSelectModalBtn');
+    const saveAccountSelectionBtn = document.getElementById('saveAccountSelectionBtn');
+    const accountListContainerEl = document.getElementById('account-list-container');
+
+    // Preview elements in Account Select Modal
+    const accSelMerchantIconPreviewEl = document.getElementById('account-select-merchant-icon-preview');
+    const accSelMerchantNamePreviewEl = document.getElementById('account-select-merchant-name-preview');
+    const accSelTransactionTimePreviewEl = document.getElementById('account-select-transaction-time-preview');
+    const accSelAmountPreviewEl = document.getElementById('account-select-amount-preview');
+    const accSelCategoryIconPreviewEl = document.getElementById('account-select-category-icon-preview');
+    const accSelCategoryNamePreviewEl = document.getElementById('account-select-category-name-preview');
+    const accSelCurrentAccountIconPreviewEl = document.getElementById('account-select-current-account-icon-preview');
+
+
+    // --- STATE ---
+    let currentTransaction = null;
+    let access_token = '';
+    let allUserAccounts = [];
+    let tempSelectedAccountId = null;
+    const API_BASE_URL = 'https://finance.arlp.live/api/v1';
+
+    let allCategoriesStructured = []; // Stores fetched categories: Array of {id, name, description, icon (for parent if any), display_order, subcategories: [{id, name, icon_name, display_order}]}
+    let tempSelectedSubcategoryId = null; // Stores ID of SUBCATEGORY selected in modal
+    let dataChangedInModal = {
+        subcategory: false,
+    };
+
+
+    // --- MAIN ---
+    async function initialize() {
+        setLoading(true);
+        try {
+            const urlParams = new URLSearchParams(window.location.search);
+            access_token = urlParams.get('token');
+
+            if (!access_token && !tg.initDataUnsafe?.user) {
+                console.warn("Access token not found. Running in local mode.");
+                currentTransaction = getMockTransactionWithSubcategory();
+                allCategoriesStructured = getMockStructuredCategories();
+            } else if (!access_token && tg.initDataUnsafe?.user) {
+                throw new Error("Access token not found.");
+            } else {
+                [currentTransaction, allCategoriesStructured, allUserAccounts] = await Promise.all([
+                    fetchTransactionAPI(),
+                    fetchAllCategoriesDetailsAPI(),
+                    fetchAllUserAccountsAPI()
+                ]);
             }
 
-            // --- DOM Elements ---
-            const loadingOverlay = document.getElementById('loading-overlay');
-            
-            const transactionAmountEl = document.getElementById('transaction-amount');
-            const mainCategoryIconEl = document.getElementById('main-category-icon');
-            const mainCategoryNameEl = document.getElementById('main-category-name');
-            const fromAccountIconInitialEl = document.getElementById('from-account-icon-initial');
-            const fromAccountDetailsEl = document.getElementById('from-account-details');
-            const transactionDateEl = document.getElementById('transaction-date');
-            const paidToMerchantNameEl = document.getElementById('paid-to-merchant-name');
-            const accountInDateEl = document.getElementById('account-in-date');
-            const descriptionTextarea = document.getElementById('description');
-            const categoryBadgeMain = document.getElementById('category-badge-main');
-            const excludeCashflowToggle = document.getElementById('exclude-cashflow-toggle');
-
-            // Category Modal elements
-            const categoryModal = document.getElementById('categoryModal');
-            const closeModalBtn = document.getElementById('closeModalBtn');
-            const saveCategoryBtn = document.getElementById('saveCategoryBtn'); 
-            const modalMerchantNamePreviewEl = document.getElementById('modal-merchant-name-preview');
-            const modalTransactionTimePreviewEl = document.getElementById('modal-transaction-time-preview');
-            const modalAmountPreviewEl = document.getElementById('modal-amount-preview');
-            const modalCategoryIconPreviewEl = document.getElementById('modal-category-icon-preview'); 
-            const modalCategoryNamePreviewEl = document.getElementById('modal-category-name-preview');
-            const modalAccountIconPreviewEl = document.getElementById('modal-account-icon-preview');
-            const mostUsedCategoryGridEl = document.getElementById('most-used-category-grid');
-            const fullCategoryListEl = document.getElementById('full-category-list');
-            const categorySearchInputEl = document.getElementById('category-search-input');
-            const mostUsedCategoriesContainerEl = document.getElementById('most-used-categories-container');
-
-            const moreDetailsModalEl = document.getElementById('moreDetailsModal');
-            const closeMoreDetailsModalBtn = document.getElementById('closeMoreDetailsModalBtn');
-            const moreDetailsActionItem = document.getElementById('more-details-action');
-
-            // DOM elements for detail values
-            const detailsSummaryEl = document.getElementById('details-summary');
-            const detailsTypeEl = document.getElementById('details-type'); 
-            const detailsAmountEl = document.getElementById('details-amount');
-            const detailsDebitedFromEl = document.getElementById('details-debited-from');
-            const detailsTransferredToEl = document.getElementById('details-transferred-to');
-            const detailsNarrationEl = document.getElementById('details-narration');
-            const detailsTransactionIdEl = document.getElementById('details-transaction-id');
-            const detailsTimestampEl = document.getElementById('details-timestamp');
-            const detailsModeEl = document.getElementById('details-mode');
-            const detailsReferenceUtrEl = document.getElementById('details-reference-utr');
-
-
-            // --- STATE ---
-            let currentTransaction = null; 
-            let access_token = ''; 
-            const API_BASE_URL = 'https://finance.arlp.live/api/v1';
-            
-            let allCategoriesStructured = []; // Stores fetched categories: Array of {id, name, description, icon (for parent if any), display_order, subcategories: [{id, name, icon_name, display_order}]}
-            let tempSelectedSubcategoryId = null; // Stores ID of SUBCATEGORY selected in modal
-            let dataChangedInModal = { 
-                subcategory: false,
-            };
-
-
-            // --- MAIN ---
-            async function initialize() {
-                setLoading(true);
-                try {
-                    const urlParams = new URLSearchParams(window.location.search);
-                    access_token = urlParams.get('token');
-                    
-                    if (!access_token && !tg.initDataUnsafe?.user) { 
-                        console.warn("Access token not found. Running in local mode.");
-                        currentTransaction = getMockTransactionWithSubcategory();
-                        allCategoriesStructured = getMockStructuredCategories(); 
-                    } else if (!access_token && tg.initDataUnsafe?.user) {
-                         throw new Error("Access token not found.");
-                    } else {
-                        [currentTransaction, allCategoriesStructured] = await Promise.all([
-                            fetchTransactionAPI(),
-                            fetchAllCategoriesDetailsAPI() 
-                        ]);
-                    }
-                    
-                    // Initialize tempSelectedSubcategoryId from current transaction
-                    if (currentTransaction.subcategory && currentTransaction.subcategory.id) {
-                        tempSelectedSubcategoryId = currentTransaction.subcategory.id;
-                    } else {
-                         // Find the "Uncategorized" subcategory under "General" from allCategoriesStructured
-                        const generalCat = allCategoriesStructured.find(c => c.name.toLowerCase() === 'general');
-                        if (generalCat && generalCat.subcategories) {
-                            const uncategorizedSub = generalCat.subcategories.find(sc => sc.name.toLowerCase() === 'uncategorized');
-                            if (uncategorizedSub) {
-                                tempSelectedSubcategoryId = uncategorizedSub.id;
-                                if (!currentTransaction.subcategory) { 
-                                    currentTransaction.subcategory = { ...uncategorizedSub, parent_category_name: generalCat.name };
-                                }
-                            }
+            // Initialize tempSelectedSubcategoryId from current transaction
+            if (currentTransaction.subcategory && currentTransaction.subcategory.id) {
+                tempSelectedSubcategoryId = currentTransaction.subcategory.id;
+            } else {
+                // Find the "Uncategorized" subcategory under "General" from allCategoriesStructured
+                const generalCat = allCategoriesStructured.find(c => c.name.toLowerCase() === 'general');
+                if (generalCat && generalCat.subcategories) {
+                    const uncategorizedSub = generalCat.subcategories.find(sc => sc.name.toLowerCase() === 'uncategorized');
+                    if (uncategorizedSub) {
+                        tempSelectedSubcategoryId = uncategorizedSub.id;
+                        if (!currentTransaction.subcategory) {
+                            currentTransaction.subcategory = {
+                                ...uncategorizedSub,
+                                parent_category_name: generalCat.name
+                            };
                         }
                     }
-
-                    populateUI(currentTransaction);
-                    configureMainButton(); 
-                    setupEventListeners();
-                } catch (error) {
-                    console.error("Initialization error:", error);
-                    showError(error.message);
-                } finally {
-                    setLoading(false);
-                    feather.replace({ width: '1em', height: '1em', 'stroke-width': 1.8 }); 
                 }
             }
-            
-            function getMockTransactionWithSubcategory() {
-                return {
-                    unique_hash: 'mock_hash_123',
-                    merchant_vpa: 'MOCK MERCHANT A',
-                    amount: 140.00,
-                    description: 'Mock tea at office',
-                    subcategory: { id: 1101, name: 'Tea & Coffee', icon_name: 'emoji:☕', parent_category_id: 101, parent_category_name: 'Food & Drinks' }, 
-                    account: { id:1, name: 'MockBank', account_last4: '0214', type_initial: 'M', account_type: 'SAVINGS_ACCOUNT' }, 
-                    transaction_datetime_from_sms: new Date().toISOString(), 
-                    exclude_from_cashflow: false,
-                    currency: 'INR', status: 'processed', raw_sms_content: 'mock sms', received_at: new Date().toISOString(),
-                    subcategory_id: 1101,
-                    account_id: 1
-                };
-            }
 
-            function getMockStructuredCategories() {
-                return [
-                    { id: 100, name: 'General', description: 'Default items', display_order: 999, subcategories: [
-                        {id: 1000, name: 'Uncategorized', icon_name: 'fthr:tag', display_order: 0, parent_category_id: 100},
-                    ]},
-                    { id: 101, name: 'Food & Drinks', description: 'Eating out, Swiggy, Zomato etc.', display_order: 0, subcategories: [
-                        {id: 1101, name: 'Eating out', icon_name: 'emoji:🍽️', display_order: 0, parent_category_id: 101},
-                        {id: 1102, name: 'Tea & Coffee', icon_name: 'emoji:☕', display_order: 1, parent_category_id: 101},
-                    ]},
-                    { id: 102, name: 'Groceries', description: 'Supermarket, daily needs', display_order: 1, subcategories: [
-                        {id: 1201, name: 'Staples', icon_name: 'fthr:archive', display_order: 0, parent_category_id: 102},
-                    ]},
-                ];
-            }
+            populateUI(currentTransaction);
+            configureMainButton();
+            setupEventListeners();
+        } catch (error) {
+            console.error("Initialization error:", error);
+            showError(error.message);
+        } finally {
+            setLoading(false);
+            feather.replace({
+                width: '1em',
+                height: '1em',
+                'stroke-width': 1.8
+            });
+        }
+    }
 
-            // --- API ---
-            async function fetchTransactionAPI() {
-                const response = await fetch(`${API_BASE_URL}/transactions/get/by-token`, {
-                    headers: { 'Authorization': `Bearer ${access_token}` },
-                });
-                if (!response.ok) {
-                    const errorData = await response.json().catch(() => ({ detail: response.statusText }));
-                    throw new Error(`API Error fetching transaction: ${errorData.detail || response.statusText}`);
-                }
-                const txnData = await response.json();
+    function getMockTransactionWithSubcategory() {
+        return {
+            unique_hash: 'mock_hash_123',
+            merchant_vpa: 'MOCK MERCHANT A',
+            amount: 140.00,
+            description: 'Mock tea at office',
+            subcategory: {
+                id: 1101,
+                name: 'Tea & Coffee',
+                icon_name: 'emoji:☕',
+                parent_category_id: 101,
+                parent_category_name: 'Food & Drinks'
+            },
+            account: {
+                id: 1,
+                name: 'MockBank',
+                account_last4: '0214',
+                type_initial: 'M',
+                account_type: 'SAVINGS_ACCOUNT'
+            },
+            transaction_datetime_from_sms: new Date().toISOString(),
+            exclude_from_cashflow: false,
+            currency: 'INR',
+            status: 'processed',
+            raw_sms_content: 'mock sms',
+            received_at: new Date().toISOString(),
+            subcategory_id: 1101,
+            account_id: 1
+        };
+    }
 
-                if (!txnData.subcategory) { 
-                    const generalCat = allCategoriesStructured.find(c => c.name.toLowerCase() === 'general') || {name: 'General'};
-                    const uncategorizedSub = generalCat.subcategories ? generalCat.subcategories.find(sc => sc.name.toLowerCase() === 'uncategorized') : null;
-                    txnData.subcategory = uncategorizedSub 
-                        ? { ...uncategorizedSub, parent_category_name: generalCat.name, parent_category_id: generalCat.id }
-                        : { id: null, name: 'Uncategorized', icon_name: 'fthr:circle', parent_category_name: 'General', parent_category_id: null};
-                    if (uncategorizedSub) txnData.subcategory_id = uncategorizedSub.id;
-                }
-                return txnData;
-            }
-
-            async function fetchAllCategoriesDetailsAPI() {
-                const response = await fetch(`${API_BASE_URL}/categories/all_details`, {
-                });
-                if (!response.ok) {
-                    const errorData = await response.json().catch(() => ({ detail: response.statusText }));
-                    throw new Error(`API Error fetching categories: ${errorData.detail || response.statusText}`);
-                }
-                return await response.json();
-            }
-
-            async function updateTransactionAPI(patchData) { 
-                const response = await fetch(`${API_BASE_URL}/transactions/by-token`, {
-                    method: 'PATCH',
-                    headers: { 
-                        'Content-Type': 'application/json', 
-                        'Authorization': `Bearer ${access_token}` 
+    function getMockStructuredCategories() {
+        return [{
+                id: 100,
+                name: 'General',
+                description: 'Default items',
+                display_order: 999,
+                subcategories: [{
+                    id: 1000,
+                    name: 'Uncategorized',
+                    icon_name: 'fthr:tag',
+                    display_order: 0,
+                    parent_category_id: 100
+                }, ]
+            },
+            {
+                id: 101,
+                name: 'Food & Drinks',
+                description: 'Eating out, Swiggy, Zomato etc.',
+                display_order: 0,
+                subcategories: [{
+                        id: 1101,
+                        name: 'Eating out',
+                        icon_name: 'emoji:🍽️',
+                        display_order: 0,
+                        parent_category_id: 101
                     },
-                    body: JSON.stringify(patchData),
-                });
-                if (!response.ok) {
-                    const errorData = await response.json().catch(() => ({ detail: response.statusText }));
-                    throw new Error(`API Error: ${errorData.detail || response.statusText}`);
-                }
-                return await response.json();
+                    {
+                        id: 1102,
+                        name: 'Tea & Coffee',
+                        icon_name: 'emoji:☕',
+                        display_order: 1,
+                        parent_category_id: 101
+                    },
+                ]
+            },
+            {
+                id: 102,
+                name: 'Groceries',
+                description: 'Supermarket, daily needs',
+                display_order: 1,
+                subcategories: [{
+                    id: 1201,
+                    name: 'Staples',
+                    icon_name: 'fthr:archive',
+                    display_order: 0,
+                    parent_category_id: 102
+                }, ]
+            },
+        ];
+    }
+
+    // --- API ---
+    async function fetchTransactionAPI() {
+        const response = await fetch(`${API_BASE_URL}/transactions/get/by-token`, {
+            headers: {
+                'Authorization': `Bearer ${access_token}`
+            },
+        });
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({
+                detail: response.statusText
+            }));
+            throw new Error(`API Error fetching transaction: ${errorData.detail || response.statusText}`);
+        }
+        const txnData = await response.json();
+
+        if (!txnData.subcategory) {
+            const generalCat = allCategoriesStructured.find(c => c.name.toLowerCase() === 'general') || {
+                name: 'General'
+            };
+            const uncategorizedSub = generalCat.subcategories ? generalCat.subcategories.find(sc => sc.name.toLowerCase() === 'uncategorized') : null;
+            txnData.subcategory = uncategorizedSub ? {
+                ...uncategorizedSub,
+                parent_category_name: generalCat.name,
+                parent_category_id: generalCat.id
+            } : {
+                id: null,
+                name: 'Uncategorized',
+                icon_name: 'fthr:circle',
+                parent_category_name: 'General',
+                parent_category_id: null
+            };
+            if (uncategorizedSub) txnData.subcategory_id = uncategorizedSub.id;
+        }
+        return txnData;
+    }
+
+    async function fetchAllCategoriesDetailsAPI() {
+        const response = await fetch(`${API_BASE_URL}/categories/all_details`, {});
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({
+                detail: response.statusText
+            }));
+            throw new Error(`API Error fetching categories: ${errorData.detail || response.statusText}`);
+        }
+        return await response.json();
+    }
+
+    async function updateTransactionAPI(patchData) {
+        const response = await fetch(`${API_BASE_URL}/transactions/by-token`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${access_token}`
+            },
+            body: JSON.stringify(patchData),
+        });
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({
+                detail: response.statusText
+            }));
+            throw new Error(`API Error: ${errorData.detail || response.statusText}`);
+        }
+        return await response.json();
+    }
+
+    // --- API for Accounts ---
+    async function fetchAllUserAccountsAPI() {
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/accounts/for-mini-app`, {
+                headers: {
+                    'Authorization': `Bearer ${access_token}`
+                },
+            });
+            if (!response.ok) {
+                const errorData = await response.json().catch(() => ({
+                    detail: response.statusText
+                }));
+                throw new Error(`API Error fetching accounts: ${errorData.detail || response.statusText}`);
             }
+            return await response.json();
+        } catch (error) {
+            console.error("Failed to fetch accounts, using mock:", error);
+            showError("Could not load accounts. Using sample data.");
+            return getMockUserAccounts();
+        }
+    }
 
-            // --- UI HELPERS ---
-            function setLoading(isLoading) {
-                loadingOverlay.style.display = isLoading ? 'flex' : 'none';
+    function getMockUserAccounts() {
+        return [{
+                id: 1,
+                name: 'HDFC Salary',
+                account_type: 'SAVINGS_ACCOUNT',
+                bank_name: 'HDFC Bank',
+                account_last4: '0000',
+                type_initial: 'H'
+            },
+            {
+                id: 2,
+                name: 'ICICI Amazon Pay',
+                account_type: 'CREDIT_CARD',
+                bank_name: 'ICICI Bank',
+                account_last4: '0000',
+                type_initial: 'I'
+            },
+            {
+                id: 3,
+                name: 'SBI Cashback Card',
+                account_type: 'CREDIT_CARD',
+                bank_name: 'SBI',
+                account_last4: '0400',
+                type_initial: 'S'
+            },
+            {
+                id: 4,
+                name: 'IDFC Select',
+                account_type: 'CREDIT_CARD',
+                bank_name: 'IDFC FIRST Bank',
+                account_last4: '0000',
+                type_initial: 'I'
+            },
+            {
+                id: 5,
+                name: 'Cash Wallet',
+                account_type: 'CASH',
+                bank_name: 'Cash',
+                account_last4: '',
+                type_initial: 'C'
+            },
+            {
+                id: 6,
+                name: 'Federal Bank Savings',
+                account_type: 'SAVINGS_ACCOUNT',
+                bank_name: 'Federal Bank',
+                account_last4: '0000',
+                type_initial: 'F'
+            },
+        ];
+    }
+
+    // --- UI HELPERS ---
+    function setLoading(isLoading) {
+        loadingOverlay.style.display = isLoading ? 'flex' : 'none';
+    }
+
+    function showError(message) {
+        if (tg.initDataUnsafe?.user) {
+            tg.showAlert(message);
+        } else {
+            alert(message); // Fallback for local testing
+        }
+        if (tg.MainButton) tg.MainButton.hide();
+    }
+
+    function populateUI(transaction) {
+        if (!transaction) return;
+        transactionAmountEl.textContent = `-₹${Math.round(transaction.amount)}`;
+
+        if (transaction.subcategory && transaction.subcategory.name) {
+            const displayName = transaction.subcategory.parent_category_name && transaction.subcategory.parent_category_name.toLowerCase() !== 'general' ?
+                `${transaction.subcategory.parent_category_name} (${transaction.subcategory.name})` :
+                transaction.subcategory.name;
+            mainCategoryNameEl.textContent = displayName.toUpperCase();
+            var parsedIcon = parseIconName(transaction.subcategory.icon_name);
+            if (parsedIcon.type === 'feather') {
+                mainCategoryIconEl.outerHTML = `<i data-feather="${parsedIcon.name}" id="modal-category-icon-preview"></i>`;
+            } else if (parsedIcon.type === 'emoji') {
+                mainCategoryIconEl.outerHTML = `<span id="modal-category-icon-preview" class="emoji-icon">${parsedIcon.name}</span>`;
             }
+        } else {
+            mainCategoryNameEl.textContent = 'UNCATEGORIZED';
+            mainCategoryIconEl.setAttribute('data-feather', 'circle');
+        }
 
-            function showError(message) {
-                if (tg.initDataUnsafe?.user) {
-                    tg.showAlert(message);
-                } else {
-                    alert(message); // Fallback for local testing
+        if (transaction.account) {
+            fromAccountDetailsEl.textContent = `***${transaction.account.account_last4}`;
+            const accInitial = transaction.account.type_initial ||
+                (transaction.account.bank_name ? transaction.account.bank_name.split(" ")[0].toUpperCase() :
+                    (transaction.account.name ? transaction.account.name.split(" ")[0].toUpperCase() : 'A'));
+            fromAccountIconInitialEl.textContent = accInitial;
+        } else {
+            fromAccountDetailsEl.textContent = '***0000';
+            fromAccountIconInitialEl.textContent = 'A';
+        }
+
+        paidToMerchantNameEl.textContent = transaction.merchant_vpa || 'Unknown Merchant';
+        descriptionTextarea.value = transaction.description || '';
+        excludeCashflowToggle.checked = transaction.exclude_from_cashflow || false;
+
+        if (transaction.transaction_datetime_from_sms) {
+            const date = new Date(transaction.transaction_datetime_from_sms);
+            transactionDateEl.textContent = date.toLocaleDateString('en-GB', {
+                weekday: 'short',
+                month: 'short',
+                day: 'numeric',
+                year: '2-digit'
+            }).replace(/,/g, '');
+
+            accountInDateEl.textContent = date.toLocaleDateString('en-US', {
+                month: 'short',
+                year: 'numeric'
+            });
+        } else {
+            transactionDateEl.textContent = 'No Date';
+            accountInDateEl.textContent = 'N/A';
+        }
+
+        feather.replace({
+            width: '1em',
+            height: '1em',
+            'stroke-width': 1.8
+        });
+    }
+
+    function populateCategoryModalPreview(transaction) {
+        if (!transaction) return;
+        modalMerchantNamePreviewEl.textContent = transaction.merchant_vpa || 'Unknown';
+        modalAmountPreviewEl.textContent = `-₹${Math.round(transaction.amount)}`;
+
+        if (transaction.account) {
+            modalAccountIconPreviewEl.textContent = transaction.account.type_initial || transaction.account.name?.split(" ")[0].toUpperCase() || 'A';
+        } else {
+            modalAccountIconPreviewEl.textContent = 'A';
+        }
+
+        if (transaction.transaction_datetime_from_sms) {
+            const date = new Date(transaction.transaction_datetime_from_sms);
+            modalTransactionTimePreviewEl.textContent = date.toLocaleTimeString('en-US', {
+                hour: 'numeric',
+                minute: '2-digit',
+                hour12: true
+            });
+        } else {
+            modalTransactionTimePreviewEl.textContent = "Time N/A";
+        }
+
+        // Use tempSelectedSubcategoryId to reflect live changes in modal preview
+        let subcatToPreview = null;
+        if (tempSelectedSubcategoryId) {
+            for (const parentCat of allCategoriesStructured) {
+                subcatToPreview = parentCat.subcategories.find(sc => sc.id === tempSelectedSubcategoryId);
+                if (subcatToPreview) {
+                    subcatToPreview.parent_category_name = parentCat.name;
+                    break;
                 }
-                if (tg.MainButton) tg.MainButton.hide();
             }
+        }
+        // Fallback to current transaction's subcategory if nothing temporarily selected or found
+        if (!subcatToPreview) subcatToPreview = transaction.subcategory;
 
-            function populateUI(transaction) {
-                if (!transaction) return;
-                transactionAmountEl.textContent = `-₹${Math.round(transaction.amount)}`;
-                
-                if (transaction.subcategory && transaction.subcategory.name) {
-                    const displayName = transaction.subcategory.parent_category_name && transaction.subcategory.parent_category_name.toLowerCase() !== 'general'
-                        ? `${transaction.subcategory.parent_category_name} (${transaction.subcategory.name})`
-                        : transaction.subcategory.name;
-                    mainCategoryNameEl.textContent = displayName.toUpperCase();
-                    var parsedIcon = parseIconName(transaction.subcategory.icon_name);
-                    if (parsedIcon.type === 'feather') {
-                        mainCategoryIconEl.outerHTML = `<i data-feather="${parsedIcon.name}" id="modal-category-icon-preview"></i>`;
-                    }else if (parsedIcon.type === 'emoji') {
-                        mainCategoryIconEl.outerHTML = `<span id="modal-category-icon-preview" class="emoji-icon">${parsedIcon.name}</span>`;
-                    } 
-                } else {
-                    mainCategoryNameEl.textContent = 'UNCATEGORIZED';
-                    mainCategoryIconEl.setAttribute('data-feather', 'circle');
-                }
 
-                if (transaction.account) {
-                    fromAccountDetailsEl.textContent = `***${transaction.account.account_last4}`;
-                    const accInitial = transaction.account.type_initial || 
-                                       (transaction.account.bank_name ? transaction.account.bank_name.split(" ")[0].toUpperCase() : 
-                                       (transaction.account.name ? transaction.account.name.split(" ")[0].toUpperCase() : 'A'));
-                    fromAccountIconInitialEl.textContent = accInitial;
-                } else { 
-                    fromAccountDetailsEl.textContent = '***0000';
-                    fromAccountIconInitialEl.textContent = 'A';
-                }
-                
-                paidToMerchantNameEl.textContent = transaction.merchant_vpa || 'Unknown Merchant';
-                descriptionTextarea.value = transaction.description || '';
-                excludeCashflowToggle.checked = transaction.exclude_from_cashflow || false;
-
-                if (transaction.transaction_datetime_from_sms) {
-                    const date = new Date(transaction.transaction_datetime_from_sms);
-                    transactionDateEl.textContent = date.toLocaleDateString('en-GB', { 
-                        weekday: 'short', month: 'short', day: 'numeric', year: '2-digit'
-                    }).replace(/,/g, '');
-
-                    accountInDateEl.textContent = date.toLocaleDateString('en-US', {
-                        month: 'short', year: 'numeric'
-                    });
-                } else {
-                    transactionDateEl.textContent = 'No Date';
-                    accountInDateEl.textContent = 'N/A';
-                }
-                
-                feather.replace({ width: '1em', height: '1em', 'stroke-width': 1.8 }); 
+        if (subcatToPreview && subcatToPreview.name) {
+            const displayName = subcatToPreview.parent_category_name && subcatToPreview.parent_category_name.toLowerCase() !== 'general' ?
+                `${subcatToPreview.parent_category_name} (${subcatToPreview.name})` :
+                subcatToPreview.name;
+            modalCategoryNamePreviewEl.textContent = displayName.toUpperCase();
+            const parsedIcon = parseIconName(subcatToPreview.icon_name);
+            if (parsedIcon.type === 'feather') {
+                modalCategoryIconPreviewEl.outerHTML = `<i data-feather="${parsedIcon.name}" id="modal-category-icon-preview"></i>`;
+            } else if (parsedIcon.type === 'emoji') {
+                modalCategoryIconPreviewEl.outerHTML = `<span id="modal-category-icon-preview" class="emoji-icon">${parsedIcon.name}</span>`;
             }
-            
-            function populateCategoryModalPreview(transaction) {
-                if (!transaction) return;
-                modalMerchantNamePreviewEl.textContent = transaction.merchant_vpa || 'Unknown';
-                modalAmountPreviewEl.textContent = `-₹${Math.round(transaction.amount)}`;
-                
-                if (transaction.account) {
-                    modalAccountIconPreviewEl.textContent = transaction.account.type_initial || transaction.account.name?.split(" ")[0].toUpperCase() || 'A';
-                } else {
-                     modalAccountIconPreviewEl.textContent = 'A';
-                }
+        } else {
+            modalCategoryNamePreviewEl.textContent = 'UNCATEGORIZED';
+            modalCategoryIconPreviewEl.outerHTML = `<i data-feather="circle" id="modal-category-icon-preview"></i>`;
+        }
+        feather.replace({
+            width: '1em',
+            height: '1em',
+            'stroke-width': 1.8
+        });
+    }
 
-                if (transaction.transaction_datetime_from_sms) {
-                    const date = new Date(transaction.transaction_datetime_from_sms);
-                    modalTransactionTimePreviewEl.textContent = date.toLocaleTimeString('en-US', {
-                        hour: 'numeric', minute: '2-digit', hour12: true 
-                    });
-                } else {
-                    modalTransactionTimePreviewEl.textContent = "Time N/A";
-                }
+    function populateMoreDetailsModal(transaction) {
+        if (!transaction) return;
 
-                // Use tempSelectedSubcategoryId to reflect live changes in modal preview
-                let subcatToPreview = null;
-                if (tempSelectedSubcategoryId) {
-                    for (const parentCat of allCategoriesStructured) {
-                        subcatToPreview = parentCat.subcategories.find(sc => sc.id === tempSelectedSubcategoryId);
-                        if (subcatToPreview) {
-                            subcatToPreview.parent_category_name = parentCat.name;
-                            break;
-                        }
+        const transactionDate = new Date(transaction.transaction_datetime_from_sms);
+        const formattedDate = transactionDate.toLocaleDateString('en-GB', {
+            day: 'numeric',
+            month: 'short',
+            year: 'numeric'
+        });
+
+        detailsSummaryEl.textContent = `You transferred ₹${Math.round(transaction.amount)} to ${transaction.merchant_vpa || 'Unknown'} on ${formattedDate}`;
+        // detailsTypeEl is static "Outgoing" for now
+
+        detailsAmountEl.textContent = transaction.amount.toFixed(2);
+
+        if (transaction.account) {
+            detailsDebitedFromEl.textContent = `${transaction.account.name || 'Unknown Account'} (***${transaction.account.account_last4 || '0000'})`;
+        } else {
+            detailsDebitedFromEl.textContent = 'N/A';
+        }
+
+        detailsTransferredToEl.textContent = transaction.merchant_vpa || 'N/A';
+
+        // --- Fields needing backend support ---
+        // For now, use placeholders or existing fields.
+        // These should ideally come from new fields on the Transaction model/schema:
+        // transaction.narration, transaction.bank_reference_id, transaction.transaction_mode
+        detailsNarrationEl.textContent = transaction.description || transaction.raw_sms_content.substring(0, 100) || 'N/A'; // Placeholder
+        detailsTransactionIdEl.textContent = transaction.bank_reference_id || transaction.unique_hash || 'N/A'; // Placeholder, use transaction.id if preferred
+        detailsModeEl.textContent = transaction.transaction_mode || (transaction.account ? capitalizeFirstLetter(transaction.account.account_type) : 'Unknown');
+
+        detailsTimestampEl.textContent = transactionDate.toLocaleString('en-GB', {
+            day: 'numeric',
+            month: 'short',
+            year: 'numeric',
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: true
+        }).replace(/,/g, '');
+
+        // detailsReferenceUtrEl.textContent = transaction.reference_utr || 'N/A'; // Placeholder
+
+        feather.replace({
+            width: '1em',
+            height: '1em',
+            'stroke-width': 1.8
+        }); // Re-run for copy icons
+    }
+
+    function capitalizeFirstLetter(str) {
+        if (!str) {
+            return str;
+        }
+
+        return `${str.split("_")[0].substring(0, 1).toUpperCase()+str.split("_")[0].substring(1)} ${str.split("_")[1].substring(0, 1).toUpperCase() + str.split("_")[1].substring(1)}`;
+    }
+
+    // --- UI Population for Account Select Modal ---
+    function populateAccountSelectModalPreview(transaction, selectedAccountId) {
+        if (!transaction) return;
+
+        // Merchant, Time, Amount, Category - from currentTransaction
+        accSelMerchantNamePreviewEl.textContent = transaction.merchant_vpa || 'Unknown';
+        if (transaction.transaction_datetime_from_sms) {
+            const date = new Date(transaction.transaction_datetime_from_sms);
+            accSelTransactionTimePreviewEl.textContent = date.toLocaleTimeString('en-US', {
+                hour: 'numeric',
+                minute: '2-digit',
+                hour12: true
+            });
+        } else {
+            accSelTransactionTimePreviewEl.textContent = "Time N/A";
+        }
+        accSelAmountPreviewEl.textContent = `-₹${Math.round(transaction.amount)}`;
+
+        if (transaction.subcategory) {
+            accSelCategoryNamePreviewEl.textContent = (transaction.subcategory.parent_category_name && transaction.subcategory.parent_category_name.toLowerCase() !== 'general' ? `${transaction.subcategory.parent_category_name} (${transaction.subcategory.name})` : transaction.subcategory.name).toUpperCase();
+            const catIcon = parseIconName(transaction.subcategory.icon_name);
+            accSelCategoryIconPreviewEl.outerHTML = createIconElementHTML(catIcon, 'account-select-category-icon-preview');
+        } else {
+            accSelCategoryNamePreviewEl.textContent = 'UNCATEGORIZED';
+            accSelCategoryIconPreviewEl.outerHTML = createIconElementHTML(parseIconName('circle'), 'account-select-category-icon-preview');
+        }
+
+        // Account Icon - reflects the *temporarily selected* account in the modal
+        let accountForPreview = allUserAccounts.find(acc => acc.id === selectedAccountId);
+        if (!accountForPreview && transaction.account) { // Fallback to current transaction's account if no temp selection
+            accountForPreview = transaction.account;
+        }
+
+        if (accountForPreview) {
+            const initial = accountForPreview.type_initial || accountForPreview.bank_name?.charAt(0).toUpperCase() || accountForPreview.name?.charAt(0).toUpperCase() || 'A';
+            accSelCurrentAccountIconPreviewEl.textContent = initial;
+            accSelCurrentAccountIconPreviewEl.className = `account-icon preview-account-icon ${getBankIconClass(accountForPreview.bank_name, accountForPreview.account_type)}`;
+
+        } else {
+            accSelCurrentAccountIconPreviewEl.textContent = '?';
+            accSelCurrentAccountIconPreviewEl.className = 'account-icon preview-account-icon bank-icon-default';
+        }
+        feather.replace({
+            width: '1em',
+            height: '1em',
+            'stroke-width': 1.8
+        });
+    }
+
+    function getBankIconClass(bankName, accountType) {
+        if (accountType === 'CASH') return 'bank-icon-cash';
+        const name = bankName?.toLowerCase() || '';
+        if (name.includes('hdfc') && name.includes('dinner club')) return 'brand/diners-club.svg';
+        if (name.includes('hdfc')) return 'brand/hdfc.svg';
+        if (name.includes('icici') && name.includes('amazon')) return 'brand/amazon-icici-cc.svg';
+        if (name.includes('icici')) return 'brand/icici.svg';
+        if (name.includes('sbi') && name.includes('cashback')) return 'brand/sbi-cashback.svg';
+        if (name.includes('sbi')) return 'brand/sbi.svg';
+        if (name.includes('idfc')) return 'brand/idfc.svg';
+        if (name.includes('federal') && name.includes('jupiter')) return 'brand/jupiter-fed.svg';
+        if (name.includes('federal') && name.includes('fi')) return 'brand/fi-fed.svg';
+        if (name.includes('federal')) return 'brand/federal-bank-savings.svg';
+        if (name.includes('amex') || name.includes('american express')) return 'brand/american-express.svg';
+        return 'bank-icon-default';
+    }
+
+    function createIconElementHTML(parsedIcon, elementId) { // Helper to generate outerHTML string
+        if (parsedIcon.type === 'feather') {
+            return `<i data-feather="${parsedIcon.name || 'circle'}" id="${elementId}"></i>`;
+        } else if (parsedIcon.type === 'emoji') {
+            return `<span id="${elementId}" class="emoji-icon">${parsedIcon.name}</span>`;
+        } else if (parsedIcon.type === 'image') {
+            return `<img src="/static/images/icons/${parsedIcon.name}" alt="${parsedIcon.name.split('/').pop().split('.')[0]}" id="${elementId}" class="custom-icon">`;
+        }
+        return `<i data-feather="circle" id="${elementId}"></i>`; // Fallback
+    }
+
+
+    function populateAccountsInModalList(accounts, currentAccountId) {
+        accountListContainerEl.innerHTML = '';
+
+        const groupedAccounts = accounts.reduce((acc, account) => {
+            const type = account.account_type || 'UNKNOWN';
+            if (!acc[type]) {
+                acc[type] = [];
+            }
+            acc[type].push(account);
+            return acc;
+        }, {});
+
+
+
+        // Define preferred order for account types
+        const accountTypeOrder = ['savings_account', 'wallet', 'credit_card', 'unknown'];
+        accountTypeOrder.forEach(accountTypeKey => {
+            const accountsInGroup = groupedAccounts[accountTypeKey];
+            if (accountsInGroup && accountsInGroup.length > 0) {
+                const groupDiv = document.createElement('div');
+                groupDiv.className = 'account-group';
+
+                const title = document.createElement('h4');
+                title.className = 'account-group-title';
+
+                let groupName = accountTypeKey.replace('_', ' ').toLowerCase();
+                groupName = groupName.charAt(0).toUpperCase() + groupName.slice(1) + (groupName.endsWith('s') ? '' : 's');
+                if (accountTypeKey === 'CASH') groupName = 'Cash';
+                title.textContent = groupName;
+                groupDiv.appendChild(title);
+
+
+                accountsInGroup.forEach(acc => {
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className = 'account-item';
+                    itemDiv.dataset.accountId = acc.id;
+                    if (acc.id === currentAccountId) {
+                        itemDiv.classList.add('selected');
                     }
-                }
-                // Fallback to current transaction's subcategory if nothing temporarily selected or found
-                if (!subcatToPreview) subcatToPreview = transaction.subcategory;
+                    itemDiv.dataset.accountType = acc.account_type;
 
+                    const iconInitial = acc.type_initial || acc.bank_name?.charAt(0).toUpperCase() || acc.name?.charAt(0).toUpperCase() || 'A';
+                    const iconName = getBankIconClass(acc.name, acc.account_type);
 
-                if (subcatToPreview && subcatToPreview.name) {
-                    const displayName = subcatToPreview.parent_category_name && subcatToPreview.parent_category_name.toLowerCase() !== 'general'
-                        ? `${subcatToPreview.parent_category_name} (${subcatToPreview.name})`
-                        : subcatToPreview.name;
-                    modalCategoryNamePreviewEl.textContent = displayName.toUpperCase();
-                    const parsedIcon = parseIconName(subcatToPreview.icon_name);
-                    if (parsedIcon.type === 'feather') {
-                        modalCategoryIconPreviewEl.outerHTML = `<i data-feather="${parsedIcon.name}" id="modal-category-icon-preview"></i>`;
-                    } else if (parsedIcon.type === 'emoji') {
-                        modalCategoryIconPreviewEl.outerHTML = `<span id="modal-category-icon-preview" class="emoji-icon">${parsedIcon.name}</span>`;
-                    } 
-                } else {
-                    modalCategoryNamePreviewEl.textContent = 'UNCATEGORIZED';
-                    modalCategoryIconPreviewEl.outerHTML = `<i data-feather="circle" id="modal-category-icon-preview"></i>`;
-                }
-                feather.replace({ width: '1em', height: '1em', 'stroke-width': 1.8 });
-            }
-
-            function populateMoreDetailsModal(transaction) {
-                if (!transaction) return;
-
-                const transactionDate = new Date(transaction.transaction_datetime_from_sms);
-                const formattedDate = transactionDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
-
-                detailsSummaryEl.textContent = `You transferred ₹${Math.round(transaction.amount)} to ${transaction.merchant_vpa || 'Unknown'} on ${formattedDate}`;
-                // detailsTypeEl is static "Outgoing" for now
-
-                detailsAmountEl.textContent = transaction.amount.toFixed(2);
-            
-                if (transaction.account) {
-                    detailsDebitedFromEl.textContent = `${transaction.account.name || 'Unknown Account'} (***${transaction.account.account_last4 || '0000'})`;
-                } else {
-                    detailsDebitedFromEl.textContent = 'N/A';
-                }
-
-                detailsTransferredToEl.textContent = transaction.merchant_vpa || 'N/A';
-            
-                // --- Fields needing backend support ---
-                // For now, use placeholders or existing fields.
-                // These should ideally come from new fields on the Transaction model/schema:
-                // transaction.narration, transaction.bank_reference_id, transaction.transaction_mode
-                detailsNarrationEl.textContent = transaction.description || transaction.raw_sms_content.substring(0,100) || 'N/A'; // Placeholder
-                detailsTransactionIdEl.textContent = transaction.bank_reference_id || transaction.unique_hash || 'N/A'; // Placeholder, use transaction.id if preferred
-                detailsModeEl.textContent = transaction.transaction_mode || (transaction.account ? capitalizeFirstLetter(transaction.account.account_type) : 'Unknown'); 
-
-                detailsTimestampEl.textContent = transactionDate.toLocaleString('en-GB', {
-                    day: 'numeric', month: 'short', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true
-                }).replace(/,/g, '');
-
-                // detailsReferenceUtrEl.textContent = transaction.reference_utr || 'N/A'; // Placeholder
-
-                feather.replace({ width: '1em', height: '1em', 'stroke-width': 1.8 }); // Re-run for copy icons
-            }
-
-            function capitalizeFirstLetter(str) {
-                if (!str) {
-                    return str;
-                }
-                
-                return `${str.split("_")[0].substring(0, 1).toUpperCase()+str.split("_")[0].substring(1)} ${str.split("_")[1].substring(0, 1).toUpperCase() + str.split("_")[1].substring(1)}`;
-            }
-
-            function setupClipboard() {
-                document.querySelectorAll('.copy-btn').forEach(button => {
-                    button.addEventListener('click', () => {
-                        const targetSelector = button.dataset.clipboardTarget;
-                        const targetElement = document.querySelector(targetSelector);
-                        if (targetElement) {
-                            navigator.clipboard.writeText(targetElement.textContent)
-                                .then(() => {
-                                    // Optional: Show a "Copied!" message or change icon
-                                    const originalIcon = button.innerHTML;
-                                    button.innerHTML = '<i data-feather="check" style="color: green;"></i>';
-                                    feather.replace({ width: '1em', height: '1em', 'stroke-width': 1.8 });
-                                    setTimeout(() => {
-                                        button.innerHTML = originalIcon;
-                                        feather.replace({ width: '1em', height: '1em', 'stroke-width': 1.8 });
-                                    }, 1500);
-                                })
-                                .catch(err => console.error('Failed to copy: ', err));
-                        }
-                    });
+                    let iconContent = iconInitial;
+                    console.log(`/static/images/icons/${iconName}`)
+                    itemDiv.innerHTML = `
+                            <div class="account-item-icon">
+                            <img class="custom-icon" src="/static/images/icons/${iconName}" alt="${iconName.split('/').pop().split('.')[0]}">
+                            </div>
+                            <div class="account-item-details">
+                                <span class="account-item-name">${acc.name}</span>
+                                ${acc.account_last4 ? `<span class="account-item-last4">***${acc.account_last4}</span>` : ''}
+                            </div>
+                            <input type="radio" name="selectedAccountRadio" value="${acc.id}" class="account-item-radio" ${acc.id === currentAccountId ? 'checked' : ''}>
+                        `;
+                    itemDiv.addEventListener('click', handleAccountItemClick);
+                    groupDiv.appendChild(itemDiv);
                 });
+                console.log(accountListContainerEl)
+                accountListContainerEl.appendChild(groupDiv);
             }
+        });
+        feather.replace({
+            width: '1em',
+            height: '1em',
+            'stroke-width': 1.8
+        });
+    }
 
-            function parseIconName(iconString) {
-                if (!iconString) return { type: 'feather', name: 'circle' };
-                if (iconString.startsWith('fthr:')) return { type: 'feather', name: iconString.substring(5) };
-                if (iconString.startsWith('img:')) return { type: 'image', name: iconString.substring(4) };
-                if (iconString.startsWith('emoji:')) return { type: 'emoji', name: iconString.substring(6) };
-                const emojiRegex = /[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F900}-\u{1F9FF}\u{1F1E0}-\u{1F1FF}]/u;
-                if (emojiRegex.test(iconString)) return { type: 'emoji', name: iconString };
-                
-                return { type: 'feather', name: iconString };
-            }
+    function handleAccountItemClick(event) {
+        const clickedItem = event.currentTarget;
+        const accountId = parseInt(clickedItem.dataset.accountId);
 
-            function createIconElement(iconString) {
-                const parsed = parseIconName(iconString);
-                if (parsed.type === 'feather') {
-                    return `<i data-feather="${parsed.name || 'circle'}"></i>`;
-                } else if (parsed.type === 'emoji') {
-                    return `<span class="emoji-icon">${parsed.name}</span>`;
-                } else if (parsed.type === 'image') {
-                    // Assuming images are in a known path e.g., /static/images/icons/
-                    return `<img src="/static/images/icons/${parsed.name}" alt="${parsed.name.split('/').pop().split('.')[0]}" class="custom-icon">`;
+        // Unselect previous
+        document.querySelectorAll('#account-list-container .account-item.selected').forEach(el => el.classList.remove('selected'));
+        document.querySelectorAll('#account-list-container .account-item-radio:checked').forEach(radio => radio.checked = false);
+
+        // Select current
+        clickedItem.classList.add('selected');
+        const radio = clickedItem.querySelector('.account-item-radio');
+        if (radio) radio.checked = true;
+
+        tempSelectedAccountId = accountId;
+        dataChangedInModal.account = true; // Mark that account choice has changed
+        populateAccountSelectModalPreview(currentTransaction, tempSelectedAccountId);
+    }
+
+    function setupClipboard() {
+        document.querySelectorAll('.copy-btn').forEach(button => {
+            button.addEventListener('click', () => {
+                const targetSelector = button.dataset.clipboardTarget;
+                const targetElement = document.querySelector(targetSelector);
+                if (targetElement) {
+                    navigator.clipboard.writeText(targetElement.textContent)
+                        .then(() => {
+                            // Optional: Show a "Copied!" message or change icon
+                            const originalIcon = button.innerHTML;
+                            button.innerHTML = '<i data-feather="check" style="color: green;"></i>';
+                            feather.replace({
+                                width: '1em',
+                                height: '1em',
+                                'stroke-width': 1.8
+                            });
+                            setTimeout(() => {
+                                button.innerHTML = originalIcon;
+                                feather.replace({
+                                    width: '1em',
+                                    height: '1em',
+                                    'stroke-width': 1.8
+                                });
+                            }, 1500);
+                        })
+                        .catch(err => console.error('Failed to copy: ', err));
                 }
-                return `<i data-feather="circle"></i>`; 
-            }
+            });
+        });
+    }
+
+    function parseIconName(iconString) {
+        if (!iconString) return {
+            type: 'feather',
+            name: 'circle'
+        };
+        if (iconString.startsWith('fthr:')) return {
+            type: 'feather',
+            name: iconString.substring(5)
+        };
+        if (iconString.startsWith('img:')) return {
+            type: 'image',
+            name: iconString.substring(4)
+        };
+        if (iconString.startsWith('emoji:')) return {
+            type: 'emoji',
+            name: iconString.substring(6)
+        };
+        const emojiRegex = /[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}\u{1F900}-\u{1F9FF}\u{1F1E0}-\u{1F1FF}]/u;
+        if (emojiRegex.test(iconString)) return {
+            type: 'emoji',
+            name: iconString
+        };
+
+        return {
+            type: 'feather',
+            name: iconString
+        };
+    }
+
+    function createIconElement(iconString) {
+        const parsed = parseIconName(iconString);
+        if (parsed.type === 'feather') {
+            return `<i data-feather="${parsed.name || 'circle'}"></i>`;
+        } else if (parsed.type === 'emoji') {
+            return `<span class="emoji-icon">${parsed.name}</span>`;
+        } else if (parsed.type === 'image') {
+            // Assuming images are in a known path e.g., /static/images/icons/
+            return `<img src="/static/images/icons/${parsed.name}" alt="${parsed.name.split('/').pop().split('.')[0]}" class="custom-icon">`;
+        }
+        return `<i data-feather="circle"></i>`;
+    }
 
 
-            function populateCategoriesInModal(categoriesToDisplay) {
-                mostUsedCategoryGridEl.innerHTML = ''; 
-                fullCategoryListEl.innerHTML = ''; 
-                
-                // TODO: For "Most Used" needs a proper mechanism. For now, skip or use a few from first category.
-                // Example: take first 2 subcategories from first 2 parent categories if they exist
-                let mostUsedCount = 0;
-                if (categoriesToDisplay.length > 0) {
-                    mostUsedCategoriesContainerEl.style.display = 'block';
-                    for (const parentCat of categoriesToDisplay) {
-                        if (parentCat.subcategories && parentCat.subcategories.length > 0) {
-                            for (const subCat of parentCat.subcategories.slice(0, 2)) { 
-                                if (mostUsedCount >= 4) break; 
-                                const chip = document.createElement('div');
-                                chip.className = 'category-chip';
-                                chip.dataset.subcategoryId = subCat.id;
-                                chip.innerHTML = `${createIconElement(subCat.icon_name)} ${subCat.name.toUpperCase()}`;
-                                if (subCat.id === tempSelectedSubcategoryId) {
-                                    chip.classList.add('selected');
-                                }
-                                chip.addEventListener('click', handleSubcategorySelection);
-                                mostUsedCategoryGridEl.appendChild(chip);
-                                mostUsedCount++;
-                            }
-                        }
+    function populateCategoriesInModal(categoriesToDisplay) {
+        mostUsedCategoryGridEl.innerHTML = '';
+        fullCategoryListEl.innerHTML = '';
+
+        // TODO: For "Most Used" needs a proper mechanism. For now, skip or use a few from first category.
+        // Example: take first 2 subcategories from first 2 parent categories if they exist
+        let mostUsedCount = 0;
+        if (categoriesToDisplay.length > 0) {
+            mostUsedCategoriesContainerEl.style.display = 'block';
+            for (const parentCat of categoriesToDisplay) {
+                if (parentCat.subcategories && parentCat.subcategories.length > 0) {
+                    for (const subCat of parentCat.subcategories.slice(0, 2)) {
                         if (mostUsedCount >= 4) break;
+                        const chip = document.createElement('div');
+                        chip.className = 'category-chip';
+                        chip.dataset.subcategoryId = subCat.id;
+                        chip.innerHTML = `${createIconElement(subCat.icon_name)} ${subCat.name.toUpperCase()}`;
+                        if (subCat.id === tempSelectedSubcategoryId) {
+                            chip.classList.add('selected');
+                        }
+                        chip.addEventListener('click', handleSubcategorySelection);
+                        mostUsedCategoryGridEl.appendChild(chip);
+                        mostUsedCount++;
                     }
-                } else {
-                     mostUsedCategoriesContainerEl.style.display = 'none';
                 }
+                if (mostUsedCount >= 4) break;
+            }
+        } else {
+            mostUsedCategoriesContainerEl.style.display = 'none';
+        }
 
 
-                categoriesToDisplay.forEach(parentCat => {
-                    if (parentCat.name.toLowerCase() === 'general' && parentCat.subcategories.some(sc => sc.name.toLowerCase() === 'uncategorized' && sc.id === tempSelectedSubcategoryId)) {
-                        // Optionally skip showing "General (Uncategorized)" in the main list if it's the current selection
-                        // Or always show it. For now, let's show all.
-                    }
+        categoriesToDisplay.forEach(parentCat => {
+            if (parentCat.name.toLowerCase() === 'general' && parentCat.subcategories.some(sc => sc.name.toLowerCase() === 'uncategorized' && sc.id === tempSelectedSubcategoryId)) {
+                // Optionally skip showing "General (Uncategorized)" in the main list if it's the current selection
+                // Or always show it. For now, let's show all.
+            }
 
-                    const groupDiv = document.createElement('div');
-                    groupDiv.className = 'category-group';
-                    
-                    const titleDiv = document.createElement('div');
-                    titleDiv.className = 'category-group-title';
-                    titleDiv.textContent = parentCat.name;
-                    groupDiv.appendChild(titleDiv);
+            const groupDiv = document.createElement('div');
+            groupDiv.className = 'category-group';
 
-                    if(parentCat.description){
-                        const subtitleDiv = document.createElement('div');
-                        subtitleDiv.className = 'category-group-subtitle';
-                        subtitleDiv.textContent = parentCat.description;
-                        groupDiv.appendChild(subtitleDiv);
-                    }
+            const titleDiv = document.createElement('div');
+            titleDiv.className = 'category-group-title';
+            titleDiv.textContent = parentCat.name;
+            groupDiv.appendChild(titleDiv);
 
-                    const subcategoryGridDiv = document.createElement('div');
-                    subcategoryGridDiv.className = 'subcategory-grid';
+            if (parentCat.description) {
+                const subtitleDiv = document.createElement('div');
+                subtitleDiv.className = 'category-group-subtitle';
+                subtitleDiv.textContent = parentCat.description;
+                groupDiv.appendChild(subtitleDiv);
+            }
 
-                    parentCat.subcategories.forEach(subCat => {
-                        const itemDiv = document.createElement('div');
-                        itemDiv.className = 'subcategory-item';
-                        itemDiv.dataset.subcategoryId = subCat.id;
-                        itemDiv.innerHTML = `
+            const subcategoryGridDiv = document.createElement('div');
+            subcategoryGridDiv.className = 'subcategory-grid';
+
+            parentCat.subcategories.forEach(subCat => {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'subcategory-item';
+                itemDiv.dataset.subcategoryId = subCat.id;
+                itemDiv.innerHTML = `
                             <div class="subcategory-icon-wrapper">${createIconElement(subCat.icon_name)}</div>
                             <div class="subcategory-name">${subCat.name}</div>
                         `;
-                        if (subCat.id === tempSelectedSubcategoryId) {
-                            itemDiv.classList.add('selected');
-                        }
-                        itemDiv.addEventListener('click', handleSubcategorySelection);
-                        subcategoryGridDiv.appendChild(itemDiv);
-                    });
-                    groupDiv.appendChild(subcategoryGridDiv);
-                    fullCategoryListEl.appendChild(groupDiv);
-                });
+                if (subCat.id === tempSelectedSubcategoryId) {
+                    itemDiv.classList.add('selected');
+                }
+                itemDiv.addEventListener('click', handleSubcategorySelection);
+                subcategoryGridDiv.appendChild(itemDiv);
+            });
+            groupDiv.appendChild(subcategoryGridDiv);
+            fullCategoryListEl.appendChild(groupDiv);
+        });
 
-                feather.replace({ width: '1em', height: '1em', 'stroke-width': 1.8 });
+        feather.replace({
+            width: '1em',
+            height: '1em',
+            'stroke-width': 1.8
+        });
+    }
+
+    function handleSubcategorySelection(event) {
+        const clickedItem = event.currentTarget;
+        const subcategoryId = parseInt(clickedItem.dataset.subcategoryId);
+
+        document.querySelectorAll('.category-modal .category-chip.selected, .category-modal .subcategory-item.selected')
+            .forEach(el => el.classList.remove('selected'));
+
+        clickedItem.classList.add('selected');
+        const correspondingChip = mostUsedCategoryGridEl.querySelector(`.category-chip[data-subcategory-id="${subcategoryId}"]`);
+        if (correspondingChip) correspondingChip.classList.add('selected');
+
+
+        tempSelectedSubcategoryId = subcategoryId;
+        dataChangedInModal.subcategory = true;
+        populateCategoryModalPreview(currentTransaction);
+    }
+
+    // --- TELEGRAM BUTTONS ---
+    function configureMainButton() {
+        if (!tg.MainButton) return;
+        tg.MainButton.setParams({
+            text: 'SAVE CHANGES',
+            color: '#3b82f6',
+            text_color: '#ffffff',
+            is_active: true,
+            is_visible: true
+        });
+        tg.MainButton.onClick(handleSave);
+    }
+
+    async function handleSave() {
+        if (tg.MainButton && (!tg.MainButton.isVisible || !tg.MainButton.isActive)) return;
+        if (tg.MainButton) tg.MainButton.showProgress();
+        setLoading(true);
+
+        try {
+            const patchData = {
+                description: descriptionTextarea.value,
+                exclude_from_cashflow: excludeCashflowToggle.checked
+            };
+
+            if (dataChangedInModal.subcategory && tempSelectedSubcategoryId !== null) {
+                patchData.subcategory_id = tempSelectedSubcategoryId;
             }
-
-            function handleSubcategorySelection(event) {
-                const clickedItem = event.currentTarget;
-                const subcategoryId = parseInt(clickedItem.dataset.subcategoryId);
-
-                document.querySelectorAll('.category-modal .category-chip.selected, .category-modal .subcategory-item.selected')
-                    .forEach(el => el.classList.remove('selected'));
-                
-                clickedItem.classList.add('selected'); 
-                const correspondingChip = mostUsedCategoryGridEl.querySelector(`.category-chip[data-subcategory-id="${subcategoryId}"]`);
-                if(correspondingChip) correspondingChip.classList.add('selected');
-
-
-                tempSelectedSubcategoryId = subcategoryId;
-                dataChangedInModal.subcategory = true; 
-                populateCategoryModalPreview(currentTransaction); 
+            if (dataChangedInModal.account && tempSelectedAccountId !== null) {
+                patchData.account_id = tempSelectedAccountId;
             }
+            let madeChanges = Object.keys(patchData).length > 2 || dataChangedInModal.subcategory || dataChangedInModal.account;
 
-            // --- TELEGRAM BUTTONS ---
-            function configureMainButton() {
-                if (!tg.MainButton) return; 
-                tg.MainButton.setParams({
-                    text: 'SAVE CHANGES',
-                    color: '#3b82f6', 
-                    text_color: '#ffffff',
-                    is_active: true,
-                    is_visible: true
-                });
-                tg.MainButton.onClick(handleSave);
-            }
-
-            async function handleSave() { 
-                if (tg.MainButton && (!tg.MainButton.isVisible || !tg.MainButton.isActive)) return;
-                if (tg.MainButton) tg.MainButton.showProgress();
-                setLoading(true);
-
-                try {
-                    const patchData = {
-                        description: descriptionTextarea.value,
-                        exclude_from_cashflow: excludeCashflowToggle.checked
+            if (madeChanges) {
+                if (access_token) {
+                    const updatedTxnFromServer = await updateTransactionAPI(patchData);
+                    currentTransaction = {
+                        ...currentTransaction,
+                        ...updatedTxnFromServer
                     };
 
+                    if (updatedTxnFromServer.subcategory) {
+                        currentTransaction.subcategory = updatedTxnFromServer.subcategory;
+                        tempSelectedSubcategoryId = updatedTxnFromServer.subcategory.id;
+                    }
+                    if (updatedTxnFromServer.account) { // <<<< UPDATE FROM SERVER RESPONSE
+                        currentTransaction.account = updatedTxnFromServer.account;
+                        tempSelectedAccountId = updatedTxnFromServer.account.id;
+                    } else if (patchData.account_id) { // If server didn't return account but we sent one
+                        const acc = allUserAccounts.find(a => a.id === patchData.account_id);
+                        currentTransaction.account = acc ? {
+                            ...acc
+                        } : null;
+                        tempSelectedAccountId = patchData.account_id;
+                    }
+
+
+                } else {
+                    if (dataChangedInModal.account && tempSelectedAccountId !== null) {
+                        const acc = allUserAccounts.find(a => a.id === tempSelectedAccountId);
+                        currentTransaction.account = acc ? {
+                            ...acc
+                        } : null;
+                        currentTransaction.account_id = tempSelectedAccountId;
+                    }
+                }
+            }
+
+            dataChangedInModal.subcategory = false;
+            dataChangedInModal.account = false;
+            populateUI(currentTransaction);
+
+            if (tg.initDataUnsafe?.user && madeChanges) tg.close();
+            else if (!tg.initDataUnsafe?.user) console.log("Changes processed!");
+
+            if (Object.keys(patchData).length > 0 || dataChangedInModal.subcategory) {
+                if (access_token) {
+                    const updatedTxnFromServer = await updateTransactionAPI(patchData);
+                    currentTransaction = {
+                        ...currentTransaction,
+                        ...updatedTxnFromServer
+                    };
+                    if (updatedTxnFromServer.subcategory) {
+                        currentTransaction.subcategory = updatedTxnFromServer.subcategory;
+                        tempSelectedSubcategoryId = updatedTxnFromServer.subcategory.id;
+                    } else if (tempSelectedSubcategoryId) {
+                        const sc = findSubcategoryById(allCategoriesStructured, tempSelectedSubcategoryId);
+                        currentTransaction.subcategory = sc ? {
+                            ...sc.subcat,
+                            parent_category_name: sc.parentCat.name
+                        } : null;
+                    }
+
+                } else {
+                    console.log("Local save (mock):", patchData);
                     if (dataChangedInModal.subcategory && tempSelectedSubcategoryId !== null) {
-                        patchData.subcategory_id = tempSelectedSubcategoryId;
-                    }
-                    
-                    if (Object.keys(patchData).length > 0 || dataChangedInModal.subcategory) { 
-                        if (access_token) { 
-                            const updatedTxnFromServer = await updateTransactionAPI(patchData);
-                            currentTransaction = { ...currentTransaction, ...updatedTxnFromServer }; 
-                             if (updatedTxnFromServer.subcategory) {
-                                currentTransaction.subcategory = updatedTxnFromServer.subcategory;
-                                tempSelectedSubcategoryId = updatedTxnFromServer.subcategory.id; 
-                            } else if (tempSelectedSubcategoryId){ 
-                                const sc = findSubcategoryById(allCategoriesStructured, tempSelectedSubcategoryId);
-                                currentTransaction.subcategory = sc ? {...sc.subcat, parent_category_name: sc.parentCat.name} : null;
-                            }
-
-                        } else { 
-                            console.log("Local save (mock):", patchData);
-                            if (dataChangedInModal.subcategory && tempSelectedSubcategoryId !== null) {
-                                const scPair = findSubcategoryById(allCategoriesStructured, tempSelectedSubcategoryId);
-                                if (scPair) {
-                                    currentTransaction.subcategory = {...scPair.subcat, parent_category_name: scPair.parentCat.name };
-                                    currentTransaction.subcategory_id = tempSelectedSubcategoryId;
-                                }
-                            }
-                            currentTransaction.description = descriptionTextarea.value;
-                            currentTransaction.exclude_from_cashflow = excludeCashflowToggle.checked;
-                            await new Promise(resolve => setTimeout(resolve, 500));
-                        }
-                    }
-                    
-                    dataChangedInModal.subcategory = false; 
-                    populateUI(currentTransaction); 
-
-                    if (tg.initDataUnsafe?.user) tg.close();
-                    else console.log("Changes processed!");
-
-                } catch (error) {
-                    console.error("Save error:", error);
-                    showError(`Error saving: ${error.message}`);
-                } finally {
-                    if (tg.MainButton) tg.MainButton.hideProgress();
-                    setLoading(false);
-                }
-            }
-            
-            function findSubcategoryById(structuredCategories, subcatId) {
-                 for (const parentCat of structuredCategories) {
-                    const foundSubcat = parentCat.subcategories.find(sc => sc.id === subcatId);
-                    if (foundSubcat) {
-                        return { subcat: foundSubcat, parentCat: parentCat };
-                    }
-                }
-                return null;
-            }
-
-            // --- EVENT LISTENERS ---
-            function setupEventListeners() {
-                categoryBadgeMain.addEventListener('click', () => {
-                    if (currentTransaction.subcategory && currentTransaction.subcategory.id) {
-                        tempSelectedSubcategoryId = currentTransaction.subcategory.id;
-                    } else { 
-                        const generalCat = allCategoriesStructured.find(c => c.name.toLowerCase() === 'general');
-                        const uncategorizedSub = generalCat?.subcategories.find(sc => sc.name.toLowerCase() === 'uncategorized');
-                        tempSelectedSubcategoryId = uncategorizedSub ? uncategorizedSub.id : null;
-                    }
-                    dataChangedInModal.subcategory = false; 
-                    categorySearchInputEl.value = ''; 
-                    populateCategoriesInModal(allCategoriesStructured); 
-                    populateCategoryModalPreview(currentTransaction); 
-                    categoryModal.style.display = 'flex';
-                    feather.replace({ width: '1em', height: '1em', 'stroke-width': 1.8 }); 
-                });
-
-                closeModalBtn.addEventListener('click', () => {
-                    categoryModal.style.display = 'none';
-                    dataChangedInModal.subcategory = false; 
-                    if (currentTransaction.subcategory && currentTransaction.subcategory.id) {
-                       tempSelectedSubcategoryId = currentTransaction.subcategory.id;
-                    }
-                });
-
-                saveCategoryBtn.addEventListener('click', () => { 
-                    categoryModal.style.display = 'none';
-                    if (dataChangedInModal.subcategory && tempSelectedSubcategoryId) {
                         const scPair = findSubcategoryById(allCategoriesStructured, tempSelectedSubcategoryId);
-                        if(scPair){
-                            populateUI({...currentTransaction, subcategory: {...scPair.subcat, parent_category_name: scPair.parentCat.name}});
+                        if (scPair) {
+                            currentTransaction.subcategory = {
+                                ...scPair.subcat,
+                                parent_category_name: scPair.parentCat.name
+                            };
+                            currentTransaction.subcategory_id = tempSelectedSubcategoryId;
                         }
                     }
-                });
-
-                categoryModal.addEventListener('click', (e) => {
-                    if (e.target === categoryModal) {
-                        categoryModal.style.display = 'none';
-                    }
-                })
-                
-                categorySearchInputEl.addEventListener('input', (e) => {
-                     if (e.target === categorySearchInputEl) {
-                        categorySearchInputEl.style.display = 'none';
-                    }
-                 });
-
-                if (moreDetailsActionItem) {
-                    moreDetailsActionItem.addEventListener('click', () => {
-                        populateMoreDetailsModal(currentTransaction);
-                        moreDetailsModalEl.style.display = 'flex';
-                        feather.replace({ width: '1em', height: '1em', 'stroke-width': 1.8 }); // Ensure icons in modal are rendered
-                    });
+                    currentTransaction.description = descriptionTextarea.value;
+                    currentTransaction.exclude_from_cashflow = excludeCashflowToggle.checked;
+                    await new Promise(resolve => setTimeout(resolve, 500));
                 }
-
-                if (closeMoreDetailsModalBtn) {
-                    closeMoreDetailsModalBtn.addEventListener('click', () => {
-                        moreDetailsModalEl.style.display = 'none';
-                    });
-                }
-
-                if (moreDetailsModalEl) {
-                    moreDetailsModalEl.addEventListener('click', (e) => {
-                        if (e.target === moreDetailsModalEl) {
-                            moreDetailsModalEl.style.display = 'none';
-                        }
-                    });
-                }
-                setupClipboard();
             }
 
-            // --- RUN ---
-            initialize();
+            dataChangedInModal.subcategory = false;
+            populateUI(currentTransaction);
+
+            if (tg.initDataUnsafe?.user) tg.close();
+            else console.log("Changes processed!");
+
+        } catch (error) {
+            console.error("Save error:", error);
+            showError(`Error saving: ${error.message}`);
+        } finally {
+            if (tg.MainButton) tg.MainButton.hideProgress();
+            setLoading(false);
+        }
+    }
+
+    function findSubcategoryById(structuredCategories, subcatId) {
+        for (const parentCat of structuredCategories) {
+            const foundSubcat = parentCat.subcategories.find(sc => sc.id === subcatId);
+            if (foundSubcat) {
+                return {
+                    subcat: foundSubcat,
+                    parentCat: parentCat
+                };
+            }
+        }
+        return null;
+    }
+
+    // --- EVENT LISTENERS ---
+    function setupEventListeners() {
+        categoryBadgeMain.addEventListener('click', () => {
+            if (currentTransaction.subcategory && currentTransaction.subcategory.id) {
+                tempSelectedSubcategoryId = currentTransaction.subcategory.id;
+            } else {
+                const generalCat = allCategoriesStructured.find(c => c.name.toLowerCase() === 'general');
+                const uncategorizedSub = generalCat?.subcategories.find(sc => sc.name.toLowerCase() === 'uncategorized');
+                tempSelectedSubcategoryId = uncategorizedSub ? uncategorizedSub.id : null;
+            }
+            dataChangedInModal.subcategory = false;
+            categorySearchInputEl.value = '';
+            populateCategoriesInModal(allCategoriesStructured);
+            populateCategoryModalPreview(currentTransaction);
+            categoryModal.style.display = 'flex';
+            feather.replace({
+                width: '1em',
+                height: '1em',
+                'stroke-width': 1.8
+            });
         });
+
+        closeModalBtn.addEventListener('click', () => {
+            categoryModal.style.display = 'none';
+            dataChangedInModal.subcategory = false;
+            if (currentTransaction.subcategory && currentTransaction.subcategory.id) {
+                tempSelectedSubcategoryId = currentTransaction.subcategory.id;
+            }
+        });
+
+        saveCategoryBtn.addEventListener('click', () => {
+            categoryModal.style.display = 'none';
+            if (dataChangedInModal.subcategory && tempSelectedSubcategoryId) {
+                const scPair = findSubcategoryById(allCategoriesStructured, tempSelectedSubcategoryId);
+                if (scPair) {
+                    populateUI({
+                        ...currentTransaction,
+                        subcategory: {
+                            ...scPair.subcat,
+                            parent_category_name: scPair.parentCat.name
+                        }
+                    });
+                }
+            }
+        });
+
+        categoryModal.addEventListener('click', (e) => {
+            if (e.target === categoryModal) {
+                categoryModal.style.display = 'none';
+            }
+        })
+
+        categorySearchInputEl.addEventListener('input', (e) => {
+            if (e.target === categorySearchInputEl) {
+                categorySearchInputEl.style.display = 'none';
+            }
+        });
+
+        if (moreDetailsActionItem) {
+            moreDetailsActionItem.addEventListener('click', () => {
+                populateMoreDetailsModal(currentTransaction);
+                moreDetailsModalEl.style.display = 'flex';
+                feather.replace({
+                    width: '1em',
+                    height: '1em',
+                    'stroke-width': 1.8
+                }); // Ensure icons in modal are rendered
+            });
+        }
+
+        if (closeMoreDetailsModalBtn) {
+            closeMoreDetailsModalBtn.addEventListener('click', () => {
+                moreDetailsModalEl.style.display = 'none';
+            });
+        }
+
+        if (moreDetailsModalEl) {
+            moreDetailsModalEl.addEventListener('click', (e) => {
+                if (e.target === moreDetailsModalEl) {
+                    moreDetailsModalEl.style.display = 'none';
+                }
+            });
+        }
+
+        if (fromInfoItemEl) {
+            fromInfoItemEl.addEventListener('click', async () => {
+                setLoading(true);
+                try {
+                    allUserAccounts = await fetchAllUserAccountsAPI();
+                    if (currentTransaction.account && currentTransaction.account.id) {
+                        tempSelectedAccountId = currentTransaction.account.id;
+                    } else {
+                        tempSelectedAccountId = null; // Or a default like 'Cash' if you have one
+                    }
+                    dataChangedInModal.account = false; // Reset change flag
+
+                    populateAccountSelectModalPreview(currentTransaction, tempSelectedAccountId);
+                    populateAccountsInModalList(allUserAccounts, tempSelectedAccountId);
+                    accountSelectModalEl.style.display = 'flex';
+                } catch (error) {
+                    showError("Could not load accounts. Please try again.");
+                    console.error("Error opening account select modal:", error);
+                } finally {
+                    setLoading(false);
+                    feather.replace({
+                        width: '1em',
+                        height: '1em',
+                        'stroke-width': 1.8
+                    });
+                }
+            });
+        }
+
+        if (closeAccountSelectModalBtn) {
+            closeAccountSelectModalBtn.addEventListener('click', () => {
+                accountSelectModalEl.style.display = 'none';
+                dataChangedInModal.account = false; // Discard changes
+                if (currentTransaction.account && currentTransaction.account.id) {
+                    tempSelectedAccountId = currentTransaction.account.id;
+                }
+            });
+        }
+
+        if (saveAccountSelectionBtn) {
+            saveAccountSelectionBtn.addEventListener('click', () => {
+                if (dataChangedInModal.account && tempSelectedAccountId !== null) {
+                    const selectedAccount = allUserAccounts.find(acc => acc.id === tempSelectedAccountId);
+                    if (selectedAccount) {
+                        // Update currentTransaction in JS state immediately
+                        currentTransaction.account = {
+                            ...selectedAccount
+                        }; // Create a new object copy
+                        currentTransaction.account_id = selectedAccount.id;
+
+                        // Update main page UI immediately
+                        populateUI(currentTransaction);
+                    }
+                }
+                accountSelectModalEl.style.display = 'none';
+                // dataChangedInModal.account flag remains true, so main "SAVE CHANGES" will pick it up
+            });
+        }
+
+
+        if (accountSelectModalEl) {
+            accountSelectModalEl.addEventListener('click', (e) => {
+                if (e.target === accountSelectModalEl) {
+                    accountSelectModalEl.style.display = 'none';
+                    dataChangedInModal.account = false; // Discard changes
+                    if (currentTransaction.account && currentTransaction.account.id) {
+                        tempSelectedAccountId = currentTransaction.account.id;
+                    }
+                }
+            });
+        }
+
+        setupClipboard();
+    }
+
+    // --- RUN ---
+    initialize();
+});
     </script>
 </body>
+
 </html>
