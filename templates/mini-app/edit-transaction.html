@@ -111,8 +111,7 @@
             gap: 8px;
         }
 
-        .account-icon { /* For the 'P' icon */
-            width: 20px;
+        .account-icon { 
             height: 20px;
             background: #3b82f6; /* Blue background */
             border-radius: 4px;
@@ -122,6 +121,7 @@
             color: white;
             font-size: 10px;
             font-weight: 600;
+            padding: 5px;
         }
 
         /* Paid to section */
@@ -461,31 +461,39 @@
             padding: 16px 20px;
             border-bottom: 1px solid #f3f4f6;
             display: flex;
-            align-items: center;
-            justify-content: space-between;
+            flex-direction: column;
+            gap: 12px;
         }
 
         .preview-left {
             display: flex;
             align-items: center;
             gap: 12px;
+            width: 100%;
         }
         .preview-left .merchant-icon { 
-            width: 28px; height: 28px;
+            width: 28px; 
+            height: 28px;
         }
         .preview-left .merchant-icon i {
-             width: 16px; height: 16px;
+             width: 16px; 
+             height: 16px;
         }
-        .preview-left .merchant-name { font-size: 14px; font-weight: 500;}
-
+        .preview-left .merchant-name { 
+            font-size: 14px; 
+            font-weight: 500;
+        }
 
         .preview-right {
             display: flex;
             align-items: center;
-            gap: 12px;
+            justify-content: space-between;
+            width: 100%;
+            gap: 8px;
         }
+        
         .preview-amount {
-            font-size: 16px; 
+            font-size: 18px; 
             font-weight: 700;
             color: #1a1a1a;
         }
@@ -500,11 +508,19 @@
             font-size: 12px;
             font-weight: 500;
             color: #374151;
+            flex-shrink: 0;
         }
-        .preview-category-badge i { width: 12px; height: 12px; }
+        .preview-category-badge i { 
+            width: 12px; 
+            height: 12px; 
+        }
 
         .preview-account-icon { 
-            width: 18px; height: 18px; font-size: 9px;
+            height: 18px; 
+            font-size: 9px;
+            padding: 5px;
+            flex-shrink: 0;
+            margin-left: auto;
         }
 
 
@@ -672,15 +688,175 @@
             height: 16px;
         }
 
+        /* Details Modal Styles */
+        .details-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.4);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2500;
+            padding: 20px;
+        }
+
+        .details-modal-content {
+            background: #ffffff;
+            width: 100%;
+            max-width: 340px;
+            border-radius: 16px;
+            max-height: 85vh;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .details-modal-header {
+            padding: 16px 20px 12px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            background: #ffffff;
+            z-index: 10;
+            border-radius: 16px 16px 0 0;
+        }
+
+        .details-modal-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #000000;
+            text-align: center;
+            flex-grow: 1;
+            margin-left: 24px; /* Compensate for close button */
+        }
+
+        .details-close-btn {
+            font-size: 18px;
+            font-weight: 400;
+            color: #999999;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 4px;
+            line-height: 1;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color 0.2s;
+        }
+
+        .details-close-btn:hover {
+            color: #666666;
+        }
+
+        .details-modal-body {
+            padding: 0 20px 20px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .detail-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            padding-bottom: 12px;
+        }
+
+        .detail-item:last-child {
+            padding-bottom: 0;
+        }
+
+        .detail-label {
+            color: #999999;
+            font-weight: 400;
+            font-size: 13px;
+            line-height: 1.2;
+        }
+
+        .detail-value {
+            color: #000000;
+            font-weight: 500;
+            font-size: 15px;
+            line-height: 1.3;
+            word-break: break-word;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Special styling for amount */
+        .detail-item:has(#details-amount) .detail-value {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .detail-item .copy-btn {
+            background: none;
+            border: none;
+            padding: 2px;
+            cursor: pointer;
+            color: #cccccc;
+            display: flex;
+            align-items: center;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+
+        .detail-item .copy-btn:hover {
+            color: #999999;
+        }
+
+        .detail-item .copy-btn svg {
+            width: 14px;
+            height: 14px;
+            stroke-width: 2;
+        }
+
+        /* Mobile responsiveness */
+        @media (max-width: 480px) {
+            .details-modal {
+                padding: 16px;
+            }
+            
+            .details-modal-content {
+                max-width: none;
+                border-radius: 12px;
+            }
+            
+            .details-modal-header {
+                padding: 14px 16px 10px 16px;
+                border-radius: 12px 12px 0 0;
+            }
+            
+            .details-modal-body {
+                padding: 0 16px 16px 16px;
+                gap: 14px;
+            }
+            
+            .detail-item {
+                padding-bottom: 10px;
+            }
+        }
+
+
     </style>
 </head>
 <body>
     <main class="container">
         <div class="card main-card">
-            <div id="transaction-amount" class="amount">-₹140</div>
+            <div id="transaction-amount" class="amount">Loading...</div>
             <div class="category-badge" id="category-badge-main">
-                <i data-feather="coffee" id="main-category-icon"></i>
-                <span id="main-category-name">FOOD & DRINKS</span>
+                <i data-feather="tag" id="main-category-icon"></i>
+                <span id="main-category-name">Loading...</span>
             </div>
         </div>
 
@@ -688,14 +864,14 @@
             <div class="info-item">
                 <div class="info-label">FROM</div>
                 <div class="info-value">
-                    <div class="account-icon" id="from-account-icon-initial">P</div>
-                    <span id="from-account-details">***0214</span>
+                    <div class="account-icon" id="from-account-icon-initial">..</div>
+                    <span id="from-account-details">Loading...</span>
                 </div>
             </div>
             <div class="info-item">
                 <div class="info-label">ON</div>
                 <div class="info-value">
-                    <span id="transaction-date">Thu, Jun. 12 '25</span>
+                    <span id="transaction-date">Loading...</span>
                 </div>
             </div>
         </div>
@@ -707,7 +883,7 @@
                     <div class="merchant-icon">
                         <i data-feather="user"></i>
                     </div>
-                    <div id="paid-to-merchant-name" class="merchant-name">JOSE A</div>
+                    <div id="paid-to-merchant-name" class="merchant-name">Loading...</div>
                 </div>
                 <i data-feather="chevron-right" class="chevron"></i>
             </div>
@@ -719,7 +895,7 @@
                     <i data-feather="calendar" class="action-icon"></i>
                     <span class="action-text">Account in</span>
                 </div>
-                <span id="account-in-date" class="action-date">Jun 2025</span>
+                <span id="account-in-date" class="action-date">Loading...</span>
                 <i data-feather="chevron-right" class="chevron"></i>
             </div>
             <div class="action-item" id="more-details-action">
@@ -776,17 +952,17 @@
                         <i data-feather="user"></i>
                     </div>
                     <div>
-                        <div class="merchant-name" id="modal-merchant-name-preview">JOSE A</div>
-                        <div style="font-size: 12px; color: #6b7280;" id="modal-transaction-time-preview">Yesterday, 5:39PM</div>
+                        <div class="merchant-name" id="modal-merchant-name-preview">Loading...</div>
+                        <div style="font-size: 12px; color: #6b7280;" id="modal-transaction-time-preview">Loading...</div>
                     </div>
                 </div>
-                <div class="preview-right">
-                    <div class="preview-amount" id="modal-amount-preview">-₹140</div>
+                <div class="preview-right"> 
+                    <div class="preview-amount" id="modal-amount-preview">Loading...</div>
                     <div class="preview-category-badge" id="modal-category-badge-preview">
-                        <i data-feather="coffee" id="modal-category-icon-preview"></i>
-                        <span id="modal-category-name-preview">FOOD & DRINKS</span>
+                        <i data-feather="" id="modal-category-icon-preview"></i>
+                        <span id="modal-category-name-preview">Loading...</span>
                     </div>
-                    <div class="account-icon preview-account-icon" id="modal-account-icon-preview">P</div>
+                    <div class="account-icon preview-account-icon" id="modal-account-icon-preview">..</div>
                 </div>
             </div>
 
@@ -804,18 +980,107 @@
 
                 <div class="category-list" id="full-category-list">
                     <!-- Full category groups will be populated here by JS -->
-                    <!-- Example structure for one group (to be generated by JS):
-                    <div class="category-group" data-group-id="food-drinks">
-                        <div class="category-group-title">Food & Drinks</div>
-                        <div class="category-group-subtitle">Eating out, Swiggy, Zomato etc.</div>
-                        <div class="subcategory-grid">
-                            <div class="subcategory-item" data-category-id="1" data-icon-name="utensils">
-                                <div class="subcategory-icon-wrapper">🍽️</div>
-                                <div class="subcategory-name">Eating out</div>
-                            </div>
-                        </div>
-                    </div>
-                    -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+<!-- Transaction Details Modal -->
+    <div class="details-modal" id="moreDetailsModal" >
+        <div class="details-modal-content">
+            <div class="details-modal-header">
+                <span class="details-modal-title">Transaction Details</span>
+                <button class="details-close-btn" id="closeMoreDetailsModalBtn" onclick="hideModal()">×</button>
+            </div>
+            <div class="details-modal-body">
+                <div class="detail-item">
+                    <span class="detail-label">Summary</span>
+                    <span class="detail-value" id="details-summary">Loading...</span>
+                </div>
+
+                <div class="detail-item">
+                    <span class="detail-label">Transaction Type</span>
+                    <span class="detail-value" id="details-type">Outgoing</span>
+                </div>
+
+                <div class="detail-item">
+                    <span class="detail-label">Amount</span>
+                    <span class="detail-value" id="details-amount">
+                        Loading...
+                        <button class="copy-btn" data-clipboard-target="#details-amount">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                            </svg>
+                        </button>
+                    </span>
+                </div>
+
+                <div class="detail-item">
+                    <span class="detail-label">Debited From</span>
+                    <span class="detail-value" id="details-debited-from">Loading...</span>
+                </div>
+
+                <div class="detail-item">
+                    <span class="detail-label">Transferred To</span>
+                    <span class="detail-value" id="details-transferred-to">
+                        Lullu
+                        <button class="copy-btn" data-clipboard-target="#details-transferred-to">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                            </svg>
+                        </button>
+                    </span>
+                </div>
+
+                <div class="detail-item">
+                    <span class="detail-label">Narration</span>
+                    <span class="detail-value" id="details-narration">
+                        Loading...
+                        <button class="copy-btn" data-clipboard-target="#details-narration">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                            </svg>
+                        </button>
+                    </span>
+                </div>
+
+                <div class="detail-item">
+                    <span class="detail-label">Transaction ID</span>
+                    <span class="detail-value" id="details-transaction-id">
+                        Loading...
+                        <button class="copy-btn" data-clipboard-target="#details-transaction-id">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2-2v1"></path>
+                            </svg>
+                        </button>
+                    </span>
+                </div>
+
+                <div class="detail-item">
+                    <span class="detail-label">Transaction Timestamp</span>
+                    <span class="detail-value" id="details-timestamp">Loading...</span>
+                </div>
+
+                <div class="detail-item">
+                    <span class="detail-label">Transaction Mode</span>
+                    <span class="detail-value" id="details-mode">Loading...</span>
+                </div>
+
+                <div style="display: none;" class="detail-item" >
+                    <span class="detail-label">Reference/UTR</span>
+                    <span class="detail-value" id="details-reference-utr">
+                        Loading...
+                        <button class="copy-btn" data-clipboard-target="#details-reference-utr">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                            </svg>
+                        </button>
+                    </span>
                 </div>
             </div>
         </div>
@@ -866,6 +1131,22 @@
             const fullCategoryListEl = document.getElementById('full-category-list');
             const categorySearchInputEl = document.getElementById('category-search-input');
             const mostUsedCategoriesContainerEl = document.getElementById('most-used-categories-container');
+
+            const moreDetailsModalEl = document.getElementById('moreDetailsModal');
+            const closeMoreDetailsModalBtn = document.getElementById('closeMoreDetailsModalBtn');
+            const moreDetailsActionItem = document.getElementById('more-details-action');
+
+            // DOM elements for detail values
+            const detailsSummaryEl = document.getElementById('details-summary');
+            const detailsTypeEl = document.getElementById('details-type'); 
+            const detailsAmountEl = document.getElementById('details-amount');
+            const detailsDebitedFromEl = document.getElementById('details-debited-from');
+            const detailsTransferredToEl = document.getElementById('details-transferred-to');
+            const detailsNarrationEl = document.getElementById('details-narration');
+            const detailsTransactionIdEl = document.getElementById('details-transaction-id');
+            const detailsTimestampEl = document.getElementById('details-timestamp');
+            const detailsModeEl = document.getElementById('details-mode');
+            const detailsReferenceUtrEl = document.getElementById('details-reference-utr');
 
 
             // --- STATE ---
@@ -1031,7 +1312,12 @@
                         ? `${transaction.subcategory.parent_category_name} (${transaction.subcategory.name})`
                         : transaction.subcategory.name;
                     mainCategoryNameEl.textContent = displayName.toUpperCase();
-                    mainCategoryIconEl.setAttribute('data-feather', parseIconName(transaction.subcategory.icon_name).name || 'circle');
+                    var parsedIcon = parseIconName(transaction.subcategory.icon_name);
+                    if (parsedIcon.type === 'feather') {
+                        mainCategoryIconEl.outerHTML = `<i data-feather="${parsedIcon.name}" id="modal-category-icon-preview"></i>`;
+                    }else if (parsedIcon.type === 'emoji') {
+                        mainCategoryIconEl.outerHTML = `<span id="modal-category-icon-preview" class="emoji-icon">${parsedIcon.name}</span>`;
+                    } 
                 } else {
                     mainCategoryNameEl.textContent = 'UNCATEGORIZED';
                     mainCategoryIconEl.setAttribute('data-feather', 'circle');
@@ -1040,8 +1326,8 @@
                 if (transaction.account) {
                     fromAccountDetailsEl.textContent = `***${transaction.account.account_last4}`;
                     const accInitial = transaction.account.type_initial || 
-                                       (transaction.account.bank_name ? transaction.account.bank_name.charAt(0).toUpperCase() : 
-                                       (transaction.account.name ? transaction.account.name.charAt(0).toUpperCase() : 'A'));
+                                       (transaction.account.bank_name ? transaction.account.bank_name.split(" ")[0].toUpperCase() : 
+                                       (transaction.account.name ? transaction.account.name.split(" ")[0].toUpperCase() : 'A'));
                     fromAccountIconInitialEl.textContent = accInitial;
                 } else { 
                     fromAccountDetailsEl.textContent = '***0000';
@@ -1075,7 +1361,7 @@
                 modalAmountPreviewEl.textContent = `-₹${Math.round(transaction.amount)}`;
                 
                 if (transaction.account) {
-                    modalAccountIconPreviewEl.textContent = transaction.account.type_initial || transaction.account.name?.charAt(0).toUpperCase() || 'A';
+                    modalAccountIconPreviewEl.textContent = transaction.account.type_initial || transaction.account.name?.split(" ")[0].toUpperCase() || 'A';
                 } else {
                      modalAccountIconPreviewEl.textContent = 'A';
                 }
@@ -1111,7 +1397,7 @@
                     modalCategoryNamePreviewEl.textContent = displayName.toUpperCase();
                     const parsedIcon = parseIconName(subcatToPreview.icon_name);
                     if (parsedIcon.type === 'feather') {
-                        modalCategoryIconPreviewEl.outerHTML = `<i data-feather="${parsedIcon.name || 'circle'}" id="modal-category-icon-preview"></i>`;
+                        modalCategoryIconPreviewEl.outerHTML = `<i data-feather="${parsedIcon.name}" id="modal-category-icon-preview"></i>`;
                     } else if (parsedIcon.type === 'emoji') {
                         modalCategoryIconPreviewEl.outerHTML = `<span id="modal-category-icon-preview" class="emoji-icon">${parsedIcon.name}</span>`;
                     } 
@@ -1120,6 +1406,73 @@
                     modalCategoryIconPreviewEl.outerHTML = `<i data-feather="circle" id="modal-category-icon-preview"></i>`;
                 }
                 feather.replace({ width: '1em', height: '1em', 'stroke-width': 1.8 });
+            }
+
+            function populateMoreDetailsModal(transaction) {
+                if (!transaction) return;
+
+                const transactionDate = new Date(transaction.transaction_datetime_from_sms);
+                const formattedDate = transactionDate.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+
+                detailsSummaryEl.textContent = `You transferred ₹${Math.round(transaction.amount)} to ${transaction.merchant_vpa || 'Unknown'} on ${formattedDate}`;
+                // detailsTypeEl is static "Outgoing" for now
+
+                detailsAmountEl.textContent = transaction.amount.toFixed(2);
+            
+                if (transaction.account) {
+                    detailsDebitedFromEl.textContent = `${transaction.account.name || 'Unknown Account'} (***${transaction.account.account_last4 || '0000'})`;
+                } else {
+                    detailsDebitedFromEl.textContent = 'N/A';
+                }
+
+                detailsTransferredToEl.textContent = transaction.merchant_vpa || 'N/A';
+            
+                // --- Fields needing backend support ---
+                // For now, use placeholders or existing fields.
+                // These should ideally come from new fields on the Transaction model/schema:
+                // transaction.narration, transaction.bank_reference_id, transaction.transaction_mode
+                detailsNarrationEl.textContent = transaction.description || transaction.raw_sms_content.substring(0,100) || 'N/A'; // Placeholder
+                detailsTransactionIdEl.textContent = transaction.bank_reference_id || transaction.unique_hash || 'N/A'; // Placeholder, use transaction.id if preferred
+                detailsModeEl.textContent = transaction.transaction_mode || (transaction.account ? capitalizeFirstLetter(transaction.account.account_type) : 'Unknown'); 
+
+                detailsTimestampEl.textContent = transactionDate.toLocaleString('en-GB', {
+                    day: 'numeric', month: 'short', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true
+                }).replace(/,/g, '');
+
+                // detailsReferenceUtrEl.textContent = transaction.reference_utr || 'N/A'; // Placeholder
+
+                feather.replace({ width: '1em', height: '1em', 'stroke-width': 1.8 }); // Re-run for copy icons
+            }
+
+            function capitalizeFirstLetter(str) {
+                if (!str) {
+                    return str;
+                }
+                
+                return `${str.split("_")[0].substring(0, 1).toUpperCase()+str.split("_")[0].substring(1)} ${str.split("_")[1].substring(0, 1).toUpperCase() + str.split("_")[1].substring(1)}`;
+            }
+
+            function setupClipboard() {
+                document.querySelectorAll('.copy-btn').forEach(button => {
+                    button.addEventListener('click', () => {
+                        const targetSelector = button.dataset.clipboardTarget;
+                        const targetElement = document.querySelector(targetSelector);
+                        if (targetElement) {
+                            navigator.clipboard.writeText(targetElement.textContent)
+                                .then(() => {
+                                    // Optional: Show a "Copied!" message or change icon
+                                    const originalIcon = button.innerHTML;
+                                    button.innerHTML = '<i data-feather="check" style="color: green;"></i>';
+                                    feather.replace({ width: '1em', height: '1em', 'stroke-width': 1.8 });
+                                    setTimeout(() => {
+                                        button.innerHTML = originalIcon;
+                                        feather.replace({ width: '1em', height: '1em', 'stroke-width': 1.8 });
+                                    }, 1500);
+                                })
+                                .catch(err => console.error('Failed to copy: ', err));
+                        }
+                    });
+                });
             }
 
             function parseIconName(iconString) {
@@ -1368,6 +1721,29 @@
                         categorySearchInputEl.style.display = 'none';
                     }
                  });
+
+                if (moreDetailsActionItem) {
+                    moreDetailsActionItem.addEventListener('click', () => {
+                        populateMoreDetailsModal(currentTransaction);
+                        moreDetailsModalEl.style.display = 'flex';
+                        feather.replace({ width: '1em', height: '1em', 'stroke-width': 1.8 }); // Ensure icons in modal are rendered
+                    });
+                }
+
+                if (closeMoreDetailsModalBtn) {
+                    closeMoreDetailsModalBtn.addEventListener('click', () => {
+                        moreDetailsModalEl.style.display = 'none';
+                    });
+                }
+
+                if (moreDetailsModalEl) {
+                    moreDetailsModalEl.addEventListener('click', (e) => {
+                        if (e.target === moreDetailsModalEl) {
+                            moreDetailsModalEl.style.display = 'none';
+                        }
+                    });
+                }
+                setupClipboard();
             }
 
             // --- RUN ---
