@@ -2,6 +2,7 @@ from pydantic import BaseModel,Field
 from datetime import datetime
 from typing import Optional
 from app.models.transaction import TransactionStatus
+from app.schemas.category import SubCategoryInDB
 
 class SMSRecieved(BaseModel):
     sms_content: str
@@ -15,6 +16,7 @@ class TransactionBase(BaseModel):
     raw_sms_content: str
 
     unique_hash: str
+    linked_transaction_hash: Optional[str] = None
     subcategory_id: Optional[int] = None 
     
     account_id: Optional[int] = None
@@ -38,6 +40,7 @@ class TransactionUpdate(BaseModel):
     subcategory_id: Optional[int] = None    
     description: Optional[str] = None
     status: Optional[str] = None
+    linked_transaction_hash: Optional[str] = None
 
 
 class CategoryForTransaction(BaseModel):
@@ -76,7 +79,7 @@ class TransactionInDB(TransactionBase):
     received_at: datetime
     status: str
     account: Optional[AccountForTransaction] = None
-    subcategory: Optional[SubCategoryForTransaction] = None
+    subcategory: Optional[SubCategoryInDB] = None
 
     class Config:
         orm_mode = True

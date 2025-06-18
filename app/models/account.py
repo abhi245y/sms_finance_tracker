@@ -9,6 +9,10 @@ class AccountType(str, enum.Enum):
     CREDIT_CARD = "credit_card"
     WALLET = "wallet"
     UNKNOWN = "unknown"
+    
+class AccountPurpose(str, enum.Enum):
+    PERSONAL = "personal"
+    BUSINESS = "business"
 
 class Account(Base):
     __tablename__ = "accounts"
@@ -18,6 +22,7 @@ class Account(Base):
 
     account_type = Column(SQLAlchemyEnum(AccountType), nullable=False, default=AccountType.UNKNOWN)
     
+    purpose = Column(SQLAlchemyEnum(AccountPurpose), nullable=False, default=AccountPurpose.PERSONAL, server_default=AccountPurpose.PERSONAL.value)    
     bank_name = Column(String(100), nullable=False, index=True)
     account_last4 = Column(String(4), nullable=False, index=True)
 
@@ -31,4 +36,4 @@ class Account(Base):
     )
 
     def __repr__(self):
-        return f"<Account(id={self.id}, name='{self.name}', bank='{self.bank_name}', last4='{self.account_last4}')>"
+        return f"<Account(id={self.id}, name='{self.name}', purpose='{self.purpose}')>"
