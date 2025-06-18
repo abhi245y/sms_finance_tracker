@@ -1,6 +1,6 @@
 from pydantic import BaseModel,Field
 from datetime import datetime
-from typing import Optional
+from typing import Optional, List
 from app.models.transaction import TransactionStatus
 from app.schemas.category import SubCategoryInDB
 
@@ -79,7 +79,7 @@ class TransactionInDB(TransactionBase):
     received_at: datetime
     status: str
     account: Optional[AccountForTransaction] = None
-    subcategory: Optional[SubCategoryInDB] = None
+    subcategory: Optional[SubCategoryForTransaction] = None
 
     class Config:
         orm_mode = True

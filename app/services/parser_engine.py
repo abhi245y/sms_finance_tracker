@@ -32,7 +32,7 @@ class ParserEngine:
             IDFCFirstBankParser(),
         ]
         self._credit_keywords = ["credited to", "credited to your a/c", "credited to acct", "received", "deposited"]
-        self._debit_keywords = ["debited from", "spent on", "sent from"]
+        self._debit_keywords = ["debited", "spent", "sent from", "debited"]
         
     def _get_flow_type(self, sms_text: str) -> Optional[str]:
         """Determines if the SMS is a credit, debit, or unknown transaction."""
@@ -42,14 +42,6 @@ class ParserEngine:
         if any(keyword in sms_lower for keyword in self._debit_keywords):
             return "DEBIT"
         return None
-
-    def _is_credit_transaction(self, sms_text: str) -> bool:
-        """Checks if the SMS is a credit transaction."""
-        for keyword in self._credit_keywords:
-            if keyword.lower() in sms_text.lower():
-                print(f"DEBUG: Ignoring credit transaction: {sms_text[:70]}...")
-                return True
-        return False
 
     def _resolve_account_id(self, parsed_data: Dict[str, Any]) -> Optional[int]:
         """

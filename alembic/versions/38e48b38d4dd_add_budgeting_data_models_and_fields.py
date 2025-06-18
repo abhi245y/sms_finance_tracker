@@ -30,7 +30,7 @@ def upgrade() -> None:
     sa.UniqueConstraint('year', 'month', name='uq_year_month_budget')
     )
     op.create_index(op.f('ix_monthly_budgets_id'), 'monthly_budgets', ['id'], unique=False)
-    op.add_column('accounts', sa.Column('purpose', sa.Enum('PERSONAL', 'BUSINESS', name='accountpurpose'), server_default='personal', nullable=False))
+    op.add_column('accounts', sa.Column('purpose', sa.Enum('PERSONAL', 'BUSINESS', name='accountpurpose'), server_default='PERSONAL', nullable=False))
     op.add_column('subcategories', sa.Column('is_reimbursable', sa.Boolean(), server_default='0', nullable=False))
     op.add_column('subcategories', sa.Column('exclude_from_budget', sa.Boolean(), server_default='0', nullable=False))
 
