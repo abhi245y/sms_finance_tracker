@@ -9,6 +9,8 @@ from app.schemas.transaction import TransactionInDB
 from app.models.transaction import TransactionStatus
 from app.crud import crud_account
 
+from app.services.budget_service import get_remaining_spend_power
+
 
 API_BASE_URL = f"https://api.telegram.org/bot{settings.TELEGRAM_BOT_TOKEN}"
 
@@ -45,7 +47,7 @@ async def send_message(text: str, reply_markup: Optional[dict] = None) -> Option
             
         return None
 
-def _format_transaction_message(transaction: TransactionInDB, type_str: TransactionType) -> str:
+def _format_transaction_message(transaction: TransactionInDB, type_str: TransactionType, db: Session) -> str:
     """Formats a transaction object into a nice string for Telegram."""
     def escape_md(text: str) -> str:
         escape_chars = r'_*[]()~`>#+-=|{}.!'
@@ -53,6 +55,25 @@ def _format_transaction_message(transaction: TransactionInDB, type_str: Transact
 
     amount_str = escape_md(f"{transaction.amount:.2f} {transaction.currency}")
     merchant = escape_md(transaction.merchant_vpa or "Unknown Merchant")
+    
+    budget_line = ""
+    summary = get_remaining_spend_power(db) 
+    if summary:
+        remaining_str = escape_md(f"₹{summary['remaining']:,.0f}")
+        budget_str = escape_md(f"₹{summary['budget']:,.0f}")
+        
+        percentage = 0
+        if summary['budget'] > 0:
+            percentage = (summary['spent'] / summary['budget']) * 100
+        
+        progress_blocks = int(percentage / 10)
+        progress_bar = ("█" * progress_blocks) + ("░" * (10 - progress_blocks))
+
+        budget_line = (
+            f"\n\n*💰 Spend Power*:\n"
+            f"`{remaining_str} / {budget_str} Left`\n"
+            f"`[{progress_bar}] {percentage:.0f}% Used`"
+        )
     
     account_name = "⚠️ *Not Set*"
     if transaction.account:
@@ -86,7 +107,8 @@ def _format_transaction_message(transaction: TransactionInDB, type_str: Transact
             f"*Account*: {account_name}\n"
             f"*Category*: {subcategory_display_name}\n" 
             f"*Description*: {description_text}\n"
-            f"*Status*: {status_text}\n"
+            f"*Status*: {status_text}"
+            f"{budget_line}" 
         )
     return message
 
@@ -123,7 +145,7 @@ def _build_inline_keyboard(transaction: TransactionInDB, db: Session) -> Optiona
 
 async def send_new_transaction_notification(transaction: TransactionInDB, db: Session):
     """The main function to call from an endpoint."""
-    message_text = _format_transaction_message(transaction, TransactionType.NEW)
+    message_text = _format_transaction_message(transaction, TransactionType.NEW, db)
     keyboard = _build_inline_keyboard(transaction, db)
     return await send_message(text=message_text, reply_markup=keyboard)
 
@@ -135,7 +157,7 @@ async def send_update_notification(transaction: TransactionInDB, db: Session):
     
 async def edit_message_after_update(transaction: TransactionInDB, chat_id: int, message_id: int, db: Session):
     """Edits an existing Telegram message to reflect the updated transaction state."""
-    new_text = _format_transaction_message(transaction, TransactionType.UPDATED)
+    new_text = _format_transaction_message(transaction, TransactionType.UPDATED, db)
     keyboard = _build_inline_keyboard(transaction, db)
     async with httpx.AsyncClient() as client:
         payload = {

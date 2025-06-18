@@ -8,6 +8,9 @@ from app.core.config import settings
 from app.services.parser_engine import ParserEngine
 from app.services.transaction_status_manager import TransactionStatusManager
 
+from app.services.rule_engine import RuleEngine
+from app.services.budget_service import get_remaining_spend_power
+
 from app.schemas.transaction import (
     TransactionInDB, SMSRecieved, TransactionCreate, TransactionUpdate,
     SubCategoryForTransaction ,
@@ -82,37 +85,38 @@ async def receive_sms(
     """
     Receive SMS content from iPhone Shortcut.
     """
-    engine = ParserEngine(db_session=db)
-    final_parsed_data = engine.run(sms_text=sms_in.sms_content)
+    parser = ParserEngine(db_session=db)
+    parsed_data = parser.run(sms_text=sms_in.sms_content)
     
-    if not final_parsed_data:
-        raise HTTPException(status_code=422, detail={"status":"SMS is a credit transaction, has an unparseable format, or a stable hash could not be generated."})
+    if not parsed_data:
+        raise HTTPException(status_code=422, detail={"status":"SMS is not a processable debit transaction or has an unparseable format."})
     
-    existing_transaction = crud_transaction.get_transaction_by_hash(db, hash_str=final_parsed_data["unique_hash"])
+    existing_transaction = crud_transaction.get_transaction_by_hash(db, hash_str=parsed_data["unique_hash"])
     if existing_transaction:
-        print(f"DEBUG: Duplicate transaction detected with hash {final_parsed_data['unique_hash']}. Returning existing transaction ID {existing_transaction.id}.")
+        print(f"DEBUG: Duplicate transaction detected. Returning existing ID {existing_transaction.id}.")
         return _map_transaction_to_response_schema(existing_transaction)
     
+    rule_engine = RuleEngine(db_session=db)
+    auto_subcategory_id = rule_engine.run(parsed_data)
+    if auto_subcategory_id:
+        parsed_data["subcategory_id"] = auto_subcategory_id
         
     current_status = TransactionStatusManager.determine_initial_status(
-        creation_data=final_parsed_data,
+        creation_data=parsed_data,
         db=db
     )
 
-    final_parsed_data["status"] = current_status.value
-    final_parsed_data["raw_sms_content"] = sms_in.sms_content
-    final_parsed_data.setdefault('exclude_from_cashflow', False)    
+    parsed_data["status"] = current_status.value
+    parsed_data["raw_sms_content"] = sms_in.sms_content
     
-    transaction_to_create = TransactionCreate(**final_parsed_data)
+    parsed_data.pop("flow_type", None) 
     
-    
-    print(f"Transation Data: {transaction_to_create}")
+    transaction_to_create = TransactionCreate(**parsed_data)
   
     try:
         db_transaction = crud_transaction.create_transaction(db=db, obj_in=transaction_to_create)
     except Exception as e:
-        print(f"Error creating Pydantic TransactionCreate model or DB transaction: {e}")
-        print(f"Data for creation: {transaction_to_create.dict()}")
+        print(f"Error creating transaction: {e}")
         raise HTTPException(status_code=400, detail=f"Invalid transaction data: {str(e)}")
     
     transaction_with_relations = crud_transaction.get_transaction_by_hash(db, hash_str=db_transaction.unique_hash, include_relations=True)
@@ -125,7 +129,6 @@ async def receive_sms(
         crud_transaction.update_transaction_message_id(db, transaction_obj=transaction_with_relations, message_id=message_id)
 
     return _map_transaction_to_response_schema(transaction_with_relations)
-
 @router.get(
     "/get/by-token",
     response_model=TransactionInDB,
