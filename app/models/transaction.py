@@ -24,6 +24,9 @@ class Transaction(Base):
     id = Column(Integer, primary_key=True, index=True)
     unique_hash = Column(String(64), unique=True, index=True, nullable=False)
     telegram_message_id = Column(Integer, nullable=True, index=True)
+    
+    linked_transaction_hash = Column(String(64), nullable=True, index=True)
+    
     raw_sms_content = Column(Text, nullable=False)
     received_at = Column(DateTime(timezone=True), server_default=func.now())
     amount = Column(Float, nullable=True)

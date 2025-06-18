@@ -1,7 +1,7 @@
 from pydantic import BaseModel, Field, constr
 from typing import List, Optional
 
-from app.models.account import AccountType
+from app.models import AccountType, AccountPurpose
 
 # --- Base Schema ---
 # Contains fields common to creating and reading an account.
@@ -10,6 +10,7 @@ class AccountBase(BaseModel):
     account_type: AccountType = Field(..., example=AccountType.SAVINGS_ACCOUNT)
     bank_name: str = Field(..., max_length=100, example="HDFC Bank")
     account_last4: constr(pattern=r'^\d{4}$') = Field(..., example="1234")
+    purpose: AccountPurpose = Field(default=AccountPurpose.PERSONAL, example=AccountPurpose.PERSONAL)
 
 # --- Schema for Creating an Account ---
 # This is what the API will expect in the POST request body.
@@ -21,7 +22,7 @@ class AccountCreate(AccountBase):
 class AccountUpdate(BaseModel):
     name: Optional[str] = Field(None, min_length=2, max_length=100)
     account_type: Optional[AccountType] = None
-
+    purpose: Optional[AccountPurpose] = None
 
 # --- Schema for Reading/Returning an Account from DB ---
 # This represents an account as it is stored in the database, including its ID.
