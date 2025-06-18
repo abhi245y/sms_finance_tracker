@@ -1,4 +1,8 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import HTMLResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
+from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 
 # from app.db.session import engine
@@ -7,6 +11,7 @@ from app.core.config import settings
 from app.api.v1.endpoints import transactions as transactions_v1
 from app.api.v1.endpoints import categories as categories_v1
 from app.api.v1.endpoints import accounts as accounts_v1
+from app.api.v1.endpoints import telegram_webhook as telegram_webhook_v1
 
 
 app = FastAPI(
@@ -31,6 +36,35 @@ app.include_router(
     prefix=f"{settings.API_V1_STR}/accounts",
     tags=["Accounts"]
 )
+
+app.include_router(
+    telegram_webhook_v1.router,
+    prefix=f"{settings.API_V1_STR}/telegram",
+    tags=["Telegram"],
+)
+
+# --- ADD CORS MIDDLEWARE ---
+# This allows Mini Web APP (running on Telegram's domain context) to make requests to your API.
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"], # TODO For development, allow all. For production, restrict this.
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+app.mount("/static", StaticFiles(directory="static"), name="static")
+templates = Jinja2Templates(directory="templates")
+
+@app.get("/mini-app/{page_name}", response_class=HTMLResponse)
+async def read_mini_app(request: Request, page_name: str):
+    """
+    Serves the HTML file for the Telegram Mini App.
+    e.g., /mini-app/edit-transaction will serve templates/mini-app/edit-transaction.html
+    """
+    return templates.TemplateResponse(
+        f"mini-app/{page_name}.html", {"request": request}
+    )
 
 @app.get("/")
 async def root():

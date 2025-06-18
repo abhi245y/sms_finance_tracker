@@ -65,13 +65,31 @@ def read_all_accounts(
     return accounts
 
 @router.get(
+    "/for-mini-app",
+    response_model=List[account_schema.Account],
+    summary="Get a list of all registered accounts (For Mini App)",
+    dependencies=[Depends(deps.get_transaction_hash_from_token)]
+)
+def read_all_accounts_mini_app(
+    db: Session = Depends(deps.get_db),
+    skip: int = 0,
+    limit: int = 100,
+) -> Any:
+    """
+    Retrieve all registered accounts.
+    """
+    accounts = crud_account.get_accounts(db, skip=skip, limit=limit)
+    return accounts
+
+
+@router.get(
     "/{account_id}",
     response_model=account_schema.Account,
     summary="Get a specific account by its ID",
     dependencies=[Depends(verify_api_key)]
 )
 def read_account_by_id(
-    account_id: int,
+    account_id: int,    
     db: Session = Depends(deps.get_db),
 ) -> Any:
     """

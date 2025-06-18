@@ -1,13 +1,19 @@
 from pydantic_settings import BaseSettings
+from typing import Optional
 import secrets
 
 class Settings(BaseSettings):
     API_V1_STR: str = "/api/v1"
     PROJECT_NAME: str = "SMS Finance Tracker"
     SQLALCHEMY_DATABASE_URL: str = "sqlite:///./finance_tracker.db"
-    APP_SECRET_KEY: str = secrets.token_hex(32)
-    IPHONE_SHORTCUT_API_KEY: str = "1d3d5ea1d406e27b3586a7bb2e7f3d858223a61d1863c3fcdc03720085faae82"
+    APP_SECRET_KEY: Optional[str] = None
+    IPHONE_SHORTCUT_API_KEY: Optional[str] = None
     VERSION: str = "0.1.4"
+    
+    TELEGRAM_BOT_TOKEN: Optional[str] = None
+    TELEGRAM_CHAT_ID: Optional[str] = None
+    MINI_APP_BASE_URL: Optional[str] = None
+    TOKEN_ALGORITHM: str = "HS256"
 
     class Config:
         env_file = ".env"

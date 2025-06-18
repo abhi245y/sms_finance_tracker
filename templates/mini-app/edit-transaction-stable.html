@@ -1,0 +1,1212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Transaction Details</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background-color: #f8f9fa; /* Off-white background */
+            color: #1a1a1a; /* Default dark text */
+            padding: 16px;
+            padding-bottom: 100px; /* Space for Telegram MainButton */
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px; /* Spacing between cards, Fold uses ~16px or sometimes 12px */
+        }
+
+        .card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(0, 0, 0, 0.06); /* Subtle border */
+        }
+
+        /* Main transaction card */
+        .main-card {
+            text-align: center;
+            padding: 24px 20px;
+            position: relative;
+        }
+
+        .bookmark-icon {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 22px;
+            height: 22px;
+            color: #9ca3af; /* Grey icon color */
+        }
+
+        .amount {
+            font-size: 48px;
+            font-weight: 700; /* Bold amount */
+            color: #1a1a1a;
+            margin: 16px 0;
+            line-height: 1;
+        }
+
+        .category-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: #f3f4f6; /* Light grey badge background */
+            padding: 8px 16px;
+            border-radius: 20px; /* Pill shape */
+            font-size: 14px;
+            font-weight: 500;
+            color: #374151; /* Darker grey text */
+            margin-top: 12px;
+            cursor: pointer;
+        }
+
+        .category-badge i {
+            width: 16px;
+            height: 16px;
+        }
+
+        /* Info cards (FROM / ON) */
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1px; /* Creates the separator line */
+            background: #e5e7eb; /* Separator color */
+            border-radius: 16px;
+            overflow: hidden; /* To clip children to border-radius */
+            border: 1px solid rgba(0, 0, 0, 0.06);
+        }
+
+        .info-item {
+            background: white;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .info-label {
+            font-size: 12px;
+            font-weight: 500;
+            color: #6b7280; /* Grey label */
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .info-value {
+            font-size: 14px;
+            font-weight: 600; /* Semi-bold value */
+            color: #1a1a1a;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .account-icon { /* For the 'P' icon */
+            width: 20px;
+            height: 20px;
+            background: #3b82f6; /* Blue background */
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 10px;
+            font-weight: 600;
+        }
+
+        /* Paid to section */
+        .paid-to-card {
+            padding: 16px 20px; /* Specific padding */
+            cursor: pointer;
+        }
+
+        .paid-to-header {
+            font-size: 12px;
+            font-weight: 500;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+        }
+
+        .paid-to-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .paid-to-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .merchant-icon {
+            width: 32px;
+            height: 32px;
+            background: #f3f4f6; /* Light grey background for icon */
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6b7280; /* Icon color */
+        }
+        .merchant-icon i {
+            width: 18px;
+            height: 18px;
+        }
+
+        .merchant-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+
+        .chevron {
+            width: 20px;
+            height: 20px;
+            color: #9ca3af; /* Chevron color */
+        }
+
+        /* Action items (Account in, More Details, etc.) */
+        /* Card for these items has no direct padding */
+        .actions-card {
+            padding: 0;
+            overflow: hidden; /* For border radius of card to apply to children */
+        }
+
+        .action-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 20px;
+            cursor: pointer;
+            transition: background-color 0.15s ease;
+        }
+
+        .action-item:hover {
+            background-color: #f9fafb; /* Slight hover effect */
+        }
+
+        .action-item:not(:last-child) {
+            border-bottom: 1px solid #f3f4f6; /* Separator line */
+        }
+
+        .action-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .action-icon {
+            width: 20px;
+            height: 20px;
+            color: #6b7280;
+        }
+
+        .action-text {
+            font-size: 16px;
+            font-weight: 500;
+            color: #1a1a1a;
+        }
+
+        .action-date {
+            font-size: 14px;
+            font-weight: 500;
+            color: #374151; /* Darker grey for date text */
+            margin-left: auto;
+            padding-right: 8px;
+        }
+        
+        /* Specific styling for "Add transaction to group" which has no chevron */
+        .action-item.no-chevron .action-left {
+            flex-grow: 1; /* Allow it to take full width if no chevron */
+        }
+
+
+        /* Notes section */
+        .notes-card {
+            padding: 0; /* Padding handled by internal elements */
+            overflow: hidden;
+        }
+
+        .notes-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid #f3f4f6;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .notes-title-text { /* To avoid conflict with title attribute */
+            font-size: 16px;
+            font-weight: 600;
+            color: #1a1a1a;
+        }
+
+        .add-receipt-btn {
+            font-size: 14px;
+            font-weight: 600;
+            color: #3b82f6; /* Blue color for button */
+            cursor: pointer;
+            background: none;
+            border: none;
+            padding: 0;
+        }
+
+        .notes-content {
+            padding: 16px 20px;
+        }
+
+        .notes-textarea {
+            width: 100%;
+            min-height: 80px;
+            border: none;
+            outline: none;
+            font-family: inherit;
+            font-size: 15px;
+            color: #374151; /* Darker grey for typed text */
+            resize: none;
+            background: transparent;
+        }
+
+        .notes-textarea::placeholder {
+            color: #9ca3af; /* Lighter grey for placeholder */
+        }
+
+        /* Toggle switch (Exclude from Cash Flow) */
+        .toggle-item-card { /* Wrapper card for toggle */
+             padding: 0; /* Padding is on toggle-item */
+        }
+        .toggle-item {
+            display: flex;
+            align-items: center; /* Vertically center icon with text block */
+            justify-content: space-between;
+            padding: 16px 20px;
+        }
+
+        .toggle-left {
+            display: flex;
+            align-items: flex-start; /* Align icon to top of text block */
+            gap: 12px;
+            flex: 1; /* Take available space */
+        }
+
+        .toggle-icon {
+            width: 20px;
+            height: 20px;
+            color: #6b7280;
+            margin-top: 2px; /* Align icon nicely with first line of text */
+        }
+
+        .toggle-content {
+            flex: 1;
+        }
+
+        .toggle-title {
+            font-size: 16px;
+            font-weight: 500;
+            color: #1a1a1a;
+            margin-bottom: 4px;
+        }
+
+        .toggle-subtitle {
+            font-size: 14px;
+            color: #6b7280;
+            line-height: 1.4;
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 44px; /* Width of the switch */
+            height: 24px; /* Height of the switch */
+            flex-shrink: 0; /* Prevent switch from shrinking */
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #e5e7eb; /* Switch off state color */
+            transition: 0.2s;
+            border-radius: 24px; /* Fully rounded */
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 20px; /* Knob height */
+            width: 20px;  /* Knob width */
+            left: 2px;   /* Knob position */
+            bottom: 2px; /* Knob position */
+            background-color: white;
+            transition: 0.2s;
+            border-radius: 50%; /* Circular knob */
+        }
+
+        input:checked + .slider {
+            background-color: #3b82f6; /* Switch on state color (blue) */
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(20px); /* Move knob to the right */
+        }
+
+        /* Loading overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.9);
+            display: none; /* Hidden by default */
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .spinner {
+            width: 32px;
+            height: 32px;
+            border: 3px solid #f3f4f6; /* Light part of spinner */
+            border-radius: 50%;
+            border-top-color: #3b82f6; /* Blue part of spinner */
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Category modal */
+        .category-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5); /* Semi-transparent overlay */
+            display: none; /* Hidden by default */
+            justify-content: center;
+            align-items: flex-end; /* Modal slides from bottom */
+            z-index: 2000;
+        }
+
+        .category-content {
+            background: white;
+            width: 100%;
+            max-width: 400px; /* Match container width */
+            border-radius: 16px 16px 0 0; /* Rounded top corners */
+            max-height: 85vh; /* Limit height */
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .category-header {
+            padding: 12px 20px; /* Adjusted padding */
+            border-bottom: 1px solid #f3f4f6;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            background: white;
+            z-index: 10;
+        }
+
+        .category-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1a1a1a;
+            text-align: center;
+            flex-grow: 1; /* Center title */
+        }
+
+        .close-btn, .save-btn {
+            font-size: 16px;
+            font-weight: 600;
+            color: #3b82f6; /* Blue */
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 8px; /* Easier to tap */
+        }
+        .close-btn { font-size: 20px; line-height: 1; } /* Make X bigger */
+        .save-btn { font-size: 22px; line-height: 1; } /* Make tick bigger */
+
+
+        .transaction-preview {
+            padding: 16px 20px;
+            border-bottom: 1px solid #f3f4f6;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .preview-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .preview-left .merchant-icon { /* Re-use merchant icon style */
+            width: 28px; height: 28px;
+        }
+        .preview-left .merchant-icon i {
+             width: 16px; height: 16px;
+        }
+        .preview-left .merchant-name { font-size: 14px; font-weight: 500;}
+
+
+        .preview-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .preview-amount {
+            font-size: 16px; /* Smaller amount in preview */
+            font-weight: 700;
+            color: #1a1a1a;
+        }
+
+        .preview-category-badge { /* Renamed to avoid conflict */
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: #f3f4f6;
+            padding: 6px 10px;
+            border-radius: 16px;
+            font-size: 12px;
+            font-weight: 500;
+            color: #374151;
+        }
+        .preview-category-badge i { width: 12px; height: 12px; }
+
+        .preview-account-icon { /* Re-use account icon style, make it distinct if needed */
+            width: 18px; height: 18px; font-size: 9px;
+        }
+
+
+        .search-section {
+            padding: 16px 20px;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 16px;
+            outline: none;
+        }
+        .search-input::placeholder { color: #9ca3af; }
+
+        .search-input:focus {
+            border-color: #3b82f6; /* Blue border on focus */
+        }
+
+        .categories-section {
+            padding: 20px;
+            flex-grow: 1; /* Allow this section to scroll */
+            overflow-y: auto;
+        }
+
+        .section-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #6b7280; /* Grey section title */
+            margin-bottom: 16px;
+        }
+
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); /* Responsive grid */
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .category-chip {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 12px; /* Adjusted padding */
+            background: #f9fafb; /* Very light grey */
+            border: 1px solid #e5e7eb; /* Light border */
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #374151;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+        .category-chip i { width: 16px; height: 16px; color: #6b7280; }
+
+        .category-chip:hover,
+        .category-chip.selected {
+            background: #eff6ff; /* Light blue background for selected/hover */
+            border-color: #3b82f6; /* Blue border */
+            color: #1d4ed8; /* Darker blue text */
+        }
+        .category-chip.selected i { color: #1d4ed8; }
+
+
+        .category-list {
+            display: flex;
+            flex-direction: column;
+            gap: 24px; /* Space between category groups */
+        }
+
+        .category-group {
+            /* border-bottom: 1px solid #f3f4f6; */ /* Fold doesn't seem to have bottom border here */
+            /* padding-bottom: 16px; */
+        }
+
+        /* .category-group:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        } */
+
+        .category-group-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 4px; /* Reduced margin */
+        }
+
+        .category-group-subtitle {
+            font-size: 12px; /* Smaller subtitle */
+            color: #6b7280;
+            margin-bottom: 12px;
+        }
+
+        .subcategory-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); /* Responsive grid for subcategories */
+            gap: 12px;
+        }
+
+        .subcategory-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            padding: 10px 6px; /* Adjusted padding */
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background-color 0.15s ease;
+            position: relative;
+        }
+         .subcategory-item.selected::after { /* Blue dot for selected subcategory */
+            content: '';
+            position: absolute;
+            bottom: 4px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 6px;
+            height: 6px;
+            background-color: #3b82f6;
+            border-radius: 50%;
+        }
+
+
+        .subcategory-item:hover {
+            background: #f9fafb; /* Light hover effect */
+        }
+
+        .subcategory-icon-wrapper { /* Wrapper for subcategory icon */
+            width: 40px; /* Increased size */
+            height: 40px;
+            background: #f3f4f6; /* Light grey background */
+            border-radius: 12px; /* More rounded */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6b7280;
+            font-size: 20px; /* For emoji icons */
+        }
+        .subcategory-icon-wrapper i { width: 20px; height: 20px;}
+
+
+        .subcategory-name {
+            font-size: 12px;
+            font-weight: 500;
+            color: #374151;
+            text-align: center;
+            line-height: 1.2;
+            width: 100%; /* Ensure text wraps if too long */
+        }
+
+    </style>
+</head>
+<body>
+    <main class="container">
+        <!-- Main Transaction Card -->
+        <div class="card main-card">
+            <i data-feather="bookmark" class="bookmark-icon"></i>
+            <div id="transaction-amount" class="amount">-₹140</div>
+            <div class="category-badge" id="category-badge-main">
+                <i data-feather="coffee" id="main-category-icon"></i>
+                <span id="main-category-name">FOOD & DRINKS</span>
+            </div>
+        </div>
+
+        <!-- Info Grid -->
+        <div class="info-grid">
+            <div class="info-item">
+                <div class="info-label">FROM</div>
+                <div class="info-value">
+                    <div class="account-icon" id="from-account-icon-initial">P</div>
+                    <span id="from-account-details">***0214</span>
+                </div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">ON</div>
+                <div class="info-value">
+                    <span id="transaction-date">Thu, Jun. 12 '25</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Paid To -->
+        <div class="card paid-to-card">
+            <div class="paid-to-header">PAID TO</div>
+            <div class="paid-to-content">
+                <div class="paid-to-info">
+                    <div class="merchant-icon">
+                        <i data-feather="user"></i>
+                    </div>
+                    <div id="paid-to-merchant-name" class="merchant-name">JOSE A</div>
+                </div>
+                <i data-feather="chevron-right" class="chevron"></i>
+            </div>
+        </div>
+
+        <!-- Action Items -->
+        <div class="card actions-card">
+            <div class="action-item">
+                <div class="action-left">
+                    <i data-feather="calendar" class="action-icon"></i>
+                    <span class="action-text">Account in</span>
+                </div>
+                <span id="account-in-date" class="action-date">Jun 2025</span>
+                <i data-feather="chevron-right" class="chevron"></i>
+            </div>
+            <div class="action-item">
+                <div class="action-left">
+                    <i data-feather="info" class="action-icon"></i>
+                    <span class="action-text">More Details</span>
+                </div>
+                <i data-feather="chevron-right" class="chevron"></i>
+            </div>
+        </div>
+
+        <!-- Add to Group -->
+        <div class="card actions-card">
+            <div class="action-item no-chevron"> <!-- Added no-chevron class -->
+                <div class="action-left">
+                    <i data-feather="folder-plus" class="action-icon"></i>
+                    <span class="action-text">Add transaction to group</span>
+                </div>
+                <!-- No chevron as per screenshot 1 -->
+            </div>
+        </div>
+
+        <!-- Notes -->
+        <div class="card notes-card">
+            <div class="notes-header">
+                <div class="notes-title-text">NOTES</div>
+                <button class="add-receipt-btn">ADD RECEIPT</button>
+            </div>
+            <div class="notes-content">
+                <textarea id="description" class="notes-textarea" placeholder="Something about this transaction you would like to recall later?"></textarea>
+            </div>
+        </div>
+
+        <!-- Cash Flow Toggle -->
+        <div class="card toggle-item-card">
+            <div class="toggle-item">
+                <div class="toggle-left">
+                    <i data-feather="trending-down" class="toggle-icon"></i>
+                    <div class="toggle-content">
+                        <div class="toggle-title">Exclude from Cash Flow</div>
+                        <div class="toggle-subtitle">Turn this on if you don't want this expense to affect your cash flow analysis.</div>
+                    </div>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" id="exclude-cashflow-toggle">
+                    <span class="slider"></span>
+                </label>
+            </div>
+        </div>
+    </main>
+
+    <!-- Category Selection Modal -->
+    <div class="category-modal" id="categoryModal">
+        <div class="category-content">
+            <div class="category-header">
+                <button class="close-btn" id="closeModalBtn">✕</button>
+                <div class="category-title">Tag transaction</div>
+                <button class="save-btn" id="saveCategoryBtn">✓</button>
+            </div>
+            
+            <div class="transaction-preview">
+                <div class="preview-left">
+                    <div class="merchant-icon" id="modal-merchant-icon-preview">
+                        <i data-feather="user"></i>
+                    </div>
+                    <div>
+                        <div class="merchant-name" id="modal-merchant-name-preview">JOSE A</div>
+                        <div style="font-size: 12px; color: #6b7280;" id="modal-transaction-time-preview">Yesterday, 5:39PM</div>
+                    </div>
+                </div>
+                <div class="preview-right">
+                    <div class="preview-amount" id="modal-amount-preview">-₹140</div>
+                    <div class="preview-category-badge" id="modal-category-badge-preview">
+                        <i data-feather="coffee" id="modal-category-icon-preview"></i>
+                        <span id="modal-category-name-preview">FOOD & DRINKS</span>
+                    </div>
+                    <div class="account-icon preview-account-icon" id="modal-account-icon-preview">P</div>
+                </div>
+            </div>
+
+            <div class="search-section">
+                <input type="text" class="search-input" placeholder="Search Bills, Categories...">
+            </div>
+
+            <div class="categories-section">
+                <div class="section-title">Most used</div>
+                <div class="category-grid">
+                    <!-- Example chips, to be populated dynamically or static -->
+                    <div class="category-chip" data-category-id="personal">
+                        <i data-feather="user"></i> PERSONAL
+                    </div>
+                    <div class="category-chip" data-category-id="groceries">
+                        <i data-feather="shopping-cart"></i> GROCERIES
+                    </div>
+                    <div class="category-chip selected" data-category-id="food"> <!-- Default selected example -->
+                        <i data-feather="coffee"></i> FOOD & DRINKS
+                    </div>
+                    <div class="category-chip" data-category-id="shopping">
+                        <i data-feather="shopping-bag"></i> SHOPPING
+                    </div>
+                    <div class="category-chip" data-category-id="investment">
+                        <i data-feather="trending-up"></i> INVESTMENT
+                    </div>
+                </div>
+
+                <div class="category-list">
+                    <div class="category-group">
+                        <div class="category-group-title">Food & Drinks</div>
+                        <div class="category-group-subtitle">Eating out, Swiggy, Zomato etc.</div>
+                        <div class="subcategory-grid">
+                            <div class="subcategory-item" data-subcategory-id="eating_out">
+                                <div class="subcategory-icon-wrapper">🍽️</div>
+                                <div class="subcategory-name">Eating out</div>
+                            </div>
+                            <div class="subcategory-item" data-subcategory-id="take_away">
+                                <div class="subcategory-icon-wrapper">🥡</div>
+                                <div class="subcategory-name">Take Away</div>
+                            </div>
+                            <div class="subcategory-item selected" data-subcategory-id="tea_coffee"> <!-- Example selected -->
+                                <div class="subcategory-icon-wrapper">☕</div>
+                                <div class="subcategory-name">Tea & Coffee</div>
+                            </div>
+                            <div class="subcategory-item" data-subcategory-id="fast_food">
+                                <div class="subcategory-icon-wrapper">🍔</div>
+                                <div class="subcategory-name">Fast Food</div>
+                            </div>
+                            <div class="subcategory-item" data-subcategory-id="snacks">
+                                <div class="subcategory-icon-wrapper">🍿</div>
+                                <div class="subcategory-name">Snacks</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="category-group">
+                        <div class="category-group-title">Transport</div>
+                        <div class="category-group-subtitle">Uber, Ola and other modes of transport</div>
+                        <div class="subcategory-grid">
+                            <div class="subcategory-item" data-subcategory-id="uber">
+                                <div class="subcategory-icon-wrapper">🚗</div>
+                                <div class="subcategory-name">Uber</div>
+                            </div>
+                            <div class="subcategory-item" data-subcategory-id="rapido">
+                                 <div class="subcategory-icon-wrapper">🛵</div> <!-- Changed icon -->
+                                <div class="subcategory-name">Rapido</div>
+                            </div>
+                            <div class="subcategory-item" data-subcategory-id="auto">
+                                <div class="subcategory-icon-wrapper">🛺</div> <!-- Changed icon -->
+                                <div class="subcategory-name">Auto</div>
+                            </div>
+                            <div class="subcategory-item" data-subcategory-id="cab">
+                                <div class="subcategory-icon-wrapper">🚕</div>
+                                <div class="subcategory-name">Cab</div>
+                            </div>
+                            <div class="subcategory-item" data-subcategory-id="train">
+                                <div class="subcategory-icon-wrapper">🚆</div> <!-- Changed icon -->
+                                <div class="subcategory-name">Train</div>
+                            </div>
+                        </div>
+                    </div>
+                     <div class="category-group">
+                        <div class="category-group-title">Shopping</div>
+                        {/* Add subcategories if any or leave empty */}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="spinner"></div>
+    </div>
+
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            'use strict';
+            const tg = window.Telegram.WebApp;
+            if (tg.initDataUnsafe?.user) { // Check if running in Telegram
+                tg.expand();
+                tg.setHeaderColor('#f8f9fa'); // Match body background
+                tg.setBackgroundColor('#f8f9fa');
+            }
+
+            // --- DOM Elements ---
+            const loadingOverlay = document.getElementById('loading-overlay');
+            
+            // Main page elements
+            const transactionAmountEl = document.getElementById('transaction-amount');
+            const mainCategoryIconEl = document.getElementById('main-category-icon');
+            const mainCategoryNameEl = document.getElementById('main-category-name');
+            const fromAccountIconInitialEl = document.getElementById('from-account-icon-initial');
+            const fromAccountDetailsEl = document.getElementById('from-account-details');
+            const transactionDateEl = document.getElementById('transaction-date');
+            const paidToMerchantNameEl = document.getElementById('paid-to-merchant-name');
+            const accountInDateEl = document.getElementById('account-in-date');
+            const descriptionTextarea = document.getElementById('description');
+            const categoryBadgeMain = document.getElementById('category-badge-main');
+
+            // Category Modal elements
+            const categoryModal = document.getElementById('categoryModal');
+            const closeModalBtn = document.getElementById('closeModalBtn');
+            const saveCategoryBtn = document.getElementById('saveCategoryBtn');
+            const modalMerchantNamePreviewEl = document.getElementById('modal-merchant-name-preview');
+            const modalTransactionTimePreviewEl = document.getElementById('modal-transaction-time-preview');
+            const modalAmountPreviewEl = document.getElementById('modal-amount-preview');
+            const modalCategoryIconPreviewEl = document.getElementById('modal-category-icon-preview'); // Ensure this ID exists if you want to change icon
+            const modalCategoryNamePreviewEl = document.getElementById('modal-category-name-preview');
+            const modalAccountIconPreviewEl = document.getElementById('modal-account-icon-preview');
+
+
+            // --- STATE ---
+            let currentTransaction = null; // To store fetched transaction
+            let access_token = ''; // To be fetched from URL params
+            const API_BASE_URL = 'https://finance.arlp.live/api/v1'; // Your API base URL
+
+            // --- MAIN ---
+            async function initialize() {
+                setLoading(true);
+                try {
+                    const urlParams = new URLSearchParams(window.location.search);
+                    access_token = urlParams.get('token');
+                    if (!access_token && !tg.initDataUnsafe?.user) { // Allow local testing without token
+                        console.warn("Access token not found. Running in local mode.");
+                        // Use mock data for local testing if no token
+                        currentTransaction = getMockTransaction();
+                    } else if (!access_token && tg.initDataUnsafe?.user) {
+                         throw new Error("Access token not found.");
+                    }
+                     else {
+                        currentTransaction = await fetchTransaction();
+                    }
+                    
+                    populateUI(currentTransaction);
+                    configureMainButton();
+                    setupEventListeners();
+                } catch (error) {
+                    console.error("Initialization error:", error);
+                    showError(error.message);
+                } finally {
+                    setLoading(false);
+                    feather.replace({ width: '1em', height: '1em' }); // Apply Feather icons globally after DOM is ready
+                }
+            }
+            
+            function getMockTransaction() {
+                return {
+                    merchant_vpa: 'JOSE A',
+                    amount: 140.00,
+                    description: 'Tea at office',
+                    category_obj: { name: 'Food & Drinks', icon: 'coffee' }, // Add icon field to your category_obj
+                    account: { name: 'PhonePe', account_last4: '0214', type_initial: 'P' }, // Add type_initial
+                    transaction_datetime_from_sms: new Date().toISOString(), // Use current time for mock
+                    exclude_from_cashflow: false
+                };
+            }
+
+            // --- API ---
+            async function fetchTransaction() {
+                const response = await fetch(`${API_BASE_URL}/transactions/get/by-token`, {
+                    headers: { 'Authorization': `Bearer ${access_token}` },
+                });
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({ detail: response.statusText }));
+                    throw new Error(`API Error: ${errorData.detail || response.statusText}`);
+                }
+                return await response.json();
+            }
+
+            async function updateTransaction(patchData) {
+                const response = await fetch(`${API_BASE_URL}/transactions/by-token`, {
+                    method: 'PATCH',
+                    headers: { 
+                        'Content-Type': 'application/json', 
+                        'Authorization': `Bearer ${access_token}` 
+                    },
+                    body: JSON.stringify(patchData),
+                });
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({ detail: response.statusText }));
+                    throw new Error(`API Error: ${errorData.detail || response.statusText}`);
+                }
+                return await response.json();
+            }
+
+            // --- UI HELPERS ---
+            function setLoading(isLoading) {
+                loadingOverlay.style.display = isLoading ? 'flex' : 'none';
+            }
+
+            function showError(message) {
+                if (tg.initDataUnsafe?.user) {
+                    tg.showAlert(message);
+                } else {
+                    alert(message); 
+                }
+                if (tg.MainButton) tg.MainButton.hide();
+            }
+
+            function populateUI(transaction) {
+                if (!transaction) return;
+
+                transactionAmountEl.textContent = `-₹${Math.round(transaction.amount)}`;
+                
+                if (transaction.category_obj) {
+                    mainCategoryNameEl.textContent = transaction.category_obj.name.toUpperCase();
+                    mainCategoryIconEl.setAttribute('data-feather', transaction.category_obj.icon || 'circle'); // Default icon
+                } else {
+                    mainCategoryNameEl.textContent = 'UNCATEGORIZED';
+                    mainCategoryIconEl.setAttribute('data-feather', 'circle');
+                }
+
+                if (transaction.account) {
+                    fromAccountDetailsEl.textContent = `***${transaction.account.account_last4}`;
+                    fromAccountIconInitialEl.textContent = transaction.account.type_initial || transaction.account.name?.charAt(0).toUpperCase() || 'A';
+                } else {
+                    fromAccountDetailsEl.textContent = '***0000';
+                    fromAccountIconInitialEl.textContent = 'A';
+                }
+                
+                paidToMerchantNameEl.textContent = transaction.merchant_vpa || 'Unknown Merchant';
+                descriptionTextarea.value = transaction.description || '';
+                document.getElementById('exclude-cashflow-toggle').checked = transaction.exclude_from_cashflow || false;
+
+
+                if (transaction.transaction_datetime_from_sms) {
+                    const date = new Date(transaction.transaction_datetime_from_sms);
+                    transactionDateEl.textContent = date.toLocaleDateString('en-GB', { 
+                        weekday: 'short', month: 'short', day: 'numeric', year: '2-digit'
+                    }).replace(/,/g, '');
+
+                    accountInDateEl.textContent = date.toLocaleDateString('en-US', {
+                        month: 'short', year: 'numeric'
+                    });
+                } else {
+                    transactionDateEl.textContent = 'No Date';
+                    accountInDateEl.textContent = 'N/A';
+                }
+                
+                feather.replace({ width: '1em', height: '1em' }); 
+            }
+            
+            function populateCategoryModalPreview(transaction) {
+                if (!transaction) return;
+
+                modalMerchantNamePreviewEl.textContent = transaction.merchant_vpa || 'Unknown';
+                modalAmountPreviewEl.textContent = `-₹${Math.round(transaction.amount)}`;
+                
+                if (transaction.account) {
+                    modalAccountIconPreviewEl.textContent = transaction.account.type_initial || transaction.account.name?.charAt(0).toUpperCase() || 'A';
+                } else {
+                     modalAccountIconPreviewEl.textContent = 'A';
+                }
+
+                if (transaction.transaction_datetime_from_sms) {
+                    const date = new Date(transaction.transaction_datetime_from_sms);
+                    // This is a simplified time. "Yesterday, 5:39PM" requires relative date logic.
+                    modalTransactionTimePreviewEl.textContent = date.toLocaleTimeString('en-US', {
+                        hour: 'numeric', minute: '2-digit', hour12: true 
+                    });
+                } else {
+                    modalTransactionTimePreviewEl.textContent = "Time N/A";
+                }
+
+                if (transaction.category_obj) {
+                    modalCategoryNamePreviewEl.textContent = transaction.category_obj.name.toUpperCase();
+                    modalCategoryIconPreviewEl.setAttribute('data-feather', transaction.category_obj.icon || 'circle');
+                } else {
+                    modalCategoryNamePreviewEl.textContent = 'UNCATEGORIZED';
+                    modalCategoryIconPreviewEl.setAttribute('data-feather', 'circle');
+                }
+                feather.replace({ width: '1em', height: '1em' });
+            }
+
+
+            // --- TELEGRAM BUTTONS ---
+            function configureMainButton() {
+                if (!tg.MainButton) return; // Not in Telegram environment
+                tg.MainButton.setParams({
+                    text: 'SAVE CHANGES',
+                    color: '#3b82f6', // Fold's blue
+                    text_color: '#ffffff',
+                    is_active: true,
+                    is_visible: true
+                });
+                tg.MainButton.onClick(handleSave);
+            }
+
+            async function handleSave() {
+                if (tg.MainButton && (!tg.MainButton.isVisible || !tg.MainButton.isActive)) return;
+                
+                if (tg.MainButton) tg.MainButton.showProgress();
+                setLoading(true);
+
+                try {
+                    const patchData = {
+                        description: descriptionTextarea.value,
+                        // category_id: currentlySelectedCategoryId, // If category changes
+                        // exclude_from_cashflow: document.getElementById('exclude-cashflow-toggle').checked
+                    };
+                    
+                    if (access_token) { 
+                        await updateTransaction(patchData);
+                    } else {
+                        console.log("Local save (mock):", patchData);
+                        await new Promise(resolve => setTimeout(resolve, 500));
+                    }
+
+                    if (tg.initDataUnsafe?.user) tg.close();
+                    else alert("Changes saved (mocked)!");
+
+                } catch (error) {
+                    console.error("Save error:", error);
+                    showError(`Error saving: ${error.message}`);
+                } finally {
+                    if (tg.MainButton) tg.MainButton.hideProgress();
+                    setLoading(false);
+                }
+            }
+
+            // --- EVENT LISTENERS ---
+            function setupEventListeners() {
+                categoryBadgeMain.addEventListener('click', () => {
+                    populateCategoryModalPreview(currentTransaction);
+                    categoryModal.style.display = 'flex';
+                    feather.replace({ width: '1em', height: '1em' }); 
+                });
+
+                closeModalBtn.addEventListener('click', () => {
+                    categoryModal.style.display = 'none';
+                });
+
+                saveCategoryBtn.addEventListener('click', () => {
+                    // Logic to get selected category from modal
+                    // const selectedCategoryId = ...; 
+                    // currentTransaction.category_obj = ... ; // Update local transaction
+                    // populateUI(currentTransaction); // Refresh main UI
+                    // Then you might want to include category_id in handleSave patchData
+                    categoryModal.style.display = 'none';
+                    // For now, just closes. Actual save would happen with main "SAVE CHANGES"
+                });
+
+                // Close modal if clicking outside content
+                categoryModal.addEventListener('click', (e) => {
+                    if (e.target === categoryModal) {
+                        categoryModal.style.display = 'none';
+                    }
+                });
+                
+                // Example: Handle clicks on category chips in modal
+                document.querySelectorAll('.category-modal .category-chip').forEach(chip => {
+                    chip.addEventListener('click', function() {
+                        document.querySelectorAll('.category-modal .category-chip.selected').forEach(c => c.classList.remove('selected'));
+                        this.classList.add('selected');
+                        // Update preview category in modal
+                        const categoryName = this.innerText.trim();
+                        const iconName = this.querySelector('i').getAttribute('data-feather');
+                        modalCategoryNamePreviewEl.textContent = categoryName;
+                        modalCategoryIconPreviewEl.setAttribute('data-feather', iconName || 'circle');
+                        feather.replace({ width: '1em', height: '1em' });
+                    });
+                });
+                 document.querySelectorAll('.category-modal .subcategory-item').forEach(item => {
+                    item.addEventListener('click', function() {
+                        document.querySelectorAll('.category-modal .subcategory-item.selected').forEach(s => s.classList.remove('selected'));
+                        this.classList.add('selected');
+                        // Potentially update main category as well if subcategory implies parent
+                        const subCategoryName = this.querySelector('.subcategory-name').innerText.trim();
+                        // Find parent category name
+                        const parentGroup = this.closest('.category-group');
+                        const parentCategoryName = parentGroup.querySelector('.category-group-title').innerText.trim();
+                        
+                        modalCategoryNamePreviewEl.textContent = `${parentCategoryName} (${subCategoryName})`.toUpperCase();
+                        // You might need a mapping for subcategory icons or use parent's
+                        const parentChip = Array.from(document.querySelectorAll('.category-modal .category-chip')).find(c => c.innerText.trim().includes(parentCategoryName));
+                        if(parentChip){
+                             const iconName = parentChip.querySelector('i').getAttribute('data-feather');
+                             modalCategoryIconPreviewEl.setAttribute('data-feather', iconName || 'circle');
+                        }
+                        feather.replace({ width: '1em', height: '1em' });
+                    });
+                });
+            }
+
+            // --- RUN ---
+            initialize();
+        });
+    </script>
+</body>
+</html>
