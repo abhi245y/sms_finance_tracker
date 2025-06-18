@@ -6,9 +6,11 @@ from sqlalchemy import pool
 from alembic import context
 
 from app.db.base_class import Base 
-from app.models.transaction import Transaction  # noqa: F401
-from app.models.category import Category  # noqa: F401
-from app.models.account import Account  # noqa: F401
+from app.models import Transaction  # noqa: F401
+from app.models import Category  # noqa: F401
+from app.models import SubCategory  # noqa: F401
+from app.models import Account  # noqa: F401
+from app.models import MonthlyBudget  # noqa: F401
 from app.core.config import settings
 
 

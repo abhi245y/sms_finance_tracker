@@ -6,6 +6,8 @@ class SubCategoryBase(BaseModel):
     name: str = Field(..., min_length=1, max_length=100)
     icon_name: Optional[str] = Field(None, max_length=100, example="fthr:coffee")
     display_order: int = Field(0, example=0)
+    is_reimbursable: bool = Field(default=False)
+    exclude_from_budget: bool = Field(default=False)
     parent_category_id: int 
     
 class SubCategoryCreate(SubCategoryBase):
