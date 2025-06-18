@@ -1447,6 +1447,13 @@
         subcategory: false,
     };
 
+    function getCurrenncySymbol(currency_type){
+        if (currency_type === "USD"){
+            return "$"
+        }
+        return "₹"
+    }
+
 
     // --- MAIN ---
     async function initialize() {
@@ -1743,7 +1750,7 @@
 
     function populateUI(transaction) {
         if (!transaction) return;
-        transactionAmountEl.textContent = `-₹${Math.round(transaction.amount)}`;
+        transactionAmountEl.textContent = `-${getCurrenncySymbol(transaction.currency_type)}${Math.round(transaction.amount)}`;
 
         if (transaction.subcategory && transaction.subcategory.name) {
             const displayName = transaction.subcategory.parent_category_name && transaction.subcategory.parent_category_name.toLowerCase() !== 'general' ?
@@ -1804,7 +1811,8 @@
     function populateCategoryModalPreview(transaction) {
         if (!transaction) return;
         modalMerchantNamePreviewEl.textContent = transaction.merchant_vpa || 'Unknown';
-        modalAmountPreviewEl.textContent = `-₹${Math.round(transaction.amount)}`;
+        
+        modalAmountPreviewEl.textContent = `-${getCurrenncySymbol(transaction.currency_type)}${Math.round(transaction.amount)}`;
 
         if (transaction.account) {
             modalAccountIconPreviewEl.textContent = transaction.account.type_initial || transaction.account.name?.split(" ")[0].toUpperCase() || 'A';
@@ -1870,7 +1878,7 @@
             year: 'numeric'
         });
 
-        detailsSummaryEl.textContent = `You transferred ₹${Math.round(transaction.amount)} to ${transaction.merchant_vpa || 'Unknown'} on ${formattedDate}`;
+        detailsSummaryEl.textContent = `You transferred ${getCurrenncySymbol(transaction.currency_type)}${Math.round(transaction.amount)} to ${transaction.merchant_vpa || 'Unknown'} on ${formattedDate}`;
         // detailsTypeEl is static "Outgoing" for now
 
         detailsAmountEl.textContent = transaction.amount.toFixed(2);
@@ -1887,8 +1895,8 @@
         // For now, use placeholders or existing fields.
         // These should ideally come from new fields on the Transaction model/schema:
         // transaction.narration, transaction.bank_reference_id, transaction.transaction_mode
-        detailsNarrationEl.textContent = transaction.description || transaction.raw_sms_content.substring(0, 100) || 'N/A'; // Placeholder
-        detailsTransactionIdEl.textContent = transaction.bank_reference_id || transaction.unique_hash || 'N/A'; // Placeholder, use transaction.id if preferred
+        detailsNarrationEl.textContent = transaction.description || transaction.raw_sms_content.substring(0, 100) || 'N/A';
+        detailsTransactionIdEl.textContent = transaction.bank_reference_id || transaction.unique_hash || 'N/A'; 
         detailsModeEl.textContent = transaction.transaction_mode || (transaction.account ? capitalizeFirstLetter(transaction.account.account_type) : 'Unknown');
 
         detailsTimestampEl.textContent = transactionDate.toLocaleString('en-GB', {
@@ -1933,7 +1941,7 @@
         } else {
             accSelTransactionTimePreviewEl.textContent = "Time N/A";
         }
-        accSelAmountPreviewEl.textContent = `-₹${Math.round(transaction.amount)}`;
+        accSelAmountPreviewEl.textContent = `-${getCurrenncySymbol(transaction.currency_type)}${Math.round(transaction.amount)}`;
 
         if (transaction.subcategory) {
             accSelCategoryNamePreviewEl.textContent = (transaction.subcategory.parent_category_name && transaction.subcategory.parent_category_name.toLowerCase() !== 'general' ? `${transaction.subcategory.parent_category_name} (${transaction.subcategory.name})` : transaction.subcategory.name).toUpperCase();
@@ -1951,7 +1959,7 @@
         }
 
         if (accountForPreview) {
-            const initial = accountForPreview.type_initial || accountForPreview.bank_name?.charAt(0).toUpperCase() || accountForPreview.name?.charAt(0).toUpperCase() || 'A';
+            const initial = accountForPreview.type_initial || accountForPreview.bank_name?.split(" ")[0].toUpperCase() || accountForPreview.name?.split(" ")[0].toUpperCase() || 'A';
             accSelCurrentAccountIconPreviewEl.textContent = initial;
             accSelCurrentAccountIconPreviewEl.className = `account-icon preview-account-icon ${getBankIconClass(accountForPreview.bank_name, accountForPreview.account_type)}`;
 
@@ -2036,11 +2044,8 @@
                     }
                     itemDiv.dataset.accountType = acc.account_type;
 
-                    const iconInitial = acc.type_initial || acc.bank_name?.charAt(0).toUpperCase() || acc.name?.charAt(0).toUpperCase() || 'A';
                     const iconName = getBankIconClass(acc.name, acc.account_type);
 
-                    let iconContent = iconInitial;
-                    console.log(`/static/images/icons/${iconName}`)
                     itemDiv.innerHTML = `
                             <div class="account-item-icon">
                             <img class="custom-icon" src="/static/images/icons/${iconName}" alt="${iconName.split('/').pop().split('.')[0]}">
