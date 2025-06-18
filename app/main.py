@@ -12,6 +12,7 @@ from app.api.v1.endpoints import transactions as transactions_v1
 from app.api.v1.endpoints import categories as categories_v1
 from app.api.v1.endpoints import accounts as accounts_v1
 from app.api.v1.endpoints import telegram_webhook as telegram_webhook_v1
+from app.api.v1.endpoints import budget as budget_v1
 
 
 app = FastAPI(
@@ -36,6 +37,13 @@ app.include_router(
     prefix=f"{settings.API_V1_STR}/accounts",
     tags=["Accounts"]
 )
+
+app.include_router(
+    budget_v1.router,
+    prefix=f"{settings.API_V1_STR}/budget",
+    tags=["Budget"]
+)
+
 
 app.include_router(
     telegram_webhook_v1.router,

@@ -31,7 +31,17 @@ class ParserEngine:
             ICICIBankParser(),
             IDFCFirstBankParser(),
         ]
-        self._credit_keywords = [ "credited to your A/c", "credited to Acct", "received", "deposited" ]
+        self._credit_keywords = ["credited to", "credited to your a/c", "credited to acct", "received", "deposited"]
+        self._debit_keywords = ["debited from", "spent on", "sent from"]
+        
+    def _get_flow_type(self, sms_text: str) -> Optional[str]:
+        """Determines if the SMS is a credit, debit, or unknown transaction."""
+        sms_lower = sms_text.lower()
+        if any(keyword in sms_lower for keyword in self._credit_keywords):
+            return "CREDIT"
+        if any(keyword in sms_lower for keyword in self._debit_keywords):
+            return "DEBIT"
+        return None
 
     def _is_credit_transaction(self, sms_text: str) -> bool:
         """Checks if the SMS is a credit transaction."""
@@ -84,7 +94,14 @@ class ParserEngine:
         Returns a dictionary ready for transaction creation, or None if the SMS should be ignored.
         The dictionary will include 'account_id' if an account could be resolved.
         """
-        if self._is_credit_transaction(sms_text):
+        flow_type = self._get_flow_type(sms_text)
+        
+        if not flow_type:
+            print(f"DEBUG: Could not determine flow type (credit/debit). Ignoring SMS: {sms_text[:70]}...")
+            return None
+        
+        if flow_type == "CREDIT":
+            print(f"DEBUG: Ignoring credit transaction for now: {sms_text[:70]}...")
             return None
 
         parsed_data: Optional[Dict[str, Any]] = None
@@ -115,6 +132,8 @@ class ParserEngine:
         parsed_data.setdefault("currency", "INR")
         
         parsed_data["account_id"] = account_id
+        parsed_data["flow_type"] = flow_type
+        
         parsed_data.pop("bank_name", None)
         parsed_data.pop("account_last4", None)
 
