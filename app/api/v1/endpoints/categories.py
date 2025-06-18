@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from typing import Any, Optional
+from typing import Any, Optional, List
 
 from app.crud import crud_category
 from app.schemas import category as category_schema
@@ -9,27 +9,30 @@ from app.api import deps
 router = APIRouter()
 
 @router.get(
-    "/list",
-    response_model=category_schema.CategoryNamesList,
-    summary="Get a list of all category names",
-    description="Returns a JSON object containing a list of all category names, intended for populating selection menus."
+    "/all_details",
+    response_model=List[category_schema.CategoryInDB],
+    summary="Get all categories with their subcategories",
+    description="Returns a list of all categories, each containing its subcategories, ordered by display_order."
 )
-def get_category_list(
+def read_all_categories_with_details(
     db: Session = Depends(deps.get_db),
+    skip: int = 0, 
+    limit: int = 100 
 ) -> Any:
     """
-    Retrieve all category names.
+    Retrieve all categories, with their subcategories populated and ordered.
     """
-    category_names = crud_category.get_all_category_names(db=db)
-    if not category_names:
-        # It's okay to return an empty list if no categories exist yet.
-        # The client (Shortcut) should handle an empty list gracefully.
-        pass
-    return {"category_names": category_names}
+   
+    categories = crud_category.get_categories(db=db, skip=skip, limit=limit)
+    if not categories:
+        return []
+    return categories
+
+
 
 @router.post(
     "/",
-    response_model=category_schema.Category, 
+    response_model=category_schema.CategoryCreate, 
     status_code=status.HTTP_201_CREATED,
     summary="Create a new category",
 )
@@ -53,7 +56,7 @@ def create_new_category(
 
 @router.post(
     "/bulk/",
-    response_model=category_schema.CategoryBulkCreateResponse,
+    response_model=List[category_schema.CategoryInDB],
     status_code=status.HTTP_201_CREATED,
     summary="Create multiple categories in bulk",
     description="Accepts a list of category names to create. Skips duplicates if they already exist."
@@ -61,7 +64,7 @@ def create_new_category(
 def create_new_categories_bulk(
     *,
     db: Session = Depends(deps.get_db),
-    categories_in: category_schema.CategoryCreateBulk,
+    categories_in: List[category_schema.CategoryInDB],
 ) -> Any:
     """
     Create multiple new categories in a single request.
@@ -78,7 +81,7 @@ def create_new_categories_bulk(
 
 @router.get(
     "/",
-    response_model=category_schema.Category,
+    response_model=category_schema.CategoryBase,
     summary="Get a specific category by ID or Name"
 )
 def get_category(
@@ -108,5 +111,33 @@ def get_category(
     return category
         
         
-
+@router.get(
+    "/{category_id_or_name}", 
+    response_model=category_schema.CategoryInDB, 
+    summary="Get a specific category by ID or Name with its subcategories"
+)
+def get_single_category_details(
+    category_id_or_name: str,
+    db: Session = Depends(deps.get_db),
+) -> Any:
+    category = None
+    try:
+        category_id = int(category_id_or_name)
+        category = crud_category.get_category(db=db, category_id=category_id)
+    except ValueError:
+        category = crud_category.get_category_by_name(db=db, name=category_id_or_name) 
+    
+    if not category:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Category '{category_id_or_name}' not found.",
+        )
+    # If get_category doesn't automatically load subcategories due to how it's called,
+    # you might need to adjust it or explicitly load them here.
+    # However, the updated crud_category.get_categories with selectinload should handle it for lists.
+    # For single item, ensure the relationship is loaded.
+    # A quick way for a single item if not loaded:
+    # if category and not category.subcategories: # Or check if it's an uninitialized loader
+    #     category.subcategories = crud_subcategory.get_subcategories_for_parent(db, parent_category_id=category.id)
+    return category
 

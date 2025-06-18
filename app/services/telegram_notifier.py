@@ -7,7 +7,7 @@ from app.core.config import settings
 from app.core.security import create_mini_app_access_token 
 from app.schemas.transaction import TransactionInDB
 from app.models.transaction import TransactionStatus
-from app.crud import crud_category, crud_account
+from app.crud import crud_account
 
 
 API_BASE_URL = f"https://api.telegram.org/bot{settings.TELEGRAM_BOT_TOKEN}"
@@ -45,9 +45,8 @@ async def send_message(text: str, reply_markup: Optional[dict] = None) -> Option
             
         return None
 
-def _format_transaction_message(transaction: TransactionInDB, type: TransactionType) -> str:
+def _format_transaction_message(transaction: TransactionInDB, type_str: TransactionType) -> str:
     """Formats a transaction object into a nice string for Telegram."""
-    # Helper to escape MarkdownV2 characters
     def escape_md(text: str) -> str:
         escape_chars = r'_*[]()~`>#+-=|{}.!'
         return "".join(f"\\{char}" if char in escape_chars else char for char in str(text))
@@ -59,26 +58,34 @@ def _format_transaction_message(transaction: TransactionInDB, type: TransactionT
     if transaction.account:
         account_name = escape_md(transaction.account.name)
 
-    category_name = "⚠️ *Not Set*"
-    if transaction.category_obj:
-        category_name = escape_md(transaction.category_obj.name)
+    subcategory_display_name  = "⚠️ *Not Set*"
+    if transaction.subcategory:
+        parent_name = transaction.subcategory.parent_category.name if transaction.subcategory.parent_category else ""
+        subcategory_display_name = escape_md(
+            f"{transaction.subcategory.name} ({parent_name})" if parent_name else transaction.subcategory.name
+        )
 
-    status_emoji = {
+    status_emoji_map = { 
         TransactionStatus.PROCESSED: "✅",
         TransactionStatus.PENDING_CATEGORIZATION: "🏷️",
         TransactionStatus.PENDING_ACCOUNT_SELECTION: "🏦",
         TransactionStatus.PENDING_PROCESSING:"🚧",
-        TransactionStatus.ERROR: "❌"
-    }.get(transaction.status, "⚙️")
-    status_text = escape_md(transaction.status.replace('_', ' ').title())
+        TransactionStatus.ERROR: "❌",
+        TransactionStatus.FAILED: "💀",
+        TransactionStatus.CANCELLED: "🚫"
+    }
+    status_emoji = status_emoji_map.get(transaction.status, "⚙️") 
+    status_text = escape_md(transaction.status.value.replace('_', ' ').title()) 
+    
+    description_text = escape_md(transaction.description or "_No description_")
     
     message = (
-            f"*{status_emoji} {type}*\n\n"
+            f"*{status_emoji} {escape_md(type_str.value)}*\n\n" 
             f"*Amount*: `{amount_str}`\n"
             f"*Merchant*: {merchant}\n"
             f"*Account*: {account_name}\n"
-            f"*Category*: {category_name}\n"
-            f"*Description*: {transaction.description}\n"
+            f"*Category*: {subcategory_display_name}\n" 
+            f"*Description*: {description_text}\n"
             f"*Status*: {status_text}\n"
         )
     return message
@@ -86,30 +93,33 @@ def _format_transaction_message(transaction: TransactionInDB, type: TransactionT
 def _build_inline_keyboard(transaction: TransactionInDB, db: Session) -> Optional[dict]:
     """Builds an interactive keyboard based on the transaction's status."""
     buttons = []
+    mini_app_access_token = create_mini_app_access_token(transaction_hash=transaction.unique_hash)
+    mini_app_url = f"{settings.MINI_APP_BASE_URL}/edit-transaction?token={mini_app_access_token}"
+    
     if transaction.status == TransactionStatus.PROCESSED:
-        access_token = create_mini_app_access_token(transaction_hash=transaction.unique_hash)
-        mini_app_url = f"{settings.MINI_APP_BASE_URL}/edit-transaction?token={access_token}"
-        buttons.append([
-            {"text": "✏️ Edit Details", "web_app": {"url": mini_app_url}}
-        ])   
+        buttons.append([{"text": "✏️ Edit Details (App)", "web_app": {"url": mini_app_url}}])
+    
     elif transaction.status == TransactionStatus.PENDING_PROCESSING:
-        buttons.append([{"text": "Set Account", "callback_data":  f"sel_mod:{transaction.unique_hash}:{TransactionStatus.PENDING_ACCOUNT_SELECTION.value}"}])
-        buttons.append([{"text": "Set Category", "callback_data":  f"sel_mod:{transaction.unique_hash}:{TransactionStatus.PENDING_CATEGORIZATION.value}"}])
-    elif transaction.status == TransactionStatus.PENDING_ACCOUNT_SELECTION:
-        accounts = crud_account.get_accounts(db, limit=20)
-        for acc in accounts:
-            callback_data = f"set_acc:{transaction.unique_hash}:{acc.id}"
-            buttons.append([{"text": f"{acc.name}", "callback_data": callback_data}])
-    elif transaction.status == TransactionStatus.PENDING_CATEGORIZATION:
-        categories = crud_category.get_categories(db, limit=20)
-        for cat in categories:
-            callback_data = f"set_cat:{transaction.unique_hash}:{cat.id}"
-            buttons.append([{"text": f"{cat.name}", "callback_data": callback_data}])
+        buttons.append([{"text": "🏦 Select Account", "callback_data": f"sel_mod:{transaction.unique_hash}:{TransactionStatus.PENDING_ACCOUNT_SELECTION.value}"}])
+        buttons.append([{"text": "🏷️ Select Category (App)", "web_app": {"url": mini_app_url}}])
 
-    if not buttons:
-        return {"inline_keyboard": []} 
+    elif transaction.status == TransactionStatus.PENDING_ACCOUNT_SELECTION:
+        accounts = crud_account.get_accounts(db, limit=5)
+        for acc in accounts:
+            buttons.append([{"text": f"{acc.name}", "callback_data": f"set_acc:{transaction.unique_hash}:{acc.id}"}])
+        if len(accounts) >= 5: 
+             buttons.append([{"text": "🏦 More Accounts (App)", "web_app": {"url": mini_app_url}}])
+
+    elif transaction.status == TransactionStatus.PENDING_CATEGORIZATION:
+        buttons.append([{"text": "🏷️ Select Category (App)", "web_app": {"url": mini_app_url}}])
         
-    return {"inline_keyboard": buttons}
+    if transaction.status != TransactionStatus.PROCESSED:
+        found_edit_button = any("Edit Details (App)" in row[0]["text"] for row in buttons if row)
+        if not found_edit_button:
+             buttons.append([{"text": "📲 Open in App", "web_app": {"url": mini_app_url}}])
+
+
+    return {"inline_keyboard": buttons} if buttons else None 
 
 async def send_new_transaction_notification(transaction: TransactionInDB, db: Session):
     """The main function to call from an endpoint."""

@@ -8,8 +8,12 @@ from app.core.config import settings
 from app.services.parser_engine import ParserEngine
 from app.services.transaction_status_manager import TransactionStatusManager
 
-from app.schemas.transaction import TransactionInDB, SMSRecieved, TransactionCreate, TransactionUpdate
-from app.crud import crud_transaction, crud_category, crud_account
+from app.schemas.transaction import (
+    TransactionInDB, SMSRecieved, TransactionCreate, TransactionUpdate,
+    SubCategoryForTransaction ,
+    AccountForTransaction  
+)
+from app.crud import crud_transaction, crud_account, crud_subcategory
 
 router = APIRouter()
 
@@ -19,6 +23,53 @@ async def verify_api_key(x_api_key: str = Header(...)):
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid API Key",
         )
+        
+def _map_transaction_to_response_schema(transaction: Any) -> TransactionInDB:
+    """Helper to map ORM object to Pydantic schema, populating SubCategoryForTransaction."""
+    if not transaction:
+        return None
+    
+    subcategory_for_response = None
+    if transaction.subcategory:
+        parent_name = "N/A"
+        if transaction.subcategory.parent_category: 
+            parent_name = transaction.subcategory.parent_category.name
+        
+        subcategory_for_response = SubCategoryForTransaction(
+            id=transaction.subcategory.id,
+            name=transaction.subcategory.name,
+            icon_name=transaction.subcategory.icon_name,
+            parent_category_id=transaction.subcategory.parent_category_id,
+            parent_category_name=parent_name
+        )
+
+    account_for_response = None
+    if transaction.account:
+        account_for_response = AccountForTransaction(
+            id=transaction.account.id,
+            name=transaction.account.name,
+            account_type=transaction.account.account_type,
+            account_last4=transaction.account.account_last4
+        )
+
+    return TransactionInDB(
+        id=transaction.id,
+        unique_hash=transaction.unique_hash,
+        telegram_message_id=transaction.telegram_message_id,
+        raw_sms_content=transaction.raw_sms_content,
+        received_at=transaction.received_at,
+        amount=transaction.amount,
+        currency=transaction.currency,
+        merchant_vpa=transaction.merchant_vpa,
+        transaction_datetime_from_sms=transaction.transaction_datetime_from_sms,
+        description=transaction.description,
+        status=transaction.status.value if transaction.status else None, 
+        account_id=transaction.account_id,
+        subcategory_id=transaction.subcategory_id,
+        exclude_from_cashflow=getattr(transaction, 'exclude_from_cashflow', False),
+        account=account_for_response,
+        subcategory=subcategory_for_response
+    )
     
 
 @router.post("/", response_model=TransactionInDB, dependencies=[Depends(verify_api_key)])
@@ -40,7 +91,7 @@ async def receive_sms(
     existing_transaction = crud_transaction.get_transaction_by_hash(db, hash_str=final_parsed_data["unique_hash"])
     if existing_transaction:
         print(f"DEBUG: Duplicate transaction detected with hash {final_parsed_data['unique_hash']}. Returning existing transaction ID {existing_transaction.id}.")
-        return existing_transaction
+        return _map_transaction_to_response_schema(existing_transaction)
     
         
     current_status = TransactionStatusManager.determine_initial_status(
@@ -50,6 +101,7 @@ async def receive_sms(
 
     final_parsed_data["status"] = current_status.value
     final_parsed_data["raw_sms_content"] = sms_in.sms_content
+    final_parsed_data.setdefault('exclude_from_cashflow', False)    
     
     transaction_to_create = TransactionCreate(**final_parsed_data)
     
@@ -57,19 +109,22 @@ async def receive_sms(
     print(f"Transation Data: {transaction_to_create}")
   
     try:
-        transaction = crud_transaction.create_transaction(db=db, obj_in=transaction_to_create)
+        db_transaction = crud_transaction.create_transaction(db=db, obj_in=transaction_to_create)
     except Exception as e:
-        print(f"Error creating Pydantic TransactionCreate model: {e}")
-        raise HTTPException(status_code=400, detail=f"Invalid transaction data: {e}")
+        print(f"Error creating Pydantic TransactionCreate model or DB transaction: {e}")
+        print(f"Data for creation: {transaction_to_create.dict()}")
+        raise HTTPException(status_code=400, detail=f"Invalid transaction data: {str(e)}")
     
+    transaction_with_relations = crud_transaction.get_transaction_by_hash(db, hash_str=db_transaction.unique_hash, include_relations=True)
+
     message_id = await telegram_notifier.send_new_transaction_notification(
-        transaction=transaction,
+        transaction=transaction_with_relations, 
         db=db
     )
     if message_id:
-        crud_transaction.update_transaction_message_id(db, transaction_obj=transaction, message_id=message_id)
+        crud_transaction.update_transaction_message_id(db, transaction_obj=transaction_with_relations, message_id=message_id)
 
-    return transaction
+    return _map_transaction_to_response_schema(transaction_with_relations)
 
 @router.get(
     "/get/by-token",
@@ -80,8 +135,10 @@ def get_transaction_by_token(
     db: Session = Depends(deps.get_db),
     transaction_hash: str = Depends(deps.get_transaction_hash_from_token),
 ) -> Any:
-    transaction = crud_transaction.get_transaction_by_hash(db=db, hash_str=transaction_hash)
-    return transaction
+    transaction = crud_transaction.get_transaction_by_hash(db=db, hash_str=transaction_hash, include_relations=True)
+    if not transaction:
+        raise HTTPException(status_code=404, detail="Transaction not found")
+    return _map_transaction_to_response_schema(transaction)
 
 
 
@@ -91,11 +148,8 @@ def read_transactions(
     skip: int = 0,
     limit: int = 100,
 ) -> Any:
-    """
-    Retrieve transactions.
-    """
-    transactions = crud_transaction.get_transactions(db, skip=skip, limit=limit)
-    return transactions
+    transactions_orm = crud_transaction.get_transactions(db, skip=skip, limit=limit, include_relations=True)
+    return [_map_transaction_to_response_schema(tx) for tx in transactions_orm]
 
 @router.get(
     "/get/{transaction_hash}", 
@@ -103,103 +157,67 @@ def read_transactions(
     summary="Retrieve single transaction.",
     dependencies=[Depends(verify_api_key)]
     )
-def get_transaction(
+def get_transaction_by_hash_api(
     transaction_hash: str,
     db: Session = Depends(deps.get_db),
 ) -> Any:
-    """
-    Retrieve single transaction.
-    """
-    transaction = crud_transaction.get_transaction_by_hash(db=db, hash_str=transaction_hash)
-    return transaction
+    transaction = crud_transaction.get_transaction_by_hash(db=db, hash_str=transaction_hash, include_relations=True)
+    if not transaction:
+        raise HTTPException(status_code=404, detail="Transaction not found")
+    return _map_transaction_to_response_schema(transaction)
     
 def _update_transaction_logic(
     db: Session,
     transaction_hash: str,
-    transaction_in: TransactionUpdate,
+    transaction_in: TransactionUpdate, 
     background_tasks: BackgroundTasks
 ) -> Any:
-    """
-    Update a transaction with enrichment data like an account or category.
-    This is the primary endpoint for the interactive part of the Shortcut
-    or a future UI to update transactions that are pending input.
-    """
     
-    db_transaction = crud_transaction.get_transaction_by_hash(db=db, hash_str=transaction_hash)
+    db_transaction = crud_transaction.get_transaction_by_hash(db=db, hash_str=transaction_hash, include_relations=False)
     if not db_transaction:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail={"status": f"Transaction with ID {transaction_hash} not found."},
-        )
-
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Transaction not found")
 
     if not transaction_in.dict(exclude_unset=True):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail={"status":"Request body is empty. Please provide fields to update."}
-        )
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Request body is empty")
 
     update_data = transaction_in.dict(exclude_unset=True)
     
-    if "category_name" in update_data:
-        update_data['category_id'] = crud_category.get_category_by_name(db, name=update_data["category_name"]).id
-        category = crud_category.get_category(db=db, category_id=update_data['category_id'])
-        if not category:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Category with Name {update_data['category_name']} not found.",
-            )
-
-    if "account_id" in update_data:
-        account = crud_account.get_account(db=db, account_id=update_data["account_id"])
-        if not account:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail={"status":f"Account with ID {update_data['account_id']} not found."},
-            )
+    print(update_data)
+    
+    # category_name logic is removed. Update is via subcategory_id.
+    # Ensure subcategory_id, if provided, is valid (optional check here, or rely on FK constraint)
+    if "subcategory_id" in update_data and update_data["subcategory_id"] is not None:
+        if not crud_subcategory.get_subcategory(db=db, subcategory_id=update_data["subcategory_id"]):
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"SubCategory with ID {update_data['subcategory_id']} not found.")
             
+    if "account_id" in update_data and update_data["account_id"] is not None:
+        if not crud_account.get_account(db=db, account_id=update_data["account_id"]):
+             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Account with ID {update_data['account_id']} not found.")
     
-    if "category_id" in update_data:
-        category = crud_category.get_category(db=db, category_id=update_data["category_id"])
-        if not category:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Category with ID {update_data['category_id']} not found.",
-            )
-    
+
     current_status = TransactionStatusManager.determine_status_for_update(
-        transaction=db_transaction,
+        transaction=db_transaction, 
         db=db,
         update_data=update_data
     )
-    
-    update_data["status"] = current_status.value
+    update_data["status"] = current_status.value 
         
-    update_schema = TransactionUpdate(**update_data)
+    update_schema = TransactionUpdate(**update_data) 
 
-    updated_transaction = crud_transaction.update_transaction(
-        db=db,
-        db_obj=db_transaction,
-        obj_in=update_schema
+    updated_transaction_orm = crud_transaction.update_transaction(
+        db=db, db_obj=db_transaction, obj_in=update_schema
     )
     
-    if db_transaction.telegram_message_id:
+    if updated_transaction_orm.telegram_message_id:
         background_tasks.add_task(
             telegram_notifier.edit_message_after_update,
-            transaction=updated_transaction,
+            transaction=updated_transaction_orm,
             chat_id=int(settings.TELEGRAM_CHAT_ID),
-            message_id=db_transaction.telegram_message_id ,
-            db=db
-        )
-    else:
-        background_tasks.add_task(
-            telegram_notifier.send_update_notification,
-            transaction=updated_transaction,
+            message_id=updated_transaction_orm.telegram_message_id,
             db=db
         )
 
-    return updated_transaction
-
+    return _map_transaction_to_response_schema(updated_transaction_orm)
 
 @router.patch(
     "/by-token",
@@ -218,19 +236,11 @@ def update_transaction_by_token(
     This endpoint is intended for use by the Telegram Mini App.
     """
     return _update_transaction_logic(
-        db=db,
-        transaction_hash=transaction_hash,
-        transaction_in=transaction_in,
-        background_tasks=background_tasks
+        db=db, transaction_hash=transaction_hash, transaction_in=transaction_in, background_tasks=background_tasks
     )
 
-@router.patch(
-    "/{transaction_hash}",
-    response_model=TransactionInDB,
-    summary="Update a Transaction (Shortcut)", # Renamed for clarity
-    dependencies=[Depends(verify_api_key)]
-)
-def update_transaction_details(
+@router.patch("/{transaction_hash}", response_model=TransactionInDB, dependencies=[Depends(verify_api_key)])
+def update_transaction_details_api(
     *,
     db: Session = Depends(deps.get_db),
     transaction_hash: str,
@@ -242,8 +252,5 @@ def update_transaction_details(
     This endpoint is secured with an API key, intended for use by Shortcuts or trusted clients.
     """
     return _update_transaction_logic(
-        db=db,
-        transaction_hash=transaction_hash,
-        transaction_in=transaction_in,
-        background_tasks=background_tasks
+        db=db, transaction_hash=transaction_hash, transaction_in=transaction_in, background_tasks=background_tasks
     )

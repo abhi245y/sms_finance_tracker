@@ -1,41 +1,61 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, selectinload
 from typing import List, Optional, Dict, Any, Tuple
 from sqlalchemy.exc import IntegrityError
 
 from app.models.category import Category as CategoryModel
-from app.schemas.category import CategoryCreate, CategoryUpdate
+from app.models.subcategory import SubCategory as SubCategoryModel 
+from app.schemas.category import CategoryCreate, CategoryUpdate 
 
 # --- READ Operations ---
 
 def get_category(db: Session, category_id: int) -> Optional[CategoryModel]:
-    """
-    Get a single category by its ID.
-    """
     return db.query(CategoryModel).filter(CategoryModel.id == category_id).first()
 
 def get_category_by_name(db: Session, name: str) -> Optional[CategoryModel]:
-    """
-    Get a single category by its name.
-    """
     return db.query(CategoryModel).filter(CategoryModel.name == name).first()
 
 def get_categories(db: Session, skip: int = 0, limit: int = 100) -> List[CategoryModel]:
     """
-    Get a list of all categories, with pagination.
+    Get a list of all categories, with pagination, and eagerly load their subcategories.
+    Subcategories are ordered by their display_order.
+    Categories are ordered by their display_order.
     """
-    return db.query(CategoryModel).order_by(CategoryModel.name).offset(skip).limit(limit).all()
+    return db.query(CategoryModel)\
+        .options(selectinload(CategoryModel.subcategories))\
+        .order_by(CategoryModel.display_order, CategoryModel.name)\
+        .offset(skip)\
+        .limit(limit)\
+        .all()
 
 def get_all_category_names(db: Session) -> List[str]:
-    """
-    Get a list of all category names.
-    This is what the Shortcut will primarily use.
-    """
-    # query(CategoryModel.name) selects only the 'name' column.
-    # .all() returns a list of tuples, e.g., [('Food',), ('Groceries',)].
-    # We use a list comprehension to flatten it.
     results = db.query(CategoryModel.name).order_by(CategoryModel.name).all()
     return [result[0] for result in results]
 
+# --- CREATE Operation ---
+# (create_category, create_multiple_categories remain largely the same,
+#  but ensure they handle new fields like description, display_order if CategoryCreate schema is updated)
+
+def create_category(db: Session, *, obj_in: CategoryCreate) -> CategoryModel:
+    db_obj = CategoryModel(
+        name=obj_in.name,
+        description=obj_in.description,
+        display_order=obj_in.display_order
+    )
+    db.add(db_obj)
+    db.commit()
+    db.refresh(db_obj)
+    return db_obj
+
+# --- SubCategory CRUD (Minimal as discussed, primarily for get_subcategory for now) ---
+# You would place these in a new app/crud/crud_subcategory.py file and import from there.
+# For brevity here, I'm including a minimal get_subcategory.
+
+def get_subcategory(db: Session, subcategory_id: int) -> Optional[SubCategoryModel]:
+    """Get a single subcategory by its ID, optionally loading its parent."""
+    return db.query(SubCategoryModel)\
+        .options(selectinload(SubCategoryModel.parent_category))\
+        .filter(SubCategoryModel.id == subcategory_id)\
+        .first()
 # --- CREATE Operation ---
 
 def create_category(db: Session, *, obj_in: CategoryCreate) -> CategoryModel:
