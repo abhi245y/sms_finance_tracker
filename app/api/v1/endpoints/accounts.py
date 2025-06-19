@@ -68,7 +68,7 @@ def read_all_accounts(
     "/for-mini-app",
     response_model=List[account_schema.Account],
     summary="Get a list of all registered accounts (For Mini App)",
-    dependencies=[Depends(deps.get_transaction_hash_from_token)]
+    # dependencies=[Depends(deps.get_transaction_hash_from_token)]
 )
 def read_all_accounts_mini_app(
     db: Session = Depends(deps.get_db),

@@ -11,6 +11,7 @@ from app.services.transaction_status_manager import TransactionStatusManager
 from app.services.rule_engine import RuleEngine
 from app.services.budget_service import get_remaining_spend_power
 
+
 from app.schemas.transaction import (
     TransactionInDB, SMSRecieved, TransactionCreate, TransactionUpdate,
     SubCategoryForTransaction ,
@@ -69,9 +70,10 @@ def _map_transaction_to_response_schema(transaction: Any) -> TransactionInDB:
         status=transaction.status.value if transaction.status else None, 
         account_id=transaction.account_id,
         subcategory_id=transaction.subcategory_id,
-        exclude_from_cashflow=getattr(transaction, 'exclude_from_cashflow', False),
         account=account_for_response,
-        subcategory=subcategory_for_response
+        linked_transaction_hash=transaction.linked_transaction_hash,
+        override_reimbursable=transaction.override_reimbursable,
+        subcategory=subcategory_for_response,
     )
     
 
@@ -257,3 +259,41 @@ def update_transaction_details_api(
     return _update_transaction_logic(
         db=db, transaction_hash=transaction_hash, transaction_in=transaction_in, background_tasks=background_tasks
     )
+
+@router.get(
+    "/linkable",
+    response_model=List[TransactionInDB],
+    summary="Get recent transactions available for linking",
+    dependencies=[Depends(deps.get_transaction_hash_from_token)]
+)
+def get_linkable_transactions(
+    db: Session = Depends(deps.get_db),
+) -> Any:
+    """
+    Returns a list of recent transactions that are not yet linked,
+    which can be presented as options for linking.
+    """
+    transactions_orm = crud_transaction.get_transactions_for_linking(db=db, days=30, limit=50)
+    
+    return [_map_transaction_to_response_schema(tx) for tx in transactions_orm]
+
+
+@router.get(
+    "/by-hash/{unique_hash}",
+    response_model=TransactionInDB, 
+    summary="Get a single transaction by its unique hash",
+    dependencies=[Depends(deps.get_transaction_hash_from_token)]
+)
+def get_transaction_details_by_hash(
+    unique_hash: str,
+    db: Session = Depends(deps.get_db),
+) -> Any:
+    """
+    Retrieve full details for a specific transaction given its unique_hash.
+    Useful for fetching details of a linked transaction.
+    """
+    transaction_orm = crud_transaction.get_transaction_by_hash(db, hash_str=unique_hash, include_relations=True)
+    if not transaction_orm:
+        raise HTTPException(status_code=404, detail="Transaction with this hash not found")
+    
+    return _map_transaction_to_response_schema(transaction_orm)

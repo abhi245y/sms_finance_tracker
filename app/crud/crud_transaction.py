@@ -1,10 +1,30 @@
 from sqlalchemy.orm import Session, selectinload
 from app.models import Transaction, SubCategory, Category
+from sqlalchemy import and_ 
+from datetime import datetime, timedelta
 
 from app.schemas.transaction import TransactionCreate, TransactionUpdate 
 
 
 DEFAULT_UNCATEGORIZED_SUBCATEGORY_ID = 1000
+
+
+def get_transactions_for_linking(db: Session, *, days: int = 30, limit: int = 50) -> list[Transaction]:
+    """
+    Retrieves recent transactions that have not yet been linked.
+    """
+    time_filter = datetime.now() - timedelta(days=days)
+    
+    query = _get_transaction_query(db, include_relations=True).filter(
+        and_(
+            Transaction.linked_transaction_hash.is_(None),
+            Transaction.transaction_datetime_from_sms >= time_filter
+        )
+    ).order_by(
+        Transaction.transaction_datetime_from_sms.desc()
+    ).limit(limit)
+    
+    return query.all()
 
 
 def get_default_uncategorized_subcategory_id(db: Session) -> int:
@@ -116,12 +136,7 @@ def _get_transaction_query(db: Session, include_relations: bool = True):
         )
     return query
 
-# def get_transaction(db: Session, id: int) -> Transaction | None:
-#     return db.query(Transaction).options(
-#         joinedload(Transaction.account),
-#         joinedload(Transaction.category_obj)
-#     ).filter(Transaction.id == id).first()
-
+ 
 def get_transaction(db: Session, id: int, include_relations: bool = True) -> Transaction | None:
     return _get_transaction_query(db, include_relations).filter(Transaction.id == id).first()
 
@@ -135,15 +150,4 @@ def get_transactions(db: Session, skip: int = 0, limit: int = 100, include_relat
 def get_transaction_by_hash(db: Session, *, hash_str: str, include_relations: bool = True) -> Transaction | None:
     return _get_transaction_query(db, include_relations).filter(Transaction.unique_hash == hash_str).first()
 
-# def get_transactions(db: Session, skip: int = 0, limit: int = 100) -> list[Transaction]:
-#     return db.query(Transaction).options(
-#         joinedload(Transaction.account),
-#         joinedload(Transaction.category_obj)
-#     ).order_by(Transaction.received_at.desc()).offset(skip).limit(limit).all()
-
-# def get_transaction_by_hash(db: Session, *, hash_str: str) -> Transaction | None:
-#     return db.query(Transaction).options(
-#         joinedload(Transaction.account),
-#         joinedload(Transaction.category_obj)
-#     ).filter(Transaction.unique_hash == hash_str).first()
 
