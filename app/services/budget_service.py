@@ -1,5 +1,5 @@
 from sqlalchemy.orm import Session
-from sqlalchemy import func
+from sqlalchemy import func, or_, and_
 from datetime import datetime
 from app.models import Transaction, SubCategory, Account
 from app.crud import crud_budget
@@ -32,7 +32,13 @@ def get_current_month_spending(db: Session) -> float:
         Account.purpose == 'PERSONAL',
         SubCategory.exclude_from_budget.is_(False),
         SubCategory.is_reimbursable.is_(False),
-        Transaction.linked_transaction_hash.is_(None)
+        Transaction.linked_transaction_hash.is_(None),
+        or_(Transaction.override_reimbursable.is_(False), 
+        and_(
+            Transaction.override_reimbursable.is_(None), 
+            SubCategory.is_reimbursable.is_(False)
+        )
+    )
         # TODO Add the override logic here later
     ).scalar()
 

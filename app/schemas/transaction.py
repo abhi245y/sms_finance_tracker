@@ -1,8 +1,7 @@
 from pydantic import BaseModel,Field
 from datetime import datetime
-from typing import Optional, List
+from typing import Optional
 from app.models.transaction import TransactionStatus
-from app.schemas.category import SubCategoryInDB
 
 class SMSRecieved(BaseModel):
     sms_content: str
@@ -17,13 +16,13 @@ class TransactionBase(BaseModel):
 
     unique_hash: str
     linked_transaction_hash: Optional[str] = None
+    override_reimbursable: Optional[bool] = None
     subcategory_id: Optional[int] = None 
     
     account_id: Optional[int] = None
     
     status: TransactionStatus = TransactionStatus.PENDING_PROCESSING
     
-    # exclude_from_cashflow: bool = Field(False, example=False)
     
     class Config:
         orm_mode = True
@@ -41,6 +40,7 @@ class TransactionUpdate(BaseModel):
     description: Optional[str] = None
     status: Optional[str] = None
     linked_transaction_hash: Optional[str] = None
+    override_reimbursable: Optional[bool] = None
 
 
 class CategoryForTransaction(BaseModel):

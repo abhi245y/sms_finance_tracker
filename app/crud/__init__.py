@@ -9,5 +9,12 @@ from .crud_transaction import (
     update_transaction, get_transaction_by_hash, update_transaction_message_id,
     get_default_uncategorized_subcategory_id 
 )
-# New import for budget
+from .crud_budget import get_budget, create_or_update_budget
+
+from .crud_transaction import (
+    create_transaction, get_transaction, get_transactions, 
+    update_transaction, get_transaction_by_hash, update_transaction_message_id,
+    get_default_uncategorized_subcategory_id,
+    get_transactions_for_linking # New export
+)
 from .crud_budget import get_budget, create_or_update_budget

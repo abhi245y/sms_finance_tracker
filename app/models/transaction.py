@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Float, DateTime, Text, Enum as SQLAlchemyEnum, ForeignKey
+from sqlalchemy import Column, Integer, String, Boolean, Float, DateTime, Text, Enum as SQLAlchemyEnum, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from enum import Enum
@@ -26,6 +26,7 @@ class Transaction(Base):
     telegram_message_id = Column(Integer, nullable=True, index=True)
     
     linked_transaction_hash = Column(String(64), nullable=True, index=True)
+    override_reimbursable = Column(Boolean, nullable=True, default=None)
     
     raw_sms_content = Column(Text, nullable=False)
     received_at = Column(DateTime(timezone=True), server_default=func.now())

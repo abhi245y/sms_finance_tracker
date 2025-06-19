@@ -2,7 +2,7 @@
 from sqlalchemy.orm import Session, selectinload
 from typing import Optional, List
 from app.models.subcategory import SubCategory as SubCategoryModel
-from app.schemas.category import SubCategoryCreate
+from app.schemas.category import SubCategoryCreate, SubCategoryUpdate
 
 def get_subcategory(db: Session, subcategory_id: int) -> Optional[SubCategoryModel]:
     """Get a single subcategory by its ID, optionally loading its parent."""
@@ -17,6 +17,18 @@ def get_subcategories_for_parent(db: Session, parent_category_id: int) -> List[S
         .filter(SubCategoryModel.parent_category_id == parent_category_id)\
         .order_by(SubCategoryModel.display_order, SubCategoryModel.name)\
         .all()
+
+def update_subcategory(
+    db: Session, *, db_obj: SubCategoryModel, obj_in: SubCategoryUpdate
+) -> SubCategoryModel:
+    """Update an existing subcategory."""
+    update_data = obj_in.dict(exclude_unset=True)
+    for field, value in update_data.items():
+        setattr(db_obj, field, value)
+    db.add(db_obj)
+    db.commit()
+    db.refresh(db_obj)
+    return db_obj
 
 def create_subcategory(db: Session, obj_in: SubCategoryCreate) -> SubCategoryModel:
     db_obj = SubCategoryModel(**obj_in.dict())

@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import Any, Optional, List
 
-from app.crud import crud_category
+from app.crud import crud_category, crud_subcategory 
 from app.schemas import category as category_schema
 from app.api import deps
 
@@ -132,12 +132,44 @@ def get_single_category_details(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Category '{category_id_or_name}' not found.",
         )
-    # If get_category doesn't automatically load subcategories due to how it's called,
-    # you might need to adjust it or explicitly load them here.
-    # However, the updated crud_category.get_categories with selectinload should handle it for lists.
-    # For single item, ensure the relationship is loaded.
-    # A quick way for a single item if not loaded:
-    # if category and not category.subcategories: # Or check if it's an uninitialized loader
-    #     category.subcategories = crud_subcategory.get_subcategories_for_parent(db, parent_category_id=category.id)
     return category
 
+
+
+@router.get(
+    "/subcategories/{subcategory_id}",
+    response_model=category_schema.SubCategoryInDB,
+    summary="Get a single subcategory by ID"
+)
+def get_subcategory_by_id(
+    subcategory_id: int,
+    db: Session = Depends(deps.get_db),
+    # Add security if needed, e.g., dependencies=[Depends(deps.get_api_key)]
+) -> Any:
+    """Retrieve details for a specific subcategory."""
+    subcategory = crud_subcategory.get_subcategory(db=db, subcategory_id=subcategory_id)
+    if not subcategory:
+        raise HTTPException(status_code=404, detail="Subcategory not found")
+    return subcategory
+
+@router.patch(
+    "/subcategories/{subcategory_id}",
+    response_model=category_schema.SubCategoryInDB,
+    summary="Update a subcategory",
+)
+def update_single_subcategory(
+    subcategory_id: int,
+    *,
+    db: Session = Depends(deps.get_db),
+    subcategory_in: category_schema.SubCategoryUpdate,
+    dependencies=[Depends(deps.get_api_key)]
+) -> Any:
+    """Update a subcategory's flags (e.g., is_reimbursable)."""
+    db_subcategory = crud_subcategory.get_subcategory(db=db, subcategory_id=subcategory_id)
+    if not db_subcategory:
+        raise HTTPException(status_code=404, detail="Subcategory not found")
+    
+    updated_subcategory = crud_subcategory.update_subcategory(
+        db=db, db_obj=db_subcategory, obj_in=subcategory_in
+    )
+    return updated_subcategory
