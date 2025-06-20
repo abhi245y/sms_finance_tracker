@@ -17,7 +17,9 @@ class SubCategoryUpdate(BaseModel):
     name: Optional[str] = Field(None, min_length=1, max_length=100)
     icon_name: Optional[str] = Field(None, max_length=100)
     display_order: Optional[int] = None
-    parent_category_id: Optional[int] = None 
+    parent_category_id: Optional[int] = None
+    is_reimbursable: Optional[bool] = None 
+    exclude_from_budget: Optional[bool] = None
     
 class SubCategoryInDB(SubCategoryBase):
     id: int

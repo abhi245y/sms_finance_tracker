@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Settings</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+    <link rel="stylesheet" href="/static/css/mini-app.css"> 
+    <style>
+        body {
+            background-color: var(--tg-theme-secondary-bg-color, #f0f0f0); 
+        }
+        .settings-section {
+            margin-bottom: 24px;
+        }
+        .settings-section-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--tg-theme-hint-color, #777);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+            padding: 0 4px; 
+        }
+        .input-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+        .input-group label {
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--tg-theme-text-color, #000000);
+            flex-shrink: 0;
+        }
+        .input-group input[type="month"],
+        .input-group input[type="number"] {
+            flex-grow: 1;
+            padding: 10px 12px;
+            border: 1px solid var(--tg-theme-button-color, #e0e0e0);
+            border-radius: 8px;
+            font-size: 15px;
+            background-color: var(--tg-theme-bg-color, #ffffff);
+            color: var(--tg-theme-text-color, #000000);
+        }
+        .input-group input[type="month"] { width: auto; flex-grow: 0;}
+        .save-budget-btn {
+            padding: 10px 16px;
+            background-color: var(--tg-theme-button-color, #007bff);
+            color: var(--tg-theme-button-text-color, #ffffff);
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .budget-display {
+            font-size: 15px;
+            color: var(--tg-theme-text-color, #333);
+        }
+    </style>
+</head>
+<body>
+    <main class="container">
+        <div id="settings-content">
+            <!-- Section 1: Monthly Budget Management -->
+            <div class="settings-section" id="budget-settings-section">
+                <div class="settings-section-title">Monthly Budget</div>
+                <div class="card">
+                    <div class="card-content" style="padding: 16px;">
+                        <div class="input-group">
+                            <label for="budget-month-year">Month:</label>
+                            <input type="month" id="budget-month-year">
+                        </div>
+                        <div class="input-group">
+                            <label for="budget-amount">Amount (₹):</label>
+                            <input type="number" id="budget-amount" placeholder="e.g., 15000">
+                        </div>
+                        <div style="text-align: right; margin-top: 8px;">
+                            <button class="save-budget-btn" id="save-monthly-budget-btn">Set/Update Budget</button>
+                        </div>
+                        <div id="current-budget-display" class="budget-display" style="margin-top:12px; font-style: italic;">
+                            Select a month to see or update its budget.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 2: Account Purposes -->
+            <div class="settings-section" id="account-settings-section">
+                <div class="settings-section-title">Account Settings</div>
+                <div class="card">
+                    <div class="card-content" style="padding: 16px;">
+                        <p>Account purpose settings will go here.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Section 3: Subcategory Rules  -->
+            <div class="settings-section" id="subcategory-settings-section">
+                <div class="settings-section-title">Subcategory Rules</div>
+                 <div class="card">
+                    <div class="card-content" style="padding: 16px;">
+                        <p>Subcategory flags (reimbursable, exclude from budget) will go here.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="spinner"></div>
+    </div>
+
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="/static/js/settings.js?v=0.1.1"></script>
+</body>
+</html>
