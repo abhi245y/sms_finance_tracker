@@ -205,7 +205,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
        
-        const segmentWidth = (elements.reimbursableToggle.offsetWidth - 4) / 3; // Subtract total padding
+        const segmentWidth = (elements.reimbursableToggle.offsetWidth - 4) / 3;
         const transformValue = `translateX(${activeIndex * segmentWidth}px)`;
     
         elements.reimbursableToggle.style.setProperty('--slider-transform', transformValue);
