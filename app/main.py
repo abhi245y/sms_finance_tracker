@@ -8,12 +8,13 @@ from app.core.config import settings
 # from app.db.session import engine
 # from app.db.base_class import Base
 
-from app.api.v1.endpoints import transactions as transactions_v1
-from app.api.v1.endpoints import categories as categories_v1
-from app.api.v1.endpoints import accounts as accounts_v1
-from app.api.v1.endpoints import telegram_webhook as telegram_webhook_v1
-from app.api.v1.endpoints import budget as budget_v1
-
+from app.api.v1.endpoints import (
+    transactions as transactions_v1,
+    categories as categories_v1,
+    accounts as accounts_v1,
+    telegram_webhook as telegram_webhook_v1,
+    budget as budget_v1_router
+)
 
 app = FastAPI(
     title=settings.PROJECT_NAME,
@@ -39,9 +40,9 @@ app.include_router(
 )
 
 app.include_router(
-    budget_v1.router,
+    budget_v1_router.router,
     prefix=f"{settings.API_V1_STR}/budget",
-    tags=["Budget"]
+    tags=["Budget Management"]
 )
 
 
@@ -51,15 +52,15 @@ app.include_router(
     tags=["Telegram"],
 )
 
-# --- ADD CORS MIDDLEWARE ---
-# This allows Mini Web APP (running on Telegram's domain context) to make requests to your API.
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"], # TODO For development, allow all. For production, restrict this.
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+
+if settings.BACKEND_CORS_ORIGINS:
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=[str(origin) for origin in settings.BACKEND_CORS_ORIGINS],
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
