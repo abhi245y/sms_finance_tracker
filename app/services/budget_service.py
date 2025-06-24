@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from sqlalchemy import func, or_, and_
-from datetime import datetime
+from datetime import datetime, timedelta
 from app.models import Transaction, SubCategory, Account, AccountPurpose
 from app.crud import crud_budget
 
@@ -12,8 +12,8 @@ def get_current_budget_period() -> tuple[datetime, datetime]:
     today = datetime.now()
     start_of_month = today.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
     
-    next_month = (today.replace(day=28) + datetime.timedelta(days=4)).replace(day=1)
-    end_of_month = next_month - datetime.timedelta(microseconds=1)
+    next_month = (today.replace(day=28) + timedelta(days=4)).replace(day=1)
+    end_of_month = next_month - timedelta(microseconds=1)
     
     return start_of_month, end_of_month
 

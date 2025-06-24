@@ -8,10 +8,7 @@ class Settings(BaseSettings):
     APP_SECRET_KEY: Optional[str] = None
     IPHONE_SHORTCUT_API_KEY: Optional[str] = None
     VERSION: str = "0.3.0"
-    BACKEND_CORS_ORIGINS: List[str] = [
-        "https://finance.arlp.live/", 
-        "http://100.94.60.100:8888", 
-    ]
+    BACKEND_CORS_ORIGINS: List[str] = None
     
     TELEGRAM_BOT_TOKEN: Optional[str] = None
     TELEGRAM_CHAT_ID: Optional[str] = None

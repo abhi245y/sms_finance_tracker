@@ -12,4 +12,6 @@ ENV/
 env.bak/
 venv.bak/
 
+# static/images/icons/brand/
+
 sms-finance-tracker-prompt.txt
