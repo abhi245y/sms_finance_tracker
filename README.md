@@ -11,9 +11,10 @@ A smart personal finance tracker that automatically parses SMS notifications fro
 
 ## 📱 Screenshots
 
-| Main Interface | Transaction Details | Category Selection | Settings |
+| Main Interface | Transaction Details | Category Selection | Settings | | Settings |
 |----------------|---------------------|-------------------|----------|
-| ![Main](screenshots/main.jpeg) | ![Details](screenshots/details.jpeg) | ![Categories](screenshots/categories.jpeg) | ![Settings](screenshots/settings-1.jpeg) |
+| ![Main](screenshots/main.jpeg) | ![Details](screenshots/details.jpeg) | ![Categories](screenshots/categories.jpeg) | ![Accounts](screenshots/accounts.jpeg) | ![Settings](screenshots/settings-1.jpeg) |
+
 
 ## ✨ Current Features
 
