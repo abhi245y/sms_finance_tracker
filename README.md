@@ -112,8 +112,8 @@ A smart personal finance tracker that automatically parses SMS notifications fro
    SQLALCHEMY_DATABASE_URL=sqlite:///./finance_tracker.db
    
    # Security
-   APP_SECRET_KEY=your-secret-key-here
-   IPHONE_SHORTCUT_API_KEY=your-api-key-here
+   APP_SECRET_KEY=your-secret-key-here # generate one using openssl rand -base64 32
+   IPHONE_SHORTCUT_API_KEY=your-api-key-here # generate one using openssl rand -base64 32
    
    # Telegram Bot
    TELEGRAM_BOT_TOKEN=your-bot-token-here
