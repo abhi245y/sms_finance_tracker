@@ -1,10 +1,10 @@
-from .sample_data.sms_smaples import IDFC_CREDIT_CARD_DEBIT, INVALID_SMS
-from .sample_data.praser_result_model import ResultModel
+from tests.sample_data.sms_samples import IDFC_CREDIT_CARD_DEBIT, INVALID_SMS
+from tests.sample_data.praser_result_model import ResultModel
 
 import datetime
 
 
-class TestclassIDFCFirstBankParser:
+class TestIDFCFirstBankParser:
     
     def test_parser_upi_transaction(self, idfc_parser):
         result = ResultModel(idfc_parser.parse(IDFC_CREDIT_CARD_DEBIT))
@@ -18,6 +18,5 @@ class TestclassIDFCFirstBankParser:
         
     
     def test_paraser_invlaid_transaction(self, idfc_parser):
-        result = ResultModel(idfc_parser.parse(INVALID_SMS))
-        
+        result = idfc_parser.parse(INVALID_SMS)
         assert result is None

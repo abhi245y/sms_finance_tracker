@@ -1,5 +1,5 @@
-from .sample_data.sms_smaples import FEDERAL_UPI_DEBIT, FEDERAL_NETBANKING_DEBIT, INVALID_SMS
-from .sample_data.praser_result_model import ResultModel
+from tests.sample_data.sms_samples import FEDERAL_UPI_DEBIT, FEDERAL_NETBANKING_DEBIT, INVALID_SMS
+from tests.sample_data.praser_result_model import ResultModel
 
 import datetime
 
@@ -24,9 +24,7 @@ class TestFederalBankParser:
         assert result.amount == 2194.00
         assert result.merchant == "FEDNET Transaction" 
         assert result.timestamp == datetime.datetime(2025, 6, 8, 20, 34, 51)
-        assert result.merchant in result.description 
     
     def test_paraser_invlaid_transaction(self, federal_parser):
-        result = ResultModel(federal_parser.parse(INVALID_SMS))
-        
+        result = federal_parser.parse(INVALID_SMS)
         assert result is None

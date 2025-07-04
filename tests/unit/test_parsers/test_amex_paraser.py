@@ -1,5 +1,5 @@
-from .sample_data.sms_smaples import AMEX_DEBIT, INVALID_SMS
-from .sample_data.praser_result_model import ResultModel
+from tests.sample_data.sms_samples import AMEX_DEBIT, INVALID_SMS
+from tests.sample_data.praser_result_model import ResultModel
 
 import datetime
 
@@ -14,9 +14,8 @@ class TestAmexParaser:
         assert result.amount == 2067.98
         assert result.merchant == "LULU HYPERMA" 
         assert result.timestamp == datetime.datetime(2025, 6, 5, 20, 36)
-        assert result.merchant in result.description 
+        assert result.merchant in result.description
     
     def test_paraser_invlaid_transaction(self, amex_parser):
-        result = ResultModel(amex_parser.parse(INVALID_SMS))
-        
+        result = amex_parser.parse(INVALID_SMS)
         assert result is None

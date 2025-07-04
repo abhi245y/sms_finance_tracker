@@ -1,10 +1,8 @@
-import pytest
-from tests.sample_data.sms_sample import HDFC_CREDIT_CARD_SMS_DEBIT, HDFC_NETBANKING_DEBIT, INVALID_SMS
 from tests.sample_data.praser_result_model import ResultModel
+from tests.sample_data.sms_samples import HDFC_CREDIT_CARD_SMS_DEBIT, HDFC_NETBANKING_DEBIT, INVALID_SMS
+
 
 import datetime
-            
-@pytest.mark.smoke_test
 class TestHDFCParser:
         
     def test_parse_valid_credit_transaction(self, hdfc_parser):
@@ -28,6 +26,5 @@ class TestHDFCParser:
         assert result.merchant in result.description
         
     def test_parse_invalid_sms(self, hdfc_parser):
-        result = ResultModel(hdfc_parser.parse(INVALID_SMS))
-        
+        result = hdfc_parser.parse(INVALID_SMS)
         assert result is None
