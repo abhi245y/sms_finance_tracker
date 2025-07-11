@@ -31,21 +31,6 @@ def get_all_category_names(db: Session) -> List[str]:
     results = db.query(CategoryModel.name).order_by(CategoryModel.name).all()
     return [result[0] for result in results]
 
-# --- CREATE Operation ---
-# (create_category, create_multiple_categories remain largely the same,
-#  but ensure they handle new fields like description, display_order if CategoryCreate schema is updated)
-
-def create_category(db: Session, *, obj_in: CategoryCreate) -> CategoryModel:
-    db_obj = CategoryModel(
-        name=obj_in.name,
-        description=obj_in.description,
-        display_order=obj_in.display_order
-    )
-    db.add(db_obj)
-    db.commit()
-    db.refresh(db_obj)
-    return db_obj
-
 # --- SubCategory CRUD (Minimal as discussed, primarily for get_subcategory for now) ---
 # You would place these in a new app/crud/crud_subcategory.py file and import from there.
 # For brevity here, I'm including a minimal get_subcategory.
@@ -57,13 +42,15 @@ def get_subcategory(db: Session, subcategory_id: int) -> Optional[SubCategoryMod
         .filter(SubCategoryModel.id == subcategory_id)\
         .first()
 # --- CREATE Operation ---
+# (create_category, create_multiple_categories remain largely the same,
+#  but ensure they handle new fields like description, display_order if CategoryCreate schema is updated)
 
 def create_category(db: Session, *, obj_in: CategoryCreate) -> CategoryModel:
     """
     Create a new category.
     'obj_in' is a Pydantic schema (CategoryCreate).
     """
-    db_obj = CategoryModel(name=obj_in.name)
+    db_obj = CategoryModel(**obj_in.dict())
     # If your CategoryCreate schema had more fields, you'd map them here:
     # db_obj = CategoryModel(**obj_in.dict()) # If CategoryModel fields match CategoryCreate fields
     

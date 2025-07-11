@@ -14,4 +14,4 @@ class Category(Base):
 
 
     def __repr__(self):
-        return f"<Category(id={self.id}, name='{self.name}')>"
+        return f"<Category(id={self.id}, name={self.name}, description={self.description}, display_order={self.display_order})>"

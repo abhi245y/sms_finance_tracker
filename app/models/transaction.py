@@ -4,8 +4,7 @@ from sqlalchemy.sql import func
 from enum import Enum
 
 from app.db.base_class import Base
-from .subcategory import SubCategory
-from .account import Account
+
 
 class TransactionStatus(str, Enum):
     PENDING_ACCOUNT_SELECTION = "pending_account_selection"

@@ -2,6 +2,7 @@ __pycache__/
 # alembic/versions/
 venv/
 *.db
+.pytest_cache/
 
 # Environments
 .env
@@ -14,5 +15,5 @@ venv.bak/
 
 # static/images/icons/brand/
 
-sms-finance-tracker-prompt.txt
+sms-finance-tracker-codebase.txt
 *.egg-info
