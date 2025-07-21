@@ -99,7 +99,7 @@ class TestDataFactory:
             "status": TransactionStatus.PROCESSED, 
         
             "subcategory_id": subcategory.id, 
-            "account_id": account.id,          
+            "account_id": account.id if account is not None else None,          
         
             "telegram_message_id": None,       
             "linked_transaction_hash": None,  
@@ -114,3 +114,27 @@ class TestDataFactory:
         db_session.refresh(transaction)
         
         return transaction
+    
+    @staticmethod
+    def create_test_monthly_budget(db_session: Session, **kwargs):
+        """
+        Creates a test MonthlyBudget with defaults
+        """
+        from app.models.monthly_budget import MonthlyBudget
+        from datetime import datetime
+        
+        now = datetime.now()
+        defaults = {
+            "year": now.year,
+            "month": now.month,
+            "budget_amount": 15000.0
+        }
+        
+        defaults.update(kwargs)
+        
+        budget = MonthlyBudget(**defaults)
+        db_session.add(budget)
+        db_session.commit()
+        db_session.refresh(budget)
+        
+        return budget

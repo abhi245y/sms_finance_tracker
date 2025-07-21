@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, constr
+from pydantic import BaseModel, Field, constr, ConfigDict
 from typing import List, Optional
 
 from app.models import AccountType, AccountPurpose
@@ -6,11 +6,12 @@ from app.models import AccountType, AccountPurpose
 # --- Base Schema ---
 # Contains fields common to creating and reading an account.
 class AccountBase(BaseModel):
-    name: str = Field(..., min_length=2, max_length=100, example="HDFC Salary Account")
-    account_type: AccountType = Field(..., example=AccountType.SAVINGS_ACCOUNT)
-    bank_name: str = Field(..., max_length=100, example="HDFC Bank")
-    account_last4: constr(pattern=r'^\d{4}$') = Field(..., example="1234")
-    purpose: AccountPurpose = Field(default=AccountPurpose.PERSONAL, example=AccountPurpose.PERSONAL)
+    name: str = Field(..., min_length=2, max_length=100, json_schema_extra={"example": "HDFC Salary Account"})
+    account_type: AccountType = Field(..., json_schema_extra={"example": AccountType.SAVINGS_ACCOUNT})
+    bank_name: str = Field(..., max_length=100, json_schema_extra={"example": "HDFC Bank"})
+    account_last4: constr(pattern=r'^\d{4}$') = Field(..., json_schema_extra={"example": "1234"})
+    purpose: AccountPurpose = Field(default=AccountPurpose.PERSONAL, json_schema_extra={"example": AccountPurpose.PERSONAL})
+
 
 # --- Schema for Creating an Account ---
 # This is what the API will expect in the POST request body.
@@ -29,8 +30,7 @@ class AccountUpdate(BaseModel):
 class AccountInDBBase(AccountBase):
     id: int
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 class Account(AccountInDBBase):
     pass # For now, same as AccountInDBBase

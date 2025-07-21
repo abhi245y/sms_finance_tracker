@@ -22,7 +22,7 @@ def update_subcategory(
     db: Session, *, db_obj: SubCategoryModel, obj_in: SubCategoryUpdate
 ) -> SubCategoryModel:
     """Update an existing subcategory."""
-    update_data = obj_in.dict(exclude_unset=True)
+    update_data = obj_in.model_dump(exclude_unset=True)
     for field, value in update_data.items():
         setattr(db_obj, field, value)
     db.add(db_obj)
@@ -31,7 +31,7 @@ def update_subcategory(
     return db_obj
 
 def create_subcategory(db: Session, obj_in: SubCategoryCreate) -> SubCategoryModel:
-    db_obj = SubCategoryModel(**obj_in.dict())
+    db_obj = SubCategoryModel(**obj_in.model_dump())
     db.add(db_obj)
     db.commit()
     db.refresh(db_obj)

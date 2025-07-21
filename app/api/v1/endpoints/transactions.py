@@ -182,10 +182,10 @@ def _update_transaction_logic(
     if not db_transaction:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Transaction not found")
 
-    if not transaction_in.dict(exclude_unset=True):
+    if not transaction_in.model_dump(exclude_unset=True):
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Request body is empty")
 
-    update_data = transaction_in.dict(exclude_unset=True)
+    update_data = transaction_in.model_dump(exclude_unset=True)
     
     print(update_data)
     

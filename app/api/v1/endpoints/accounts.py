@@ -125,7 +125,7 @@ def update_existing_account(
             detail=f"Account with ID {account_id} not found.",
         )
     
-    update_data = account_in.dict(exclude_unset=True)
+    update_data = account_in.model_dump(exclude_unset=True)
     if "bank_name" in update_data or "account_last4" in update_data:
         # This is a design choice. Forcing users to delete and recreate an account if the
         # core identifiers are wrong can be safer than allowing direct updates.

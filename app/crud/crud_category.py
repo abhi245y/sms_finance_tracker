@@ -50,9 +50,9 @@ def create_category(db: Session, *, obj_in: CategoryCreate) -> CategoryModel:
     Create a new category.
     'obj_in' is a Pydantic schema (CategoryCreate).
     """
-    db_obj = CategoryModel(**obj_in.dict())
+    db_obj = CategoryModel(**obj_in.model_dump())
     # If your CategoryCreate schema had more fields, you'd map them here:
-    # db_obj = CategoryModel(**obj_in.dict()) # If CategoryModel fields match CategoryCreate fields
+    # db_obj = CategoryModel(**obj_in.model_dump()) # If CategoryModel fields match CategoryCreate fields
     
     db.add(db_obj)
     db.commit()
@@ -108,7 +108,7 @@ def update_category(
     'db_obj' is the SQLAlchemy model instance.
     'obj_in' is a Pydantic schema (CategoryUpdate) or a dict.
     """
-    update_data = obj_in.dict(exclude_unset=True) # Get only fields that were actually provided
+    update_data = obj_in.model_dump(exclude_unset=True) # Get only fields that were actually provided
     
     for field, value in update_data.items():
         setattr(db_obj, field, value)

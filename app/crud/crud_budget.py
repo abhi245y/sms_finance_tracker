@@ -12,7 +12,7 @@ def create_budget(db: Session, *, obj_in: BudgetCreate) -> MonthlyBudget:
     """
     Creates a new budget entry.
     """
-    db_obj = MonthlyBudget(**obj_in.dict())
+    db_obj = MonthlyBudget(**obj_in.model_dump())
     db.add(db_obj)
     db.commit()
     db.refresh(db_obj)

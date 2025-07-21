@@ -1,4 +1,4 @@
-from pydantic import BaseModel,Field
+from pydantic import BaseModel,Field, ConfigDict
 from datetime import datetime
 from typing import Optional
 from app.models.transaction import TransactionStatus
@@ -8,7 +8,7 @@ class SMSRecieved(BaseModel):
 
 class TransactionBase(BaseModel):
     amount: Optional[float] = None
-    currency: Optional[str] = Field("INR", example="INR")
+    currency: Optional[str] = Field("INR", json_schema_extra={"example": "INR"})
     merchant_vpa: Optional[str] = None
     transaction_datetime_from_sms: Optional[datetime] = None
     description: Optional[str] = None
@@ -23,9 +23,8 @@ class TransactionBase(BaseModel):
     
     status: TransactionStatus = TransactionStatus.PENDING_PROCESSING
     
+    model_config = ConfigDict(from_attributes=True)
     
-    class Config:
-        orm_mode = True
 
 class TransactionCreate(TransactionBase):
     pass
@@ -47,9 +46,9 @@ class CategoryForTransaction(BaseModel):
     """A minimal Category schema for embedding in a Transaction response."""
     id: int
     name: str
-    class Config:
-        orm_mode = True
-        
+    
+    model_config = ConfigDict(from_attributes=True)
+    
 class SubCategoryForTransaction(BaseModel):
     id: int
     name: str
@@ -57,8 +56,7 @@ class SubCategoryForTransaction(BaseModel):
     parent_category_id: int
     parent_category_name: str 
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
         
 class AccountForTransaction(BaseModel):
     """A minimal Account schema for embedding in a Transaction response."""
@@ -66,8 +64,8 @@ class AccountForTransaction(BaseModel):
     name: str
     account_type: str
     account_last4: str
-    class Config:
-        orm_mode = True
+    
+    model_config = ConfigDict(from_attributes=True)
 
 class TransactionInDB(TransactionBase):
     """
@@ -81,5 +79,4 @@ class TransactionInDB(TransactionBase):
     account: Optional[AccountForTransaction] = None
     subcategory: Optional[SubCategoryForTransaction] = None
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
