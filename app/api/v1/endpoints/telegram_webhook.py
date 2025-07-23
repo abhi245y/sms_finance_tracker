@@ -26,7 +26,6 @@ async def telegram_webhook(
     update = TelegramUpdate.parse_obj(data)
 
     if not update.callback_query or not update.callback_query.data:
-        # This update is not a button press we care about, ignore it.
         return {"ok": True}
 
     if update.callback_query.message.chat.id != int(settings.TELEGRAM_CHAT_ID):
@@ -73,11 +72,11 @@ async def telegram_webhook(
     
     updated_transaction_orm = crud_transaction.update_transaction(
         db=db, db_obj=db_transaction, obj_in=update_schema
-    ) # This will have relations loaded
+    )
 
     background_tasks.add_task(
         telegram_notifier.edit_message_after_update,
-        transaction=updated_transaction_orm, # Pass the ORM object with relations
+        transaction=updated_transaction_orm,
         chat_id=update.callback_query.message.chat.id,
         message_id=update.callback_query.message.message_id,
         db=db

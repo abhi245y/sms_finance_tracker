@@ -9,7 +9,7 @@ from app.services.parser_engine import ParserEngine
 from app.services.transaction_status_manager import TransactionStatusManager
 
 from app.services.rule_engine import RuleEngine
-from app.services.budget_service import get_remaining_spend_power
+# from app.services.budget_service import get_remaining_spend_power
 
 
 from app.schemas.transaction import (

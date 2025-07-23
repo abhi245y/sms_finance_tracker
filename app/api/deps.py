@@ -47,7 +47,7 @@ async def get_current_transaction_from_token(
         if txn_hash is None:
             raise credentials_exception
         token_data = TokenData(txn_hash=txn_hash)
-    except JWTError as e:
+    except JWTError:
         raise credentials_exception
     
     return token_data
