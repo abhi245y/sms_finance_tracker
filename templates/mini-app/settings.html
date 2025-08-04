@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
@@ -8,202 +9,10 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
-    <link rel="stylesheet" href="/static/css/mini-app.css?v=2.2.9"> 
-    <style>
-        body {
-            background-color: var(--tg-theme-secondary-bg-color, #f0f0f0); 
-        }
-        .settings-section {
-            margin-bottom: 24px;
-        }
-        .settings-section-title {
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--tg-theme-hint-color, #777);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 12px;
-            padding: 0 4px; 
-        }
-        .input-group {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 12px;
-        }
-        .input-group label {
-            font-size: 15px;
-            font-weight: 500;
-            color: var(--tg-theme-text-color, #000000);
-            flex-shrink: 0;
-        }
-        .input-group input[type="month"],
-        .input-group input[type="number"] {
-            flex-grow: 1;
-            padding: 10px 12px;
-            border: 1px solid var(--tg-theme-button-color, #e0e0e0);
-            border-radius: 8px;
-            font-size: 15px;
-            background-color: var(--tg-theme-bg-color, #ffffff);
-            color: var(--tg-theme-text-color, #000000);
-        }
-        .input-group input[type="month"] { width: auto; flex-grow: 0;}
-        .save-budget-btn {
-            padding: 10px 16px;
-            background-color: var(--tg-theme-button-color, #007bff);
-            color: var(--tg-theme-button-text-color, #ffffff);
-            border: none;
-            border-radius: 8px;
-            font-size: 15px;
-            font-weight: 600;
-            cursor: pointer;
-        }
-        .budget-display {
-            font-size: 15px;
-            color: var(--tg-theme-text-color, #333);
-        }
-
-         .account-list-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 12px 0; 
-            border-bottom: 1px solid var(--tg-theme-border-color, #e0e0e0);
-        }
-        .account-list-item:last-child {
-            border-bottom: none;
-        }
-        .account-info {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        .account-name-details {
-            display: flex;
-            flex-direction: column;
-        }
-        .account-name-settings {
-            font-size: 15px;
-            font-weight: 500;
-            color: var(--tg-theme-text-color, #000000);
-        }
-        .account-meta-settings {
-            font-size: 12px;
-            color: var(--tg-theme-hint-color, #777777);
-        }
-
-        .three-state-toggle {
-            background-color: var(--tg-theme-secondary-bg-color, #f1f3f4);
-            border: 1px solid var(--tg-theme-border-color, #e0e0e0);
-        }
-
-        .three-state-toggle::before {
-            background-color: var(--tg-theme-bg-color, #ffffff);
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
-        }
-
-        .toggle-segment {
-            color: var(--tg-theme-hint-color, #6b7280);
-        }
-
-        .toggle-segment.active-text {
-            color: var(--tg-theme-text-color, #1f2937);
-        }
-
-        .account-purpose-toggle-style .toggle-segment {
-            padding: 5px 8px; 
-            font-size: 12px;
-        }
-        .account-purpose-toggle-style {
-             width: 140px;
-        }
-
-        .account-purpose-toggle-style::before {
-            width: calc(50% - 2px); 
-        }
-
-        /* Styles for Subcategory Rules Section */
-        .category-group-settings {
-            margin-bottom: 16px;
-            border: 1px solid var(--tg-theme-border-color, #e0e0e0); 
-            border-radius: 8px;
-            background-color: var(--tg-theme-bg-color, #ffffff);
-        }
-        .category-header-settings {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 12px 16px;
-            cursor: pointer;
-            border-bottom: 1px solid var(--tg-theme-border-color, #e0e0e0);
-        }
-        .category-title-settings {
-            font-size: 16px;
-            font-weight: 600;
-            color: var(--tg-theme-text-color, #000000);
-        }
-        .category-chevron {
-            transition: transform 0.2s ease-in-out;
-        }
-        .category-header-settings.expanded .category-chevron {
-            transform: rotate(90deg);
-        }
-        .subcategories-list-settings {
-            display: none; /* Hidden by default, shown when expanded */
-            padding: 0 16px 8px 16px; /* Padding inside the expanded area */
-        }
-        .subcategory-item-settings {
-            display: flex;
-            flex-direction: column; /* Stack toggles vertically for clarity */
-            padding: 10px 0;
-            border-bottom: 1px solid var(--tg-theme-secondary-bg-color, #f0f0f0); /* Lighter separator */
-        }
-        .subcategory-item-settings:last-child {
-            border-bottom: none;
-        }
-        .subcategory-info-settings {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 8px; /* Space before toggles */
-        }
-        .subcategory-icon-settings { /* Can reuse account-icon-settings or define new */
-            width: 28px;
-            height: 28px;
-            background-color: var(--tg-theme-hint-color, #ccc); /* Neutral background */
-            color: var(--tg-theme-bg-color, #fff);
-            border-radius: 6px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 16px;
-        }
-         .subcategory-icon-settings .emoji-icon,
-         .subcategory-icon-settings img.custom-icon {
-            max-width: 18px; max-height: 18px;
-         }
-        .subcategory-name-settings {
-            font-size: 15px;
-            font-weight: 500;
-            color: var(--tg-theme-text-color, #000000);
-        }
-        .subcategory-toggles-container {
-            display: flex;
-            flex-direction: column; 
-            gap: 8px; 
-            padding-left: 38px;
-        }
-        .subcategory-toggle-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        .subcategory-toggle-label {
-            font-size: 14px;
-            color: var(--tg-theme-text-color, #333333);
-        }
-    </style>
+    <link rel="stylesheet" href="/static/css/mini-app.css?v=2.2.9">
+    <link rel="stylesheet" href="/static/css/settings.css?v=0.0.1">
 </head>
+
 <body>
     <main class="container">
         <div id="settings-content">
@@ -242,12 +51,175 @@
                 </div>
             </div>
 
-            <!-- Section 3: Subcategory Rules  -->
+            <!-- Section 3: Category Management -->
+        <div class="settings-section" id="category-management-section">
+            <div class="settings-section-title">Category Management</div>
+            <div class="card">
+                <div class="card-content" style="padding: 16px;">
+                    <div style="text-align: center;">
+                        <button class="create-category-btn" id="create-category-subcategory-btn">
+                            <i data-feather="plus-circle"></i>
+                            <span>Create Category & Subcategory</span>
+                        </button>
+                    </div>
+                    <div style="margin-top: 12px; font-size: 13px; color: var(--tg-theme-hint-color, #777); text-align: center; line-height: 1.4;">
+                        Add new categories and subcategories with custom icons. Perfect for organizing your unique expenses.
+                    </div>
+                </div>
+            </div>
+        </div>
+        </div>
+
+        <div class="category-creation-modal" id="categoryCreationModal">
+            <div class="category-creation-modal-content">
+                <!-- Header -->
+                <div class="category-creation-modal-header">
+                    <button class="category-creation-close-btn" id="closeCategoryCreationModalBtn">✕</button>
+                    <span class="category-creation-modal-title">Create Category & Subcategory</span>
+                    <button class="category-creation-save-btn" id="saveCategoryCreationBtn">✓</button>
+                </div>
+
+                <!-- Form Content -->
+                <div class="category-creation-modal-body">
+                    <!-- Category Section -->
+                    <div class="form-section">
+                        <div class="form-section-header">
+                            <i data-feather="folder" class="form-section-icon"></i>
+                            <span class="form-section-title">Category</span>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Category Name</label>
+                            <div class="category-input-container">
+                                <input type="text" id="category-name-input" class="form-input category-input" placeholder="Select existing or type new..." autocomplete="off">
+                                <div class="category-dropdown" id="category-dropdown">
+                                    <!-- Populated by JavaScript -->
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Description (for new categories)</label>
+                            <input type="text" id="category-description-input" class="form-input" placeholder="Brief description of this category..." disabled>
+                        </div>
+                    </div>
+
+                    <!-- Subcategory Section -->
+                    <div class="form-section">
+                        <div class="form-section-header">
+                            <i data-feather="tag" class="form-section-icon"></i>
+                            <span class="form-section-title">Subcategory</span>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Subcategory Name</label>
+                            <input type="text" id="subcategory-name-input" class="form-input" placeholder="e.g., Pizza, Coffee, Gas..." required>
+                        </div>
+
+                        <!-- Icon Selection -->
+                        <div class="form-group">
+                            <label class="form-label">Icon</label>
+                            <div class="icon-selection-container">
+                                <!-- Icon Type Tabs -->
+                                <div class="icon-type-tabs">
+                                    <button class="icon-type-tab active" data-tab="feather" id="feather-tab">
+                                        <i data-feather="feather"></i>
+                                        <span>Icons</span>
+                                    </button>
+                                    <button class="icon-type-tab" data-tab="emoji" id="emoji-tab">
+                                        <span class="emoji-preview">😀</span>
+                                        <span>Emoji</span>
+                                    </button>
+                                    <button class="icon-type-tab" data-tab="upload" id="upload-tab">
+                                        <i data-feather="upload"></i>
+                                        <span>Upload</span>
+                                    </button>
+                                </div>
+
+                                <!-- Selected Icon Preview -->
+                                <div class="selected-icon-preview">
+                                    <div class="icon-preview-container" id="icon-preview-container">
+                                        <i data-feather="circle" id="icon-preview"></i>
+                                    </div>
+                                    <div class="icon-preview-label" id="icon-preview-label">No icon selected</div>
+                                </div>
+
+                                <!-- Icon Selection Content -->
+                                <div class="icon-selection-content">
+                                    <!-- Feather Icons Panel -->
+                                    <div class="icon-panel feather-panel active" id="feather-panel">
+                                        <div class="icon-search-container">
+                                            <input type="text" id="feather-search" class="icon-search-input" placeholder="Search icons...">
+                                            <i data-feather="search" class="search-icon"></i>
+                                        </div>
+                                        <div class="icon-grid" id="feather-icon-grid"></div>
+                                    </div>
+
+                                    <!-- Emoji Panel -->
+                                    <div class="icon-panel emoji-panel" id="emoji-panel">
+                                        <div class="emoji-categories">
+                                            <button class="emoji-category-btn active" data-category="food">🍕 Food</button>
+                                            <button class="emoji-category-btn" data-category="transport">🚗 Transport</button>
+                                            <button class="emoji-category-btn" data-category="activities">⚽ Activities</button>
+                                            <button class="emoji-category-btn" data-category="objects">💡 Objects</button>
+                                            <button class="emoji-category-btn" data-category="symbols">💰 Money</button>
+                                        </div>
+                                        <div class="emoji-grid" id="emoji-grid"></div>
+                                    </div>
+
+                                    <!-- Upload Panel -->
+                                    <div class="icon-panel upload-panel" id="upload-panel">
+                                        <div class="upload-area" id="upload-area">
+                                            <div class="upload-content">
+                                                <i data-feather="upload-cloud" class="upload-icon"></i>
+                                                <div class="upload-text">
+                                                    <div class="upload-title">Drop SVG file here</div>
+                                                    <div class="upload-subtitle">or click to browse</div>
+                                                </div>
+                                                <input type="file" id="svg-file-input" accept=".svg,image/svg+xml" style="display: none;">
+                                            </div>
+                                        </div>
+                                        <div class="upload-info">
+                                            <div class="upload-info-item">
+                                                <i data-feather="info" class="info-icon"></i>
+                                                <span>SVG files only, max 100KB</span>
+                                            </div>
+                                            <div class="upload-info-item">
+                                                <i data-feather="shield" class="info-icon"></i>
+                                                <span>Files are automatically sanitized</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Subcategory Options -->
+                        <div class="form-group">
+                            <div class="form-options">
+                                <label class="option-item">
+                                    <input type="checkbox" id="is-reimbursable-checkbox">
+                                    <span class="option-text">
+                                <span class="option-title">Reimbursable</span>
+                                    <span class="option-description">Expenses that can be reimbursed</span>
+                                    </span>
+                                </label>
+                                <label class="option-item">
+                                    <input type="checkbox" id="exclude-from-budget-checkbox">
+                                    <span class="option-text">
+                                <span class="option-title">Exclude from Budget</span>
+                                    <span class="option-description">Don't count towards budget calculations</span>
+                                    </span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+            <!-- Section 4: Subcategory Rules  -->
             <div class="settings-section" id="subcategory-settings-section">
                 <div class="settings-section-title">Subcategory Rules</div>
-                    <div id="categories-accordion-container">
-                        <!-- Categories and Subcategories will be dynamically populated here -->
-                    </div>
+                <div id="categories-accordion-container">
+                    <!-- Categories and Subcategories will be dynamically populated here -->
                 </div>
             </div>
         </div>
@@ -258,6 +230,7 @@
     </div>
 
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script src="/static/js/settings.js?v=0.3.1"></script>
+    <script src="/static/js/settings.js?v=0.4.2"></script>
 </body>
+
 </html>

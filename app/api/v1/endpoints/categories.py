@@ -3,14 +3,24 @@ from sqlalchemy.orm import Session
 from typing import Any, Optional, List
 
 from app.crud import crud_category, crud_subcategory 
-from app.schemas import category as category_schema
+from app.schemas.category import (
+    CategoryBase,
+    CategoryInDB,
+    SubCategoryInDB,
+    CategoryCreate,
+    SubCategoryUpdate,
+    UnifiedCategorySubcategoryCreate, 
+    UnifiedCategorySubcategoryResponse
+)
+from app.models.subcategory import SubCategory as SubCategoryModel
+
 from app.api import deps
 
 router = APIRouter()
 
 @router.get(
     "/all_details",
-    response_model=List[category_schema.CategoryInDB],
+    response_model=List[CategoryInDB],
     summary="Get all categories with their subcategories",
     description="Returns a list of all categories, each containing its subcategories, ordered by display_order."
 )
@@ -29,17 +39,83 @@ def read_all_categories_with_details(
     return categories
 
 
+@router.post(
+    "/create-with-subcategory",
+    response_model=UnifiedCategorySubcategoryResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Create category (if needed) and subcategory in one step",
+    description="Creates a new subcategory under the specified category. If the category doesn't exist, it will be created first.",
+    dependencies=[Depends(deps.get_api_key)]
+)
+def create_category_and_subcategory(
+    *,
+    db: Session = Depends(deps.get_db),
+    category_data: UnifiedCategorySubcategoryCreate,
+) -> Any:
+    """
+    Create or find a category and create a subcategory under it.
+    
+    This endpoint handles both scenarios:
+    1. Category exists → Just create the subcategory
+    2. Category doesn't exist → Create category first, then subcategory
+    
+    Icon handling:
+    - feather: Use feather icon name (e.g., "coffee" becomes "fthr:coffee")
+    - emoji: Use emoji character (e.g., "🍕" becomes "emoji:🍕") 
+    - upload: Base64 encoded SVG or raw SVG content (becomes "img:custom/filename.svg")
+    """
+    try:
+        existing_category = crud_category.get_category_by_name(db, name=category_data.category_name)
+        if existing_category:
+            existing_subcat = db.query(SubCategoryModel).filter(
+                SubCategoryModel.name == category_data.subcategory_name,
+                SubCategoryModel.parent_category_id == existing_category.id
+            ).first()
+            
+            if existing_subcat:
+                raise HTTPException(
+                    status_code=status.HTTP_409_CONFLICT,
+                    detail=f"Subcategory '{category_data.subcategory_name}' already exists under category '{category_data.category_name}'"
+                )
+        
+        category, subcategory, created_new_category = crud_subcategory.create_category_with_subcategory(
+            db=db, obj_in=category_data
+        )
+        
+        db.refresh(category)
+        db.refresh(subcategory)
+        
+        category_response = CategoryInDB.from_orm(category)
+        subcategory_response = SubCategoryInDB.from_orm(subcategory)
+        
+        return UnifiedCategorySubcategoryResponse(
+            category=category_response,
+            subcategory=subcategory_response,
+            created_new_category=created_new_category
+        )
+        
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"An unexpected error occurred: {str(e)}"
+        )
+
 
 @router.post(
     "/",
-    response_model=category_schema.CategoryCreate, 
+    response_model=CategoryCreate, 
     status_code=status.HTTP_201_CREATED,
     summary="Create a new category",
 )
 def create_new_category(
     *,
     db: Session = Depends(deps.get_db),
-    category_in: category_schema.CategoryCreate,
+    category_in: CategoryCreate,
 ) -> Any:
     """
     Create a new category.
@@ -56,7 +132,7 @@ def create_new_category(
 
 @router.post(
     "/bulk/",
-    response_model=List[category_schema.CategoryInDB],
+    response_model=List[CategoryInDB],
     status_code=status.HTTP_201_CREATED,
     summary="Create multiple categories in bulk",
     description="Accepts a list of category names to create. Skips duplicates if they already exist."
@@ -64,7 +140,7 @@ def create_new_category(
 def create_new_categories_bulk(
     *,
     db: Session = Depends(deps.get_db),
-    categories_in: List[category_schema.CategoryInDB],
+    categories_in: List[CategoryInDB],
 ) -> Any:
     """
     Create multiple new categories in a single request.
@@ -81,7 +157,7 @@ def create_new_categories_bulk(
 
 @router.get(
     "/",
-    response_model=category_schema.CategoryBase,
+    response_model=CategoryBase,
     summary="Get a specific category by ID or Name"
 )
 def get_category(
@@ -113,7 +189,7 @@ def get_category(
         
 @router.get(
     "/{category_id_or_name}", 
-    response_model=category_schema.CategoryInDB, 
+    response_model=CategoryInDB, 
     summary="Get a specific category by ID or Name with its subcategories"
 )
 def get_single_category_details(
@@ -138,7 +214,7 @@ def get_single_category_details(
 
 @router.get(
     "/subcategories/{subcategory_id}",
-    response_model=category_schema.SubCategoryInDB,
+    response_model=SubCategoryInDB,
     summary="Get a single subcategory by ID"
 )
 def get_subcategory_by_id(
@@ -154,14 +230,14 @@ def get_subcategory_by_id(
 
 @router.patch(
     "/subcategories/{subcategory_id}",
-    response_model=category_schema.SubCategoryInDB,
+    response_model=SubCategoryInDB,
     summary="Update a subcategory",
 )
 def update_single_subcategory(
     subcategory_id: int,
     *,
     db: Session = Depends(deps.get_db),
-    subcategory_in: category_schema.SubCategoryUpdate,
+    subcategory_in: SubCategoryUpdate,
     dependencies=[Depends(deps.get_api_key)]
 ) -> Any:
     """Update a subcategory's flags (e.g., is_reimbursable)."""
