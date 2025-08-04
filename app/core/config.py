@@ -14,6 +14,8 @@ class Settings(BaseSettings):
     TELEGRAM_CHAT_ID: Optional[str] = None
     MINI_APP_BASE_URL: Optional[str] = None
     TOKEN_ALGORITHM: str = "HS256"
+    
+    LOG_UNPARSED_FINANCE_SMS: bool = False
 
     class Config:
         env_file = ".env"

@@ -15,4 +15,4 @@ venv.bak/
 
 # static/images/icons/brand/
 
-sms-finance-tracker-prompt.txt
+*.log

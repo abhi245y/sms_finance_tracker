@@ -13,8 +13,13 @@ from .parsers.amex_parser import AmexParser
 from .parsers.sbi_parser import SBIParser
 from .parsers.icici_parser import ICICIBankParser
 from .parsers.idfc_parser import IDFCFirstBankParser
+from .parsers.onecard_parser import OneCardParser
+from .parsers.axis_parser  import AXISParser
 
 from app.core.hashing import generate_transaction_hash
+from app.core.config import settings
+from .unparsed_sms_logger import UnparsedSMSLogger
+import re
 
 class ParserEngine:
     def __init__(self, db_session: Session):
@@ -30,9 +35,16 @@ class ParserEngine:
             SBIParser(),
             ICICIBankParser(),
             IDFCFirstBankParser(),
+            OneCardParser(),
+            AXISParser()
         ]
         self._credit_keywords = ["credited to", "credited to your a/c", "credited to acct", "received", "deposited"]
         self._debit_keywords = ["debited", "spent", "sent from", "debited"]
+        
+        if settings.LOG_UNPARSED_FINANCE_SMS:
+            self.unparsed_logger = UnparsedSMSLogger()
+        else:
+            self.unparsed_logger = None
         
     def _get_flow_type(self, sms_text: str) -> Optional[str]:
         """Determines if the SMS is a credit, debit, or unknown transaction."""
@@ -74,9 +86,28 @@ class ParserEngine:
         )
         new_account = crud_account.create_account(self.db, obj_in=account_in)
         print(f"DEBUG: Created placeholder account: ID {new_account.id} ({new_account.name})")
-        # Code to trigger a notification to the user here in the future TODO Telegram Bot/UI
+        # TODO Code to trigger a notification to the user here in the future  Telegram Bot/UI
         
         return new_account.id
+    
+    def _extract_sender_info(self, sms_text: str) -> Optional[str]:
+        """
+        Extract sender information from SMS text if available.
+        This is a simple implementation - could be enhanced based on SMS format.
+        """
+        
+        sender_patterns = [
+            r'^([A-Z]{2,6}[-]?[A-Z]{0,6}):',
+            r'From[:\s]+([A-Z]{2,10})',      
+            r'^([A-Z]{2,6})\s',
+        ]
+        
+        for pattern in sender_patterns:
+            match = re.search(pattern, sms_text, re.IGNORECASE)
+            if match:
+                return match.group(1)
+                
+        return None
 
 
     def run(self, sms_text: str) -> Optional[Dict[str, Any]]:
@@ -90,10 +121,24 @@ class ParserEngine:
         
         if not flow_type:
             print(f"DEBUG: Could not determine flow type (credit/debit). Ignoring SMS: {sms_text[:70]}...")
+            
+            if self.unparsed_logger:
+                sender_info = self._extract_sender_info(sms_text)
+                self.unparsed_logger.log_unparsed_sms(
+                    sms_text, 
+                    source_info=f"No flow type detected{' | Sender: ' + sender_info if sender_info else ''}"
+                )
+                
             return None
         
         if flow_type == "CREDIT":
             print(f"DEBUG: Ignoring credit transaction for now: {sms_text[:70]}...")
+            if self.unparsed_logger:
+                sender_info = self._extract_sender_info(sms_text)
+                self.unparsed_logger.log_unparsed_sms(
+                    sms_text, 
+                    source_info=f"No flow type detected{' | Sender: ' + sender_info if sender_info else ''}"
+                )
             return None
 
         parsed_data: Optional[Dict[str, Any]] = None
