@@ -49,18 +49,6 @@ document.addEventListener('DOMContentLoaded', function() {
 		isCreatingNewCategory: false
 	};
 
-	// Popular feather icons for the grid
-	const POPULAR_FEATHER_ICONS = [
-		'shopping-bag', 'coffee', 'car', 'home', 'phone', 'credit-card', 'dollar-sign',
-		'gift', 'heart', 'music', 'camera', 'book', 'briefcase', 'calendar',
-		'umbrella', 'airplane', 'bicycle', 'bus', 'train', 'truck',
-		'pizza', 'wine', 'cup', 'utensils', 'apple', 'sandwich',
-		'gamepad', 'tv', 'headphones', 'smartphone', 'laptop', 'monitor',
-		'pill', 'thermometer', 'activity', 'dumbbell', 'zap', 'sun',
-		'moon', 'cloud', 'droplet', 'wind', 'fire', 'leaf',
-		'star', 'flag', 'lock', 'key', 'shield', 'tool'
-	];
-
 	// Emoji categories
 	const EMOJI_CATEGORIES = {
 		food: ['🍕', '🍔', '🍟', '🌭', '🍿', '🧂', '🥓', '🥞', '🧇', '🥯', '🍞', '🥐', '🥨', '🧀', '🥚', '🍳', '🧈', '🥞', '🥪', '🌮', '🌯', '🥙', '🧆', '🥗', '🍲', '🍛', '🍜', '🍝', '🍠', '🍢', '🍣', '🍤', '🍙', '🍘', '🍱', '🍚'],
@@ -81,6 +69,9 @@ document.addEventListener('DOMContentLoaded', function() {
 		subcategoryNameInput: null,
 		categoryDropdown: null,
 
+		customEmojiInput: null,
+		emojiAddBtn: null,
+
 		iconPreview: null,
 		iconPreviewLabel: null,
 		iconTypeTabs: null,
@@ -98,6 +89,31 @@ document.addEventListener('DOMContentLoaded', function() {
 		isReimbursableCheckbox: null,
 		excludeFromBudgetCheckbox: null
 	};
+
+    function getAllFeatherIcons() {
+    // Popular icons to show first
+    const popularIcons = [
+        'shopping-bag', 'coffee', 'car', 'home', 'phone', 'credit-card', 'dollar-sign',
+        'gift', 'heart', 'music', 'camera', 'book', 'briefcase', 'calendar',
+        'umbrella', 'airplane', 'bicycle', 'bus', 'train', 'truck',
+        'pizza', 'wine', 'cup', 'utensils', 'apple', 'sandwich',
+        'gamepad', 'tv', 'headphones', 'smartphone', 'laptop', 'monitor',
+        'pill', 'thermometer', 'activity', 'dumbbell', 'zap', 'sun',
+        'moon', 'cloud', 'droplet', 'wind', 'fire', 'leaf',
+        'star', 'flag', 'lock', 'key', 'shield', 'tool'
+    ];
+    
+    // Get all feather icons from the loaded library
+    const allIcons = window.feather ? Object.keys(window.feather.icons) : popularIcons;
+    
+    // Sort: popular first, then alphabetically
+    const popularSet = new Set(popularIcons);
+    const popular = allIcons.filter(icon => popularSet.has(icon));
+    const others = allIcons.filter(icon => !popularSet.has(icon)).sort();
+    
+    return [...popular, ...others];
+}
+
 
 	// --- API Fetch Utility ---
 	async function fetchApi(endpoint, options = {}) {
@@ -491,467 +507,529 @@ document.addEventListener('DOMContentLoaded', function() {
 
 	// === Initialize Category Creation Modal ===
 	function initializeCategoryCreationModal() {
-		// Cache DOM elements
-		categoryCreationElements.modal = document.getElementById('categoryCreationModal');
-		categoryCreationElements.openBtn = document.getElementById('create-category-subcategory-btn');
-		categoryCreationElements.closeBtn = document.getElementById('closeCategoryCreationModalBtn');
-		categoryCreationElements.saveBtn = document.getElementById('saveCategoryCreationBtn');
+    // Cache DOM elements
+    categoryCreationElements.modal = document.getElementById('categoryCreationModal');
+    categoryCreationElements.openBtn = document.getElementById('create-category-subcategory-btn');
+    categoryCreationElements.closeBtn = document.getElementById('closeCategoryCreationModalBtn');
+    categoryCreationElements.saveBtn = document.getElementById('saveCategoryCreationBtn');
+    
+    categoryCreationElements.categoryNameInput = document.getElementById('category-name-input');
+    categoryCreationElements.categoryDescriptionInput = document.getElementById('category-description-input');
+    categoryCreationElements.subcategoryNameInput = document.getElementById('subcategory-name-input');
+    categoryCreationElements.categoryDropdown = document.getElementById('category-dropdown');
+    
+    categoryCreationElements.iconPreview = document.getElementById('icon-preview');
+    categoryCreationElements.iconPreviewLabel = document.getElementById('icon-preview-label');
+    
+    categoryCreationElements.featherSearchInput = document.getElementById('feather-search');
+    categoryCreationElements.featherGrid = document.getElementById('feather-icon-grid');
+    categoryCreationElements.emojiGrid = document.getElementById('emoji-grid');
+    categoryCreationElements.customEmojiInput = document.getElementById('custom-emoji-input');
+    categoryCreationElements.emojiAddBtn = document.getElementById('emoji-add-btn');
+    
+    categoryCreationElements.uploadArea = document.getElementById('upload-area');
+    categoryCreationElements.svgFileInput = document.getElementById('svg-file-input');
+    
+    categoryCreationElements.isReimbursableCheckbox = document.getElementById('is-reimbursable-checkbox');
+    categoryCreationElements.excludeFromBudgetCheckbox = document.getElementById('exclude-from-budget-checkbox');
 
-		categoryCreationElements.categoryNameInput = document.getElementById('category-name-input');
-		categoryCreationElements.categoryDescriptionInput = document.getElementById('category-description-input');
-		categoryCreationElements.subcategoryNameInput = document.getElementById('subcategory-name-input');
-		categoryCreationElements.categoryDropdown = document.getElementById('category-dropdown');
+    if (!categoryCreationElements.modal) return;
 
-		categoryCreationElements.iconPreview = document.getElementById('icon-preview');
-		categoryCreationElements.iconPreviewLabel = document.getElementById('icon-preview-label');
+    // Setup event listeners
+    setupCategoryCreationEventListeners();
+    
+    // Initialize UI components
+    populateFeatherIconsGrid();
+    populateEmojiGrid('food'); // Default category
+    
+    // Load existing categories
+    loadExistingCategories();
+	
+    }
+function setupCategoryCreationEventListeners() {
+    // Modal open/close
+    categoryCreationElements.openBtn?.addEventListener('click', openCategoryCreationModal);
+    categoryCreationElements.closeBtn?.addEventListener('click', closeCategoryCreationModal);
+    categoryCreationElements.saveBtn?.addEventListener('click', handleSaveCategoryCreation);
+    
+    // Close on backdrop click
+    categoryCreationElements.modal?.addEventListener('click', (e) => {
+        if (e.target === categoryCreationElements.modal) {
+            closeCategoryCreationModal();
+        }
+    });
+    
+    // Category input and dropdown
+    categoryCreationElements.categoryNameInput?.addEventListener('input', handleCategoryNameInput);
+    categoryCreationElements.categoryNameInput?.addEventListener('focus', showCategoryDropdown);
+    categoryCreationElements.categoryNameInput?.addEventListener('blur', () => {
+        // Delay hiding to allow dropdown clicks
+        setTimeout(hideCategoryDropdown, 150);
+    });
+    
+    // Icon type tabs
+    document.querySelectorAll('.icon-type-tab').forEach(tab => {
+        tab.addEventListener('click', () => switchIconTab(tab.dataset.tab));
+    });
+    
+    // Feather icon search
+    categoryCreationElements.featherSearchInput?.addEventListener('input', handleFeatherIconSearch);
+    
+    // Emoji category buttons
+    document.querySelectorAll('.emoji-category-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.emoji-category-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            populateEmojiGrid(btn.dataset.category);
+        });
+    });
+    
+    // Custom emoji input
+    categoryCreationElements.customEmojiInput?.addEventListener('input', handleCustomEmojiInput);
+    categoryCreationElements.customEmojiInput?.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {	
+            handleAddCustomEmoji();
+        }
+    });
+    categoryCreationElements.emojiAddBtn?.addEventListener('click', handleAddCustomEmoji);
+    
+    // Upload area
+    setupUploadArea();
+}
 
-		categoryCreationElements.featherSearchInput = document.getElementById('feather-search');
-		categoryCreationElements.featherGrid = document.getElementById('feather-icon-grid');
-		categoryCreationElements.emojiGrid = document.getElementById('emoji-grid');
+// === Modal Management ===
+function openCategoryCreationModal() {
+    categoryCreationElements.modal.style.display = 'flex';
+    resetCategoryCreationForm();
+    feather.replace(); // Re-render feather icons
+}
 
-		categoryCreationElements.uploadArea = document.getElementById('upload-area');
-		categoryCreationElements.svgFileInput = document.getElementById('svg-file-input');
+function closeCategoryCreationModal() {
+    categoryCreationElements.modal.style.display = 'none';
+    resetCategoryCreationForm();
+}
 
-		categoryCreationElements.isReimbursableCheckbox = document.getElementById('is-reimbursable-checkbox');
-		categoryCreationElements.excludeFromBudgetCheckbox = document.getElementById('exclude-from-budget-checkbox');
+function resetCategoryCreationForm() {
+    // Reset form inputs
+    categoryCreationElements.categoryNameInput.value = '';
+    categoryCreationElements.categoryDescriptionInput.value = '';
+    categoryCreationElements.categoryDescriptionInput.disabled = true;
+    categoryCreationElements.subcategoryNameInput.value = '';
+    
+    // Reset icon selection
+    categoryCreationState.selectedIconType = 'feather';
+    categoryCreationState.selectedIconValue = null;
+    categoryCreationState.uploadedSvgContent = null;
+    
+    updateIconPreview(null, 'No icon selected');
+    switchIconTab('feather');
+    
+    // Reset checkboxes
+    categoryCreationElements.isReimbursableCheckbox.checked = false;
+    categoryCreationElements.excludeFromBudgetCheckbox.checked = false;
+    
+    // Reset state
+    categoryCreationState.isCreatingNewCategory = false;
+    hideCategoryDropdown();
+}
 
-		if (!categoryCreationElements.modal) return;
+// === Category Dropdown ===
+async function loadExistingCategories() {
+    try {
+        const categories = await fetchApi('/categories/all_details');
+        categoryCreationState.allExistingCategories = categories || [];
+    } catch (error) {
+        console.error('Failed to load existing categories:', error);
+        categoryCreationState.allExistingCategories = [];
+    }
+}
 
-		// Setup event listeners
-		setupCategoryCreationEventListeners();
+function handleCategoryNameInput(e) {
+    const value = e.target.value.trim();
+    const isExisting = categoryCreationState.allExistingCategories.some(
+        cat => cat.name.toLowerCase() === value.toLowerCase()
+    );
+    
+    categoryCreationState.isCreatingNewCategory = !isExisting && value.length > 0;
+    
+    // Enable/disable description input
+    categoryCreationElements.categoryDescriptionInput.disabled = !categoryCreationState.isCreatingNewCategory;
+    if (!categoryCreationState.isCreatingNewCategory) {
+        categoryCreationElements.categoryDescriptionInput.value = '';
+    }
+    
+    // Update dropdown
+    updateCategoryDropdown(value);
+}
 
-		// Initialize UI components
-		populateFeatherIconsGrid();
-		populateEmojiGrid('food'); // Default category
-
-		// Load existing categories
-		loadExistingCategories();
-	}
-
-	// === Event Listeners ===
-	function setupCategoryCreationEventListeners() {
-		// Modal open/close
-		categoryCreationElements.openBtn?.addEventListener('click', openCategoryCreationModal);
-		categoryCreationElements.closeBtn?.addEventListener('click', closeCategoryCreationModal);
-		categoryCreationElements.saveBtn?.addEventListener('click', handleSaveCategoryCreation);
-
-		// Close on backdrop click
-		categoryCreationElements.modal?.addEventListener('click', (e) => {
-			if (e.target === categoryCreationElements.modal) {
-				closeCategoryCreationModal();
-			}
-		});
-
-		// Category input and dropdown
-		categoryCreationElements.categoryNameInput?.addEventListener('input', handleCategoryNameInput);
-		categoryCreationElements.categoryNameInput?.addEventListener('focus', showCategoryDropdown);
-		categoryCreationElements.categoryNameInput?.addEventListener('blur', () => {
-			// Delay hiding to allow dropdown clicks
-			setTimeout(hideCategoryDropdown, 150);
-		});
-
-		// Icon type tabs
-		document.querySelectorAll('.icon-type-tab').forEach(tab => {
-			tab.addEventListener('click', () => switchIconTab(tab.dataset.tab));
-		});
-
-		// Feather icon search
-		categoryCreationElements.featherSearchInput?.addEventListener('input', handleFeatherIconSearch);
-
-		// Emoji category buttons
-		document.querySelectorAll('.emoji-category-btn').forEach(btn => {
-			btn.addEventListener('click', () => {
-				document.querySelectorAll('.emoji-category-btn').forEach(b => b.classList.remove('active'));
-				btn.classList.add('active');
-				populateEmojiGrid(btn.dataset.category);
-			});
-		});
-
-		// Upload area
-		setupUploadArea();
-	}
-
-	// === Modal Management ===
-	function openCategoryCreationModal() {
-		categoryCreationElements.modal.style.display = 'flex';
-		resetCategoryCreationForm();
-		feather.replace(); // Re-render feather icons
-	}
-
-	function closeCategoryCreationModal() {
-		categoryCreationElements.modal.style.display = 'none';
-		resetCategoryCreationForm();
-	}
-
-	function resetCategoryCreationForm() {
-		// Reset form inputs
-		categoryCreationElements.categoryNameInput.value = '';
-		categoryCreationElements.categoryDescriptionInput.value = '';
-		categoryCreationElements.categoryDescriptionInput.disabled = true;
-		categoryCreationElements.subcategoryNameInput.value = '';
-
-		// Reset icon selection
-		categoryCreationState.selectedIconType = 'feather';
-		categoryCreationState.selectedIconValue = null;
-		categoryCreationState.uploadedSvgContent = null;
-
-		updateIconPreview(null, 'No icon selected');
-		switchIconTab('feather');
-
-		// Reset checkboxes
-		categoryCreationElements.isReimbursableCheckbox.checked = false;
-		categoryCreationElements.excludeFromBudgetCheckbox.checked = false;
-
-		// Reset state
-		categoryCreationState.isCreatingNewCategory = false;
-		hideCategoryDropdown();
-	}
-
-	// === Category Dropdown ===
-	async function loadExistingCategories() {
-		try {
-			const categories = await fetchApi('/categories/all_details');
-			categoryCreationState.allExistingCategories = categories || [];
-		} catch (error) {
-			console.error('Failed to load existing categories:', error);
-			categoryCreationState.allExistingCategories = [];
-		}
-	}
-
-	function handleCategoryNameInput(e) {
-		const value = e.target.value.trim();
-		const isExisting = categoryCreationState.allExistingCategories.some(
-			cat => cat.name.toLowerCase() === value.toLowerCase()
-		);
-
-		categoryCreationState.isCreatingNewCategory = !isExisting && value.length > 0;
-
-		// Enable/disable description input
-		categoryCreationElements.categoryDescriptionInput.disabled = !categoryCreationState.isCreatingNewCategory;
-		if (!categoryCreationState.isCreatingNewCategory) {
-			categoryCreationElements.categoryDescriptionInput.value = '';
-		}
-
-		// Update dropdown
-		updateCategoryDropdown(value);
-	}
-
-	function updateCategoryDropdown(searchValue) {
-		const dropdown = categoryCreationElements.categoryDropdown;
-		dropdown.innerHTML = '';
-
-		if (!searchValue) {
-			hideCategoryDropdown();
-			return;
-		}
-
-		// Filter existing categories
-		const matches = categoryCreationState.allExistingCategories.filter(cat =>
-			cat.name.toLowerCase().includes(searchValue.toLowerCase())
-		);
-
-		// Add existing category matches
-		matches.forEach(category => {
-			const item = document.createElement('div');
-			item.className = 'category-dropdown-item';
-			item.innerHTML = `
+function updateCategoryDropdown(searchValue) {
+    const dropdown = categoryCreationElements.categoryDropdown;
+    dropdown.innerHTML = '';
+    
+    if (!searchValue) {
+        hideCategoryDropdown();
+        return;
+    }
+    
+    // Filter existing categories
+    const matches = categoryCreationState.allExistingCategories.filter(cat =>
+        cat.name.toLowerCase().includes(searchValue.toLowerCase())
+    );
+    
+    // Add existing category matches
+    matches.forEach(category => {
+        const item = document.createElement('div');
+        item.className = 'category-dropdown-item';
+        item.innerHTML = `
             <span>${category.name}</span>
             <span style="font-size: 12px; color: #6b7280;">${category.subcategories?.length || 0} subcategories</span>
         `;
-			item.addEventListener('click', () => selectExistingCategory(category));
-			dropdown.appendChild(item);
-		});
-
-		// Add "Create New" option if no exact match
-		const exactMatch = categoryCreationState.allExistingCategories.some(
-			cat => cat.name.toLowerCase() === searchValue.toLowerCase()
-		);
-
-		if (!exactMatch && searchValue.length > 1) {
-			const createItem = document.createElement('div');
-			createItem.className = 'category-dropdown-item create-new';
-			createItem.innerHTML = `
+        item.addEventListener('click', () => selectExistingCategory(category));
+        dropdown.appendChild(item);
+    });
+    
+    // Add "Create New" option if no exact match
+    const exactMatch = categoryCreationState.allExistingCategories.some(
+        cat => cat.name.toLowerCase() === searchValue.toLowerCase()
+    );
+    
+    if (!exactMatch && searchValue.length > 1) {
+        const createItem = document.createElement('div');
+        createItem.className = 'category-dropdown-item create-new';
+        createItem.innerHTML = `
             <span>Create "${searchValue}"</span>
             <i data-feather="plus" style="width: 14px; height: 14px;"></i>
         `;
-			createItem.addEventListener('click', () => selectNewCategory(searchValue));
-			dropdown.appendChild(createItem);
-		}
+        createItem.addEventListener('click', () => selectNewCategory(searchValue));
+        dropdown.appendChild(createItem);
+    }
+    
+    showCategoryDropdown();
+    feather.replace();
+}
 
-		showCategoryDropdown();
-		feather.replace();
-	}
+function selectExistingCategory(category) {
+    categoryCreationElements.categoryNameInput.value = category.name;
+    categoryCreationState.isCreatingNewCategory = false;
+    categoryCreationElements.categoryDescriptionInput.disabled = true;
+    categoryCreationElements.categoryDescriptionInput.value = '';
+    hideCategoryDropdown();
+}
 
-	function selectExistingCategory(category) {
-		categoryCreationElements.categoryNameInput.value = category.name;
-		categoryCreationState.isCreatingNewCategory = false;
-		categoryCreationElements.categoryDescriptionInput.disabled = true;
-		categoryCreationElements.categoryDescriptionInput.value = '';
-		hideCategoryDropdown();
-	}
+function selectNewCategory(name) {
+    categoryCreationElements.categoryNameInput.value = name;
+    categoryCreationState.isCreatingNewCategory = true;
+    categoryCreationElements.categoryDescriptionInput.disabled = false;
+    categoryCreationElements.categoryDescriptionInput.focus();
+    hideCategoryDropdown();
+}
 
-	function selectNewCategory(name) {
-		categoryCreationElements.categoryNameInput.value = name;
-		categoryCreationState.isCreatingNewCategory = true;
-		categoryCreationElements.categoryDescriptionInput.disabled = false;
-		categoryCreationElements.categoryDescriptionInput.focus();
-		hideCategoryDropdown();
-	}
+function showCategoryDropdown() {
+    categoryCreationElements.categoryDropdown.classList.add('active');
+}
 
-	function showCategoryDropdown() {
-		categoryCreationElements.categoryDropdown.classList.add('active');
-	}
+function hideCategoryDropdown() {
+    categoryCreationElements.categoryDropdown.classList.remove('active');
+}
 
-	function hideCategoryDropdown() {
-		categoryCreationElements.categoryDropdown.classList.remove('active');
-	}
+// === Icon Selection ===
+function switchIconTab(tabType) {
+    // Update tabs
+    document.querySelectorAll('.icon-type-tab').forEach(tab => {
+        tab.classList.toggle('active', tab.dataset.tab === tabType);
+    });
+    
+    // Update panels
+    document.querySelectorAll('.icon-panel').forEach(panel => {
+        panel.classList.toggle('active', panel.id === `${tabType}-panel`);
+    });
+    
+    categoryCreationState.selectedIconType = tabType;
+    feather.replace();
+}
 
-	// === Icon Selection ===
-	function switchIconTab(tabType) {
-		// Update tabs
-		document.querySelectorAll('.icon-type-tab').forEach(tab => {
-			tab.classList.toggle('active', tab.dataset.tab === tabType);
-		});
+function populateFeatherIconsGrid(searchTerm = '') {
+    const grid = categoryCreationElements.featherGrid;
+    if (!grid) return;
+    
+    const allIcons = getAllFeatherIcons();
+    const filteredIcons = searchTerm 
+        ? allIcons.filter(icon => icon.toLowerCase().includes(searchTerm.toLowerCase()))
+        : allIcons;
+    
+    grid.innerHTML = '';
+    
+    // Add total count info
+    if (searchTerm) {
+        const countDiv = document.createElement('div');
+        countDiv.className = 'icon-count-info';
+        countDiv.innerHTML = `<span style="font-size: 12px; color: #6b7280; margin-bottom: 8px; display: block;">${filteredIcons.length} icons found</span>`;
+        grid.appendChild(countDiv);
+    }
+    
+    filteredIcons.forEach(iconName => {
+        const item = document.createElement('div');
+        item.className = 'icon-item';
+        item.dataset.iconValue = iconName;
+        item.title = iconName; // Tooltip with icon name
+        item.innerHTML = `<i data-feather="${iconName}"></i>`;
+        item.addEventListener('click', () => selectFeatherIcon(iconName, item));
+        grid.appendChild(item);
+    });
+    
+    feather.replace();
+}
 
-		// Update panels
-		document.querySelectorAll('.icon-panel').forEach(panel => {
-			panel.classList.toggle('active', panel.id === `${tabType}-panel`);
-		});
+function handleFeatherIconSearch(e) {
+    const searchTerm = e.target.value;
+    populateFeatherIconsGrid(searchTerm);
+}
 
-		categoryCreationState.selectedIconType = tabType;
-		feather.replace();
-	}
+function handleCustomEmojiInput(e) {
+    const value = e.target.value.trim();
+    const addBtn = categoryCreationElements.emojiAddBtn;
+    
+    // Enable/disable add button based on input
+    if (addBtn) {
+        addBtn.disabled = !isValidEmoji(value);
+    }
+}
 
-	function populateFeatherIconsGrid() {
-		const grid = categoryCreationElements.featherGrid;
-		if (!grid) return;
 
-		grid.innerHTML = '';
-		POPULAR_FEATHER_ICONS.forEach(iconName => {
-			const item = document.createElement('div');
-			item.className = 'icon-item';
-			item.dataset.iconValue = iconName;
-			item.innerHTML = `<i data-feather="${iconName}"></i>`;
-			item.addEventListener('click', () => selectFeatherIcon(iconName, item));
-			grid.appendChild(item);
-		});
+function isValidEmoji(text) {
+    if (!text || text.length === 0) return false;
+    
+    // Basic emoji validation - check if it contains emoji characters
+    // This is a simple check, you could make it more sophisticated
+    const emojiRegex = /[\u{1F600}-\u{1F64F}]|[\u{1F300}-\u{1F5FF}]|[\u{1F680}-\u{1F6FF}]|[\u{1F1E0}-\u{1F1FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/u;
+    return emojiRegex.test(text) && text.length <= 10;
+}
 
-		feather.replace();
-	}
+function handleAddCustomEmoji() {
+    const input = categoryCreationElements.customEmojiInput;
+    const value = input.value.trim();
+    
+    if (!isValidEmoji(value)) {
+        showMessage('Please enter a valid emoji', 'error');
+        return;
+    }
+    
+    // Select the custom emoji
+    selectCustomEmoji(value);
+    
+    // Clear input
+    input.value = '';
+    categoryCreationElements.emojiAddBtn.disabled = true;
+    
+    showMessage('Custom emoji selected!', 'success');
+}
 
-	function handleFeatherIconSearch(e) {
-		const searchTerm = e.target.value.toLowerCase();
-		const filteredIcons = POPULAR_FEATHER_ICONS.filter(icon =>
-			icon.toLowerCase().includes(searchTerm)
-		);
+function selectCustomEmoji(emoji) {
+    // Clear existing selections
+    document.querySelectorAll('#emoji-grid .emoji-item').forEach(item => {
+        item.classList.remove('selected');
+    });
+    
+    // Update state and preview
+    categoryCreationState.selectedIconValue = emoji;
+    updateIconPreview(`<span class="emoji-icon">${emoji}</span>`, emoji);
+}
 
-		const grid = categoryCreationElements.featherGrid;
-		grid.innerHTML = '';
 
-		filteredIcons.forEach(iconName => {
-			const item = document.createElement('div');
-			item.className = 'icon-item';
-			item.dataset.iconValue = iconName;
-			item.innerHTML = `<i data-feather="${iconName}"></i>`;
-			item.addEventListener('click', () => selectFeatherIcon(iconName, item));
-			grid.appendChild(item);
-		});
 
-		feather.replace();
-	}
+function selectFeatherIcon(iconName, element) {
+    // Update selection UI
+    document.querySelectorAll('#feather-icon-grid .icon-item').forEach(item => {
+        item.classList.remove('selected');
+    });
+    element.classList.add('selected');
+    
+    // Update state and preview
+    categoryCreationState.selectedIconValue = iconName;
+    updateIconPreview(`<i data-feather="${iconName}"></i>`, iconName);
+}
 
-	function selectFeatherIcon(iconName, element) {
-		// Update selection UI
-		document.querySelectorAll('#feather-icon-grid .icon-item').forEach(item => {
-			item.classList.remove('selected');
-		});
-		element.classList.add('selected');
+function populateEmojiGrid(category) {
+    const grid = categoryCreationElements.emojiGrid;
+    if (!grid || !EMOJI_CATEGORIES[category]) return;
+    
+    grid.innerHTML = '';
+    EMOJI_CATEGORIES[category].forEach(emoji => {
+        const item = document.createElement('div');
+        item.className = 'emoji-item';
+        item.dataset.iconValue = emoji;
+        item.textContent = emoji;
+        item.addEventListener('click', () => selectEmoji(emoji, item));
+        grid.appendChild(item);
+    });
+}
 
-		// Update state and preview
-		categoryCreationState.selectedIconValue = iconName;
-		updateIconPreview(`<i data-feather="${iconName}"></i>`, iconName);
-	}
+function selectEmoji(emoji, element) {
+    // Update selection UI
+    document.querySelectorAll('#emoji-grid .emoji-item').forEach(item => {
+        item.classList.remove('selected');
+    });
+    element.classList.add('selected');
+    
+    // Update state and preview
+    categoryCreationState.selectedIconValue = emoji;
+    updateIconPreview(`<span class="emoji-icon">${emoji}</span>`, emoji);
+}
 
-	function populateEmojiGrid(category) {
-		const grid = categoryCreationElements.emojiGrid;
-		if (!grid || !EMOJI_CATEGORIES[category]) return;
+function updateIconPreview(iconHtml, label) {
+    if (iconHtml) {
+        categoryCreationElements.iconPreview.outerHTML = iconHtml.includes('data-feather') 
+            ? iconHtml.replace('>', ' id="icon-preview">') 
+            : `<div id="icon-preview">${iconHtml}</div>`;
+        categoryCreationElements.iconPreview = document.getElementById('icon-preview');
+    } else {
+        categoryCreationElements.iconPreview.outerHTML = '<i data-feather="circle" id="icon-preview"></i>';
+        categoryCreationElements.iconPreview = document.getElementById('icon-preview');
+    }
+    
+    categoryCreationElements.iconPreviewLabel.textContent = label;
+    feather.replace();
+}
 
-		grid.innerHTML = '';
-		EMOJI_CATEGORIES[category].forEach(emoji => {
-			const item = document.createElement('div');
-			item.className = 'emoji-item';
-			item.dataset.iconValue = emoji;
-			item.textContent = emoji;
-			item.addEventListener('click', () => selectEmoji(emoji, item));
-			grid.appendChild(item);
-		});
-	}
+// === File Upload ===
+function setupUploadArea() {
+    const uploadArea = categoryCreationElements.uploadArea;
+    const fileInput = categoryCreationElements.svgFileInput;
+    
+    if (!uploadArea || !fileInput) return;
+    
+    // Click to upload
+    uploadArea.addEventListener('click', () => fileInput.click());
+    
+    // File input change
+    fileInput.addEventListener('change', handleFileSelect);
+    
+    // Drag and drop
+    uploadArea.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        uploadArea.classList.add('dragover');
+    });
+    
+    uploadArea.addEventListener('dragleave', () => {
+        uploadArea.classList.remove('dragover');
+    });
+    
+    uploadArea.addEventListener('drop', (e) => {
+        e.preventDefault();
+        uploadArea.classList.remove('dragover');
+        
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            handleFileUpload(files[0]);
+        }
+    });
+}
 
-	function selectEmoji(emoji, element) {
-		// Update selection UI
-		document.querySelectorAll('#emoji-grid .emoji-item').forEach(item => {
-			item.classList.remove('selected');
-		});
-		element.classList.add('selected');
+function handleFileSelect(e) {
+    const file = e.target.files[0];
+    if (file) {
+        handleFileUpload(file);
+    }
+}
 
-		// Update state and preview
-		categoryCreationState.selectedIconValue = emoji;
-		updateIconPreview(`<span class="emoji-icon">${emoji}</span>`, emoji);
-	}
+function handleFileUpload(file) {
+    // Validate file
+    if (!file.type.includes('svg') && !file.name.endsWith('.svg')) {
+        showMessage('Please select an SVG file only.', 'error');
+        return;
+    }
+    
+    if (file.size > 100 * 1024) { // 100KB limit
+        showMessage('File size must be under 100KB.', 'error');
+        return;
+    }
+    
+    // Read file
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        const svgContent = e.target.result;
+        categoryCreationState.uploadedSvgContent = svgContent;
+        categoryCreationState.selectedIconValue = svgContent;
+        
+        // Update preview (simplified for now)
+        updateIconPreview(`<div style="width: 24px; height: 24px; background: #e5e7eb; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 10px;">SVG</div>`, file.name);
+        
+        showMessage('SVG file uploaded successfully!', 'success');
+    };
+    
+    reader.onerror = () => {
+        showMessage('Failed to read the SVG file.', 'error');
+    };
+    
+    reader.readAsText(file);
+}
 
-	function updateIconPreview(iconHtml, label) {
-		if (iconHtml) {
-			categoryCreationElements.iconPreview.outerHTML = iconHtml.includes('data-feather') ?
-				iconHtml.replace('>', ' id="icon-preview">') :
-				`<div id="icon-preview">${iconHtml}</div>`;
-			categoryCreationElements.iconPreview = document.getElementById('icon-preview');
-		} else {
-			categoryCreationElements.iconPreview.outerHTML = '<i data-feather="circle" id="icon-preview"></i>';
-			categoryCreationElements.iconPreview = document.getElementById('icon-preview');
-		}
-
-		categoryCreationElements.iconPreviewLabel.textContent = label;
-		feather.replace();
-	}
-
-	// === File Upload ===
-	function setupUploadArea() {
-		const uploadArea = categoryCreationElements.uploadArea;
-		const fileInput = categoryCreationElements.svgFileInput;
-
-		if (!uploadArea || !fileInput) return;
-
-		// Click to upload
-		uploadArea.addEventListener('click', () => fileInput.click());
-
-		// File input change
-		fileInput.addEventListener('change', handleFileSelect);
-
-		// Drag and drop
-		uploadArea.addEventListener('dragover', (e) => {
-			e.preventDefault();
-			uploadArea.classList.add('dragover');
-		});
-
-		uploadArea.addEventListener('dragleave', () => {
-			uploadArea.classList.remove('dragover');
-		});
-
-		uploadArea.addEventListener('drop', (e) => {
-			e.preventDefault();
-			uploadArea.classList.remove('dragover');
-
-			const files = e.dataTransfer.files;
-			if (files.length > 0) {
-				handleFileUpload(files[0]);
-			}
-		});
-	}
-
-	function handleFileSelect(e) {
-		const file = e.target.files[0];
-		if (file) {
-			handleFileUpload(file);
-		}
-	}
-
-	function handleFileUpload(file) {
-		// Validate file
-		if (!file.type.includes('svg') && !file.name.endsWith('.svg')) {
-			showMessage('Please select an SVG file only.', 'error');
-			return;
-		}
-
-		if (file.size > 100 * 1024) { // 100KB limit
-			showMessage('File size must be under 100KB.', 'error');
-			return;
-		}
-
-		// Read file
-		const reader = new FileReader();
-		reader.onload = (e) => {
-			const svgContent = e.target.result;
-			categoryCreationState.uploadedSvgContent = svgContent;
-			categoryCreationState.selectedIconValue = svgContent;
-
-			// Update preview (simplified for now)
-			updateIconPreview(`<div style="width: 24px; height: 24px; background: #e5e7eb; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 10px;">SVG</div>`, file.name);
-
-			showMessage('SVG file uploaded successfully!', 'success');
-		};
-
-		reader.onerror = () => {
-			showMessage('Failed to read the SVG file.', 'error');
-		};
-
-		reader.readAsText(file);
-	}
-
-	// === Save Category Creation ===
-	async function handleSaveCategoryCreation() {
-		try {
-			// Validate form
-			const categoryName = categoryCreationElements.categoryNameInput.value.trim();
-			const subcategoryName = categoryCreationElements.subcategoryNameInput.value.trim();
-
-			if (!categoryName) {
-				showMessage('Please enter a category name.', 'error');
-				return;
-			}
-
-			if (!subcategoryName) {
-				showMessage('Please enter a subcategory name.', 'error');
-				return;
-			}
-
-			if (!categoryCreationState.selectedIconValue) {
-				showMessage('Please select an icon for the subcategory.', 'error');
-				return;
-			}
-
-			setLoading(true);
-
-			// Prepare API payload
-			const payload = {
-				category_name: categoryName,
-				category_description: categoryCreationState.isCreatingNewCategory ?
-					categoryCreationElements.categoryDescriptionInput.value.trim() || `Custom category: ${categoryName}` :
-					undefined,
-				subcategory_name: subcategoryName,
-				subcategory_icon_type: categoryCreationState.selectedIconType,
-				subcategory_icon_value: categoryCreationState.selectedIconValue,
-				is_reimbursable: categoryCreationElements.isReimbursableCheckbox.checked,
-				exclude_from_budget: categoryCreationElements.excludeFromBudgetCheckbox.checked
-			};
-
-			// Make API call
-			const response = await fetchApi('/categories/create-with-subcategory', {
-				method: 'POST',
-				body: JSON.stringify(payload),
-			});
-
-			// Success feedback
-			const message = categoryCreationState.isCreatingNewCategory ?
-				`Created new category "${response.category.name}" with subcategory "${response.subcategory.name}"` :
-				`Added subcategory "${response.subcategory.name}" to "${response.category.name}"`;
-
-			showMessage(message, 'success');
-
-			// Close modal and refresh data
-			closeCategoryCreationModal();
-			loadExistingCategories(); // Refresh for next time
-
-			// Optionally refresh the subcategory rules section
-			if (typeof fetchAndDisplayCategoriesAndSubcategories === 'function') {
-				await fetchAndDisplayCategoriesAndSubcategories();
-			}
-
-		} catch (error) {
-			showMessage(`Error creating category/subcategory: ${error.message}`, 'error');
-		} finally {
-			setLoading(false);
-		}
-	}
+// === Save Category Creation ===
+async function handleSaveCategoryCreation() {
+    try {
+        // Validate form
+        const categoryName = categoryCreationElements.categoryNameInput.value.trim();
+        const subcategoryName = categoryCreationElements.subcategoryNameInput.value.trim();
+        
+        if (!categoryName) {
+            showMessage('Please enter a category name.', 'error');
+            return;
+        }
+        
+        if (!subcategoryName) {
+            showMessage('Please enter a subcategory name.', 'error');
+            return;
+        }
+        
+        if (!categoryCreationState.selectedIconValue) {
+            showMessage('Please select an icon for the subcategory.', 'error');
+            return;
+        }
+        
+        setLoading(true);
+        
+        // Prepare API payload
+        const payload = {
+            category_name: categoryName,
+            category_description: categoryCreationState.isCreatingNewCategory 
+                ? categoryCreationElements.categoryDescriptionInput.value.trim() || `Custom category: ${categoryName}`
+                : undefined,
+            subcategory_name: subcategoryName,
+            subcategory_icon_type: categoryCreationState.selectedIconType,
+            subcategory_icon_value: categoryCreationState.selectedIconValue,
+            is_reimbursable: categoryCreationElements.isReimbursableCheckbox.checked,
+            exclude_from_budget: categoryCreationElements.excludeFromBudgetCheckbox.checked
+        };
+        
+        // Make API call
+        const response = await fetchApi('/categories/create-with-subcategory', {
+            method: 'POST',
+            body: JSON.stringify(payload),
+        });
+        
+        // Success feedback
+        const message = categoryCreationState.isCreatingNewCategory 
+            ? `Created new category "${response.category.name}" with subcategory "${response.subcategory.name}"`
+            : `Added subcategory "${response.subcategory.name}" to "${response.category.name}"`;
+        
+        showMessage(message, 'success');
+        
+        // Close modal and refresh data
+        closeCategoryCreationModal();
+        loadExistingCategories(); // Refresh for next time
+        
+        // Optionally refresh the subcategory rules section
+        if (typeof fetchAndDisplayCategoriesAndSubcategories === 'function') {
+            await fetchAndDisplayCategoriesAndSubcategories();
+        }
+        
+    } catch (error) {
+		alert(`Error creating category/subcategory: ${error.message}`)
+        showMessage(`Error creating category/subcategory: ${error.message}`, 'error');
+    } finally {
+        setLoading(false);
+    }
+}
 
 	// --- Main Initialization ---
 	function initialize() {

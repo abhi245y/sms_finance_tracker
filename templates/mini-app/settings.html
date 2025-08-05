@@ -52,169 +52,186 @@
             </div>
 
             <!-- Section 3: Category Management -->
-        <div class="settings-section" id="category-management-section">
-            <div class="settings-section-title">Category Management</div>
-            <div class="card">
-                <div class="card-content" style="padding: 16px;">
-                    <div style="text-align: center;">
-                        <button class="create-category-btn" id="create-category-subcategory-btn">
-                            <i data-feather="plus-circle"></i>
-                            <span>Create Category & Subcategory</span>
-                        </button>
-                    </div>
-                    <div style="margin-top: 12px; font-size: 13px; color: var(--tg-theme-hint-color, #777); text-align: center; line-height: 1.4;">
-                        Add new categories and subcategories with custom icons. Perfect for organizing your unique expenses.
+            <div class="settings-section" id="category-management-section">
+                <div class="settings-section-title">Category Management</div>
+                <div class="card">
+                    <div class="card-content" style="padding: 16px;">
+                        <div style="text-align: center;">
+                            <button class="create-category-btn" id="create-category-subcategory-btn">
+                                <i data-feather="plus-circle"></i>
+                                <span>Create Category & Subcategory</span>
+                            </button>
+                        </div>
+                        <div style="margin-top: 12px; font-size: 13px; color: var(--tg-theme-hint-color, #777); text-align: center; line-height: 1.4;">
+                            Add new categories and subcategories with custom icons. Perfect for organizing your unique expenses.
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-        </div>
 
-        <div class="category-creation-modal" id="categoryCreationModal">
-            <div class="category-creation-modal-content">
-                <!-- Header -->
-                <div class="category-creation-modal-header">
-                    <button class="category-creation-close-btn" id="closeCategoryCreationModalBtn">✕</button>
-                    <span class="category-creation-modal-title">Create Category & Subcategory</span>
-                    <button class="category-creation-save-btn" id="saveCategoryCreationBtn">✓</button>
-                </div>
-
-                <!-- Form Content -->
-                <div class="category-creation-modal-body">
-                    <!-- Category Section -->
-                    <div class="form-section">
-                        <div class="form-section-header">
-                            <i data-feather="folder" class="form-section-icon"></i>
-                            <span class="form-section-title">Category</span>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Category Name</label>
-                            <div class="category-input-container">
-                                <input type="text" id="category-name-input" class="form-input category-input" placeholder="Select existing or type new..." autocomplete="off">
-                                <div class="category-dropdown" id="category-dropdown">
-                                    <!-- Populated by JavaScript -->
-                                </div>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Description (for new categories)</label>
-                            <input type="text" id="category-description-input" class="form-input" placeholder="Brief description of this category..." disabled>
-                        </div>
+            <!-- Category Creation Modal -->
+            <div class="category-creation-modal" id="categoryCreationModal">
+                <div class="category-creation-modal-content">
+                    <!-- Header -->
+                    <div class="category-creation-modal-header">
+                        <button class="category-creation-close-btn" id="closeCategoryCreationModalBtn">✕</button>
+                        <span class="category-creation-modal-title">Create Category & Subcategory</span>
+                        <button class="category-creation-save-btn" id="saveCategoryCreationBtn">✓</button>
                     </div>
 
-                    <!-- Subcategory Section -->
-                    <div class="form-section">
-                        <div class="form-section-header">
-                            <i data-feather="tag" class="form-section-icon"></i>
-                            <span class="form-section-title">Subcategory</span>
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label">Subcategory Name</label>
-                            <input type="text" id="subcategory-name-input" class="form-input" placeholder="e.g., Pizza, Coffee, Gas..." required>
-                        </div>
-
-                        <!-- Icon Selection -->
-                        <div class="form-group">
-                            <label class="form-label">Icon</label>
-                            <div class="icon-selection-container">
-                                <!-- Icon Type Tabs -->
-                                <div class="icon-type-tabs">
-                                    <button class="icon-type-tab active" data-tab="feather" id="feather-tab">
-                                        <i data-feather="feather"></i>
-                                        <span>Icons</span>
-                                    </button>
-                                    <button class="icon-type-tab" data-tab="emoji" id="emoji-tab">
-                                        <span class="emoji-preview">😀</span>
-                                        <span>Emoji</span>
-                                    </button>
-                                    <button class="icon-type-tab" data-tab="upload" id="upload-tab">
-                                        <i data-feather="upload"></i>
-                                        <span>Upload</span>
-                                    </button>
+                    <!-- Form Content -->
+                    <div class="category-creation-modal-body">
+                        <!-- Category Section -->
+                        <div class="form-section">
+                            <div class="form-section-header">
+                                <i data-feather="folder" class="form-section-icon"></i>
+                                <span class="form-section-title">Category</span>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Category Name</label>
+                                <div class="category-input-container">
+                                    <input type="text" id="category-name-input" class="form-input category-input" placeholder="Select existing or type new..." autocomplete="off">
+                                    <div class="category-dropdown" id="category-dropdown"></div>
                                 </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Description (for new categories)</label>
+                                <input type="text" id="category-description-input" class="form-input" placeholder="Brief description of this category..." disabled>
+                            </div>
+                        </div>
 
-                                <!-- Selected Icon Preview -->
-                                <div class="selected-icon-preview">
-                                    <div class="icon-preview-container" id="icon-preview-container">
-                                        <i data-feather="circle" id="icon-preview"></i>
+                        <!-- Subcategory Section -->
+                        <div class="form-section">
+                            <div class="form-section-header">
+                                <i data-feather="tag" class="form-section-icon"></i>
+                                <span class="form-section-title">Subcategory</span>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Subcategory Name</label>
+                                <input type="text" id="subcategory-name-input" class="form-input" placeholder="e.g., Pizza, Coffee, Gas..." required>
+                            </div>
+
+                            <!-- Icon Selection -->
+                            <div class="form-group">
+                                <label class="form-label">Icon</label>
+                                <div class="icon-selection-container">
+                                    <!-- Icon Type Tabs -->
+                                    <div class="icon-type-tabs">
+                                        <button class="icon-type-tab active" data-tab="feather" id="feather-tab">
+                                            <i data-feather="feather"></i>
+                                            <span>Icons</span>
+                                        </button>
+                                        <button class="icon-type-tab" data-tab="emoji" id="emoji-tab">
+                                            <span class="emoji-preview">😀</span>
+                                            <span>Emoji</span>
+                                        </button>
+                                        <button class="icon-type-tab" data-tab="upload" id="upload-tab">
+                                            <i data-feather="upload"></i>
+                                            <span>Upload</span>
+                                        </button>
                                     </div>
-                                    <div class="icon-preview-label" id="icon-preview-label">No icon selected</div>
-                                </div>
 
-                                <!-- Icon Selection Content -->
-                                <div class="icon-selection-content">
-                                    <!-- Feather Icons Panel -->
-                                    <div class="icon-panel feather-panel active" id="feather-panel">
-                                        <div class="icon-search-container">
-                                            <input type="text" id="feather-search" class="icon-search-input" placeholder="Search icons...">
-                                            <i data-feather="search" class="search-icon"></i>
+                                    <!-- Selected Icon Preview -->
+                                    <div class="selected-icon-preview">
+                                        <div class="icon-preview-container" id="icon-preview-container">
+                                            <i data-feather="circle" id="icon-preview"></i>
                                         </div>
-                                        <div class="icon-grid" id="feather-icon-grid"></div>
+                                        <div class="icon-preview-label" id="icon-preview-label">No icon selected</div>
                                     </div>
 
-                                    <!-- Emoji Panel -->
-                                    <div class="icon-panel emoji-panel" id="emoji-panel">
-                                        <div class="emoji-categories">
-                                            <button class="emoji-category-btn active" data-category="food">🍕 Food</button>
-                                            <button class="emoji-category-btn" data-category="transport">🚗 Transport</button>
-                                            <button class="emoji-category-btn" data-category="activities">⚽ Activities</button>
-                                            <button class="emoji-category-btn" data-category="objects">💡 Objects</button>
-                                            <button class="emoji-category-btn" data-category="symbols">💰 Money</button>
+                                    <!-- Icon Selection Content -->
+                                    <div class="icon-selection-content">
+                                        <!-- Feather Icons Panel -->
+                                        <div class="icon-panel feather-panel active" id="feather-panel">
+                                            <div class="icon-search-container">
+                                                <input type="text" id="feather-search" class="icon-search-input" placeholder="Search icons...">
+                                                <i data-feather="search" class="search-icon"></i>
+                                            </div>
+                                            <div class="icon-grid" id="feather-icon-grid">
+                                                <!-- Populated by JavaScript -->
+                                            </div>
                                         </div>
-                                        <div class="emoji-grid" id="emoji-grid"></div>
-                                    </div>
 
-                                    <!-- Upload Panel -->
-                                    <div class="icon-panel upload-panel" id="upload-panel">
-                                        <div class="upload-area" id="upload-area">
-                                            <div class="upload-content">
-                                                <i data-feather="upload-cloud" class="upload-icon"></i>
-                                                <div class="upload-text">
-                                                    <div class="upload-title">Drop SVG file here</div>
-                                                    <div class="upload-subtitle">or click to browse</div>
+                                        <!-- Emoji Panel -->
+                                        <div class="icon-panel emoji-panel" id="emoji-panel">
+                                            <!-- Custom Emoji Input -->
+                                            <div class="custom-emoji-section">
+                                                <label class="emoji-input-label">Custom Emoji</label>
+                                                <div class="custom-emoji-input-container">
+                                                    <input type="text" id="custom-emoji-input" class="custom-emoji-input" placeholder="Type or paste any emoji..." maxlength="10">
+                                                    <button type="button" class="emoji-add-btn" id="emoji-add-btn">Add</button>
                                                 </div>
-                                                <input type="file" id="svg-file-input" accept=".svg,image/svg+xml" style="display: none;">
+                                                <div class="emoji-input-help">
+                                                    <span>💡 Tip: Type emoji using keyboard or paste from anywhere</span>
+                                                </div>
+                                            </div>
+
+                                            <!-- Predefined Categories -->
+                                            <div class="emoji-categories-section">
+                                                <label class="emoji-input-label">Browse Categories</label>
+                                                <div class="emoji-categories">
+                                                    <button class="emoji-category-btn active" data-category="food">🍕 Food</button>
+                                                    <button class="emoji-category-btn" data-category="transport">🚗 Transport</button>
+                                                    <button class="emoji-category-btn" data-category="activities">⚽ Activities</button>
+                                                    <button class="emoji-category-btn" data-category="objects">💡 Objects</button>
+                                                    <button class="emoji-category-btn" data-category="symbols">💰 Money</button>
+                                                </div>
+                                                <div class="emoji-grid" id="emoji-grid">
+                                                    <!-- Populated by JavaScript -->
+                                                </div>
                                             </div>
                                         </div>
-                                        <div class="upload-info">
-                                            <div class="upload-info-item">
-                                                <i data-feather="info" class="info-icon"></i>
-                                                <span>SVG files only, max 100KB</span>
+
+                                        <!-- Upload Panel -->
+                                        <div class="icon-panel upload-panel" id="upload-panel">
+                                            <div class="upload-area" id="upload-area">
+                                                <div class="upload-content">
+                                                    <i data-feather="upload-cloud" class="upload-icon"></i>
+                                                    <div class="upload-text">
+                                                        <div class="upload-title">Drop SVG file here</div>
+                                                        <div class="upload-subtitle">or click to browse</div>
+                                                    </div>
+                                                    <input type="file" id="svg-file-input" accept=".svg,image/svg+xml" style="display: none;">
+                                                </div>
                                             </div>
-                                            <div class="upload-info-item">
-                                                <i data-feather="shield" class="info-icon"></i>
-                                                <span>Files are automatically sanitized</span>
+                                            <div class="upload-info">
+                                                <div class="upload-info-item">
+                                                    <i data-feather="info" class="info-icon"></i>
+                                                    <span>SVG files only, max 100KB</span>
+                                                </div>
+                                                <div class="upload-info-item">
+                                                    <i data-feather="shield" class="info-icon"></i>
+                                                    <span>Files are automatically sanitized</span>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <!-- Subcategory Options -->
-                        <div class="form-group">
-                            <div class="form-options">
-                                <label class="option-item">
-                                    <input type="checkbox" id="is-reimbursable-checkbox">
-                                    <span class="option-text">
+                            <!-- Subcategory Options -->
+                            <div class="form-group">
+                                <div class="form-options">
+                                    <label class="option-item">
+                                        <input type="checkbox" id="is-reimbursable-checkbox">
+                                        <span class="option-text">
                                 <span class="option-title">Reimbursable</span>
-                                    <span class="option-description">Expenses that can be reimbursed</span>
-                                    </span>
-                                </label>
-                                <label class="option-item">
-                                    <input type="checkbox" id="exclude-from-budget-checkbox">
-                                    <span class="option-text">
+                                        <span class="option-description">Expenses that can be reimbursed</span>
+                                        </span>
+                                    </label>
+                                    <label class="option-item">
+                                        <input type="checkbox" id="exclude-from-budget-checkbox">
+                                        <span class="option-text">
                                 <span class="option-title">Exclude from Budget</span>
-                                    <span class="option-description">Don't count towards budget calculations</span>
-                                    </span>
-                                </label>
+                                        <span class="option-description">Don't count towards budget calculations</span>
+                                        </span>
+                                    </label>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-
             <!-- Section 4: Subcategory Rules  -->
             <div class="settings-section" id="subcategory-settings-section">
                 <div class="settings-section-title">Subcategory Rules</div>
@@ -230,7 +247,7 @@
     </div>
 
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script src="/static/js/settings.js?v=0.4.2"></script>
+    <script src="/static/js/settings.js?v=0.4.5"></script>
 </body>
 
 </html>

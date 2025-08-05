@@ -78,15 +78,15 @@ def create_category_and_subcategory(
                     detail=f"Subcategory '{category_data.subcategory_name}' already exists under category '{category_data.category_name}'"
                 )
         
-        category, subcategory, created_new_category = crud_subcategory.create_category_with_subcategory(
+        category, subcategory, created_new_category = crud_category.create_category_with_subcategory(
             db=db, obj_in=category_data
         )
         
         db.refresh(category)
         db.refresh(subcategory)
         
-        category_response = CategoryInDB.from_orm(category)
-        subcategory_response = SubCategoryInDB.from_orm(subcategory)
+        category_response = CategoryInDB.model_validate(category)
+        subcategory_response = SubCategoryInDB.model_validate(subcategory)
         
         return UnifiedCategorySubcategoryResponse(
             category=category_response,
@@ -95,11 +95,13 @@ def create_category_and_subcategory(
         )
         
     except ValueError as e:
+        print(e)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=str(e)
         )
     except Exception as e:
+        print(e)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"An unexpected error occurred: {str(e)}"

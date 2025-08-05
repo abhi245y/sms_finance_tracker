@@ -26,7 +26,7 @@ class SubCategoryInDB(SubCategoryBase):
     id: int
 
     class Config:
-        orm_mode = True
+        from_attributes  = True
 
 # --- Category Schemas ---
 class CategoryBase(BaseModel):
@@ -47,7 +47,7 @@ class CategoryInDB(CategoryBase):
     subcategories: List[SubCategoryInDB] = []
 
     class Config:
-        orm_mode = True
+        from_attributes  = True
 
 class CategoryListWithSubcategories(BaseModel):
     categories: List[CategoryInDB]
@@ -64,7 +64,7 @@ class UnifiedCategorySubcategoryCreate(BaseModel):
     
     subcategory_name: str = Field(..., min_length=1, max_length=100, example="Pizza")
     subcategory_icon_type: IconType = Field(..., example="feather")
-    subcategory_icon_value: str = Field(..., max_length=10000, example="pizza") 
+    subcategory_icon_value: str = Field(..., max_length=300000, example="pizza") 
     
     is_reimbursable: bool = Field(default=False)
     exclude_from_budget: bool = Field(default=False)
@@ -90,4 +90,4 @@ class UnifiedCategorySubcategoryResponse(BaseModel):
     created_new_category: bool = Field(..., description="Whether a new category was created")
     
     class Config:
-        orm_mode = True
+        from_attributes  = True

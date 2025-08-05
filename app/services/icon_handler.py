@@ -8,7 +8,7 @@ class IconHandler:
     """Handles icon processing and storage for categories and subcategories"""
     
     def __init__(self):
-        self.icons_base_path = Path("static/images/icons/brand")
+        self.icons_base_path = Path("static/images/icons/")
         self.custom_icons_path = self.icons_base_path / "brand"
         self.custom_icons_path.mkdir(parents=True, exist_ok=True)
     
