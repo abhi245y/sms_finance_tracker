@@ -1,10 +1,16 @@
 from sqlalchemy.orm import Session, selectinload
-from typing import List, Optional, Dict, Any, Tuple
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy import func
+from typing import List, Optional, Dict, Any, Tuple
+
 
 from app.models.category import Category as CategoryModel
 from app.models.subcategory import SubCategory as SubCategoryModel 
 from app.schemas.category import CategoryCreate, CategoryUpdate 
+
+from app.services.icon_handler import IconHandler
+from app.schemas.category import UnifiedCategorySubcategoryCreate, SubCategoryCreate
+from app.crud.crud_subcategory import create_subcategory
 
 # --- READ Operations ---
 
@@ -31,24 +37,7 @@ def get_all_category_names(db: Session) -> List[str]:
     results = db.query(CategoryModel.name).order_by(CategoryModel.name).all()
     return [result[0] for result in results]
 
-# --- CREATE Operation ---
-# (create_category, create_multiple_categories remain largely the same,
-#  but ensure they handle new fields like description, display_order if CategoryCreate schema is updated)
-
-def create_category(db: Session, *, obj_in: CategoryCreate) -> CategoryModel:
-    db_obj = CategoryModel(
-        name=obj_in.name,
-        description=obj_in.description,
-        display_order=obj_in.display_order
-    )
-    db.add(db_obj)
-    db.commit()
-    db.refresh(db_obj)
-    return db_obj
-
 # --- SubCategory CRUD (Minimal as discussed, primarily for get_subcategory for now) ---
-# You would place these in a new app/crud/crud_subcategory.py file and import from there.
-# For brevity here, I'm including a minimal get_subcategory.
 
 def get_subcategory(db: Session, subcategory_id: int) -> Optional[SubCategoryModel]:
     """Get a single subcategory by its ID, optionally loading its parent."""
@@ -56,6 +45,7 @@ def get_subcategory(db: Session, subcategory_id: int) -> Optional[SubCategoryMod
         .options(selectinload(SubCategoryModel.parent_category))\
         .filter(SubCategoryModel.id == subcategory_id)\
         .first()
+        
 # --- CREATE Operation ---
 
 def create_category(db: Session, *, obj_in: CategoryCreate) -> CategoryModel:
@@ -107,21 +97,76 @@ def create_multiple_categories(db: Session, *, categories_in: List[CategoryCreat
 
     return created_categories_db, errors
 
+def create_category_with_subcategory(
+    db: Session, 
+    *, 
+    obj_in: UnifiedCategorySubcategoryCreate
+) -> Tuple[CategoryModel, SubCategoryModel, bool]:
+    """
+    Create or find category and create subcategory under it.
+    
+    Args:
+        db: Database session
+        obj_in: Unified creation schema
+        
+    Returns:
+        Tuple of (category_model, subcategory_model, created_new_category)
+    """
+    icon_handler = IconHandler()
+    created_new_category = False
+    
+    existing_category = get_category_by_name(db, name=obj_in.category_name)
+    
+    if existing_category:
+        category = existing_category
+    else:
+        category_create_data = CategoryCreate(
+            name=obj_in.category_name,
+            description=obj_in.category_description or f"Custom category: {obj_in.category_name}",
+            display_order=999  
+        )
+        category = create_category(db=db, obj_in=category_create_data)
+        created_new_category = True
+    
+    try:
+        processed_icon_name = icon_handler.process_icon(
+            icon_type=obj_in.subcategory_icon_type.value,
+            icon_value=obj_in.subcategory_icon_value
+        )
+    except ValueError as e:
+        raise ValueError(f"Icon processing failed: {str(e)}")
+    
+    max_display_order = db.query(func.max(SubCategoryModel.display_order))\
+        .filter(SubCategoryModel.parent_category_id == category.id)\
+        .scalar() or 0
+        
+    subcategory_create_data = SubCategoryCreate(
+        name=obj_in.subcategory_name,
+        icon_name=processed_icon_name,
+        display_order=max_display_order + 1,
+        is_reimbursable=obj_in.is_reimbursable,
+        exclude_from_budget=obj_in.exclude_from_budget,
+        parent_category_id=category.id
+    )
+    
+    subcategory = create_subcategory(db=db, obj_in=subcategory_create_data)
+    
+    return category, subcategory, created_new_category
+
 # --- UPDATE Operation ---
-# Not strictly needed for the Shortcut's GET request, but good for completeness.
 
 def update_category(
     db: Session,
     *,
-    db_obj: CategoryModel, # The existing category ORM object to update
-    obj_in: CategoryUpdate # Pydantic schema with fields to update
+    db_obj: CategoryModel, 
+    obj_in: CategoryUpdate 
 ) -> CategoryModel:
     """
     Update an existing category.
     'db_obj' is the SQLAlchemy model instance.
     'obj_in' is a Pydantic schema (CategoryUpdate) or a dict.
     """
-    update_data = obj_in.dict(exclude_unset=True) # Get only fields that were actually provided
+    update_data = obj_in.dict(exclude_unset=True) 
     
     for field, value in update_data.items():
         setattr(db_obj, field, value)
@@ -132,7 +177,6 @@ def update_category(
     return db_obj
 
 # --- DELETE Operation ---
-# Not strictly needed for current plan, but good for completeness.
 
 def delete_category(db: Session, *, category_id: int) -> Optional[CategoryModel]:
     """
