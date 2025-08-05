@@ -1024,7 +1024,6 @@ async function handleSaveCategoryCreation() {
         }
         
     } catch (error) {
-		alert(`Error creating category/subcategory: ${error.message}`)
         showMessage(`Error creating category/subcategory: ${error.message}`, 'error');
     } finally {
         setLoading(false);
